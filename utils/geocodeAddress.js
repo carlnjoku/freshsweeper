@@ -1,0 +1,69 @@
+// geocoding.js
+import { GOOGLE_MAPS_API_KEY } from "../secret";
+const apiKey = GOOGLE_MAPS_API_KEY; // Replace with your actual API key
+
+export const geocodeAddress = async (address) => {
+  try {
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${apiKey}`;
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.status === 'OK' && data.results.length > 0) {
+      const location = data.results[0].geometry.location;
+      const latitude = location.lat;
+      const longitude = location.lng;
+
+      // Initialize variables to store city, state, country, and postal code
+      let cityLong = '';
+      let cityShort = '';
+      let stateLong = '';
+      let stateShort = '';
+      let countryLong = '';
+      let countryShort = '';
+      let postalCode = '';
+
+      // Ensure that address_components exists and is an array
+      if (data.results[0].address_components && Array.isArray(data.results[0].address_components)) {
+        const addressComponents = data.results[0].address_components;
+
+        // Traverse through address components to find city, state, country, and postal code
+        for (let component of addressComponents) {
+          const types = component.types;
+
+          if (types.includes('locality')) {
+            cityLong = component.long_name;
+            cityShort = component.short_name;
+          }
+          if (types.includes('administrative_area_level_1')) {
+            stateLong = component.long_name;
+            stateShort = component.short_name;
+          }
+          if (types.includes('country')) {
+            countryLong = component.long_name;
+            countryShort = component.short_name;
+          }
+          if (types.includes('postal_code')) {
+            postalCode = component.long_name;
+          }
+        }
+      }
+
+      return {
+        latitude,
+        longitude,
+        cityLong,
+        cityShort,
+        stateLong,
+        stateShort,
+        countryLong,
+        countryShort,
+        postalCode,
+      };
+    } else {
+      throw new Error(`Geocoding failed: ${data.status}`);
+    }
+  } catch (error) {
+    console.error('Geocoding error:', error);
+    throw error;
+  }
+};
