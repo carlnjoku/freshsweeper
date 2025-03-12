@@ -742,43 +742,216 @@
 
 
 
+// import React, { useState } from 'react';
+// import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+// import moment from 'moment';
+// import COLORS from '../constants/colors';
+
+// const CalendarView = ({ title, openUpcomingTab , openOngoingTab, future_schedule_dates}) => {
+
+//   const schedule_dates = ["Wed Feb 27 2025", "Wed Feb 28 2025" , "Wed Feb 28 2025" , "Wed Feb 28 2025" ,"Wed Feb 29 2025", "Wed Feb 30 2025"]
+
+//   const [selectedDate, setSelectedDate] = useState(null);
+
+//   // Parse and format schedule dates
+//   const formattedScheduleDates = future_schedule_dates.map(date => moment(date).format('YYYY-MM-DD'));
+
+//   // Count schedules for each date
+//   const scheduleCount = formattedScheduleDates.reduce((acc, date) => {
+//     acc[date] = (acc[date] || 0) + 1;
+//     return acc;
+//   }, {});
+
+//   const daysInMonth = (month, year) => new Date(year, month + 1, 0).getDate();
+//   const getFirstDayOfMonth = (month, year) => new Date(year, month, 1).getDay();
+
+//   const renderCalendarGrid = () => {
+//     const currentDate = moment();
+//     const currentMonth = currentDate.month();
+//     const currentYear = currentDate.year();
+//     const numDays = daysInMonth(currentMonth, currentYear);
+//     const firstDayOfWeek = getFirstDayOfMonth(currentMonth, currentYear);
+
+//     const calendarCells = [];
+
+//     // Fill in empty cells for days before the first day of the month
+//     for (let i = 0; i < firstDayOfWeek; i++) {
+//       calendarCells.push(<View key={`empty-${i}`} style={styles.calendarCell} />);
+//     }
+
+//     // Render cells for each day in the month
+//     for (let day = 1; day <= numDays; day++) {
+//       const dateKey = moment(new Date(currentYear, currentMonth, day)).format('YYYY-MM-DD');
+//       const isScheduled = formattedScheduleDates.includes(dateKey);
+//       const isToday = moment().isSame(dateKey, 'day');
+//       const isPastDate = moment(dateKey).isBefore(moment(), 'day');
+//       const scheduleNum = scheduleCount[dateKey] || 0;
+
+//       calendarCells.push(
+//         <TouchableOpacity
+//           key={day}
+//           style={[
+//             styles.calendarCell,
+//             isScheduled && !isToday && styles.scheduledDay,
+//             isToday && styles.today,
+//           ]}
+//           onPress={() => {
+//             if (isToday) {
+//               openOngoingTab(); // Open ongoing tab if the date is today
+//             } else if (isScheduled) {
+//               openUpcomingTab(); // Open upcoming tab if the date has a schedule
+//             } else {
+//               handleDayPress(day);
+//             }
+//           }}
+//         >
+//           {scheduleNum > 0 && (
+//             <View style={styles.scheduleCount}>
+//               <Text style={styles.countText}>{scheduleNum}</Text>
+//             </View>
+//           )}
+//           <Text style={[
+//             styles.date,
+//             isPastDate && styles.pastDate,
+//           ]}>
+//             {day}
+//           </Text>
+//         </TouchableOpacity>
+//       );
+//     }
+//     // alert(future_schedule_dates)
+//     // Fill in empty cells for remaining days in the last week
+//     const remainingCells = 7 - ((firstDayOfWeek + numDays) % 7);
+//     for (let i = 0; i < remainingCells && remainingCells !== 7; i++) {
+//       calendarCells.push(<View key={`empty-${firstDayOfWeek + numDays + i}`} style={styles.calendarCell} />);
+//     }
+
+//     return calendarCells;
+//   };
+
+//   const handleDayPress = (day) => setSelectedDate(day);
+
+//   return (
+//     <View style={{ marginTop: 0 }}>
+//       <Text style={styles.header}>{moment().format('MMMM YYYY')}</Text>
+//       <View style={styles.daysOfWeek}>
+//         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+//           <Text key={day} style={styles.day}>{day}</Text>
+//         ))}
+//       </View>
+//       <View style={styles.calendarGrid}>{renderCalendarGrid()}</View>
+//     </View>
+//   );
+// };
+
+// const styles = StyleSheet.create({
+//   header: {
+//     fontSize: 24,
+//     fontWeight: 'bold',
+//     marginBottom: 10,
+//     color: COLORS.white,
+//   },
+//   daysOfWeek: {
+//     flexDirection: 'row',
+//     justifyContent: 'space-between',
+//     marginBottom: 8,
+//     width: '94%',
+//     paddingLeft: 6,
+//   },
+//   day: {
+//     fontSize: 14,
+//     fontWeight: 'bold',
+//     color: COLORS.white,
+//   },
+//   calendarGrid: {
+//     flexDirection: 'row',
+//     flexWrap: 'wrap',
+//     marginBottom: -80,
+//   },
+//   calendarCell: {
+//     width: '14%',
+//     aspectRatio: 1,
+//     justifyContent: 'center',
+//     alignItems: 'center',
+//     borderWidth: 0,
+//     borderRadius: 5,
+//     marginBottom: 5,
+//     position: 'relative',
+//   },
+//   date: {
+//     fontSize: 14,
+//     color: COLORS.light_gray_1,
+//   },
+//   scheduledDay: {
+//     backgroundColor: COLORS.darkBlue,
+//     borderRadius: 5,
+//   },
+//   today: {
+//     backgroundColor:COLORS.deepBlue,
+//     borderRadius: 5,
+//   },
+//   pastDate: {
+//     textDecorationLine: 'line-through',
+//     color: COLORS.light_gray_1,
+//   },
+//   scheduleCount: {
+//     position: 'absolute', // Positioning the count badge
+//     top: -8,
+//     right: 3,
+//     backgroundColor: 'rgba(0,0,0,0.6)', // Semi-transparent background for visibility
+//     borderRadius: 10,
+//     paddingLeft: 5,
+//     height:15,
+//     width:15
+//   },
+//   countText: {
+//     color: 'white',
+//     fontSize: 9,
+//     // fontWeight: 'bold',
+//   },
+// });
+
+// export default CalendarView;
+
+
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import moment from 'moment';
 import COLORS from '../constants/colors';
 
-const CalendarView = ({ title, openUpcomingTab , openOngoingTab, future_schedule_dates}) => {
-
-  const schedule_dates = ["Wed Oct 27 2024", "Wed Oct 28 2026" , "Wed Oct 28 2024" , "Wed Oct 28 2024" ,"Wed Oct 29 2024", "Wed Oct 30 2024"]
+const CalendarView = ({ title, openUpcomingTab, openOngoingTab, future_schedule_dates }) => {
+  const [currentDate, setCurrentDate] = useState(moment());
   const [selectedDate, setSelectedDate] = useState(null);
 
-  // Parse and format schedule dates
-  const formattedScheduleDates = future_schedule_dates.map(date => moment(date).format('YYYY-MM-DD'));
+  // Process schedule dates
+  const formattedScheduleDates = future_schedule_dates.map(date => 
+    moment(date).format('YYYY-MM-DD')
+  );
 
-  // Count schedules for each date
+  // Create schedule count object
   const scheduleCount = formattedScheduleDates.reduce((acc, date) => {
     acc[date] = (acc[date] || 0) + 1;
     return acc;
   }, {});
 
+  // Calendar calculation functions
   const daysInMonth = (month, year) => new Date(year, month + 1, 0).getDate();
   const getFirstDayOfMonth = (month, year) => new Date(year, month, 1).getDay();
 
   const renderCalendarGrid = () => {
-    const currentDate = moment();
     const currentMonth = currentDate.month();
     const currentYear = currentDate.year();
     const numDays = daysInMonth(currentMonth, currentYear);
     const firstDayOfWeek = getFirstDayOfMonth(currentMonth, currentYear);
 
-    const calendarCells = [];
+    let calendarCells = [];
 
-    // Fill in empty cells for days before the first day of the month
+    // Add empty cells for days before first day of month
     for (let i = 0; i < firstDayOfWeek; i++) {
       calendarCells.push(<View key={`empty-${i}`} style={styles.calendarCell} />);
     }
 
-    // Render cells for each day in the month
+    // Create day cells
     for (let day = 1; day <= numDays; day++) {
       const dateKey = moment(new Date(currentYear, currentMonth, day)).format('YYYY-MM-DD');
       const isScheduled = formattedScheduleDates.includes(dateKey);
@@ -794,119 +967,155 @@ const CalendarView = ({ title, openUpcomingTab , openOngoingTab, future_schedule
             isScheduled && !isToday && styles.scheduledDay,
             isToday && styles.today,
           ]}
-          onPress={() => {
-            if (isToday) {
-              openOngoingTab(); // Open ongoing tab if the date is today
-            } else if (isScheduled) {
-              openUpcomingTab(); // Open upcoming tab if the date has a schedule
-            } else {
-              handleDayPress(day);
-            }
-          }}
+          onPress={() => handleDatePress(isToday, isScheduled)}
         >
           {scheduleNum > 0 && (
             <View style={styles.scheduleCount}>
               <Text style={styles.countText}>{scheduleNum}</Text>
             </View>
           )}
-          <Text style={[
-            styles.date,
-            isPastDate && styles.pastDate,
-          ]}>
+          <Text style={[styles.date, isPastDate && styles.pastDate]}>
             {day}
           </Text>
         </TouchableOpacity>
       );
     }
 
-    // Fill in empty cells for remaining days in the last week
+    // Fill remaining week days
     const remainingCells = 7 - ((firstDayOfWeek + numDays) % 7);
-    for (let i = 0; i < remainingCells && remainingCells !== 7; i++) {
-      calendarCells.push(<View key={`empty-${firstDayOfWeek + numDays + i}`} style={styles.calendarCell} />);
+    if (remainingCells !== 7) {
+      for (let i = 0; i < remainingCells; i++) {
+        calendarCells.push(<View key={`empty-end-${i}`} style={styles.calendarCell} />);
+      }
     }
 
     return calendarCells;
   };
 
-  const handleDayPress = (day) => setSelectedDate(day);
+  const handleDatePress = (isToday, isScheduled) => {
+    if (isToday) {
+      openOngoingTab();
+    } else if (isScheduled) {
+      openUpcomingTab();
+    }
+  };
+
+  const navigateMonth = (direction) => {
+    setCurrentDate(currentDate.clone().add(direction, 'month'));
+  };
 
   return (
-    <View style={{ marginTop: 30 }}>
-      <Text style={styles.header}>{moment().format('MMMM YYYY')}</Text>
+    <View style={styles.container}>
+      {/* Month Navigation Header */}
+      <View style={styles.headerContainer}>
+        <TouchableOpacity onPress={() => navigateMonth(-1)}>
+          <Text style={styles.navButton}>‹</Text>
+        </TouchableOpacity>
+        
+        <Text style={styles.header}>
+          {currentDate.format('MMMM YYYY')}
+        </Text>
+        
+        <TouchableOpacity onPress={() => navigateMonth(1)}>
+          <Text style={styles.navButton}>›</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Days of Week */}
       <View style={styles.daysOfWeek}>
         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
           <Text key={day} style={styles.day}>{day}</Text>
         ))}
       </View>
-      <View style={styles.calendarGrid}>{renderCalendarGrid()}</View>
+
+      {/* Calendar Grid */}
+      <View style={styles.calendarGrid}>
+        {renderCalendarGrid()}
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    marginTop: 0,
+    paddingHorizontal: 0,
+    height:330,
+    paddingTop:20
+  },
+  headerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15,
+    paddingHorizontal: 10,
+  },
   header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 10,
+    fontSize: 22,
+    fontWeight: '600',
     color: COLORS.white,
+  },
+  navButton: {
+    fontSize: 30,
+    color: COLORS.white,
+    paddingHorizontal: 15,
   },
   daysOfWeek: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 8,
-    width: '94%',
-    paddingLeft: 6,
+    marginBottom: 10,
+    paddingHorizontal: 5,
   },
   day: {
+    width: '14%',
+    textAlign: 'center',
     fontSize: 14,
-    fontWeight: 'bold',
-    color: COLORS.white,
+    fontWeight: '500',
+    color: COLORS.light_gray_1,
   },
   calendarGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginBottom: -80,
   },
   calendarCell: {
     width: '14%',
     aspectRatio: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 0,
-    borderRadius: 5,
-    marginBottom: 5,
+    marginVertical: 2,
+    borderRadius: 8,
     position: 'relative',
   },
   date: {
-    fontSize: 14,
+    fontSize: 16,
     color: COLORS.light_gray_1,
   },
   scheduledDay: {
     backgroundColor: COLORS.darkBlue,
-    borderRadius: 5,
   },
   today: {
-    backgroundColor:COLORS.deepBlue,
-    borderRadius: 5,
+    backgroundColor: COLORS.deepBlue,
   },
   pastDate: {
     textDecorationLine: 'line-through',
     color: COLORS.light_gray_1,
   },
   scheduleCount: {
-        position: 'absolute', // Positioning the count badge
-        top: -8,
-        right: 3,
-        backgroundColor: 'rgba(0,0,0,0.6)', // Semi-transparent background for visibility
-        borderRadius: 10,
-        paddingLeft: 5,
-        height:15,
-        width:15
-      },
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    backgroundColor: COLORS.accent,
+    borderRadius: 9,
+    minWidth: 18,
+    height: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
   countText: {
-    color: 'white',
-    fontSize: 9,
-    // fontWeight: 'bold',
+    color: COLORS.white,
+    fontSize: 12,
+    fontWeight: '700',
   },
 });
 

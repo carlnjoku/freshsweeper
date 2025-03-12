@@ -4,14 +4,17 @@ import * as Animatable from 'react-native-animatable';
 import UpcomingScheduleListItem from '../../../components/cleaner/UpcomingScheduleListItem';
 import ListItem from '../../../components/cleaner/ListItem';
 import COLORS from '../../../constants/colors';
+import UpcomingScheduleItem from '../../../components/cleaner/UpcomingScheduleItem';
 
 
 export default function Upcoming({schedules}) {
     const singleItem = ( {item,index} ) => (
- 
-        <ListItem 
+
+
+        <UpcomingScheduleItem 
           item={item}
         />
+
     )
 
     const itemSeparator = () => (
@@ -35,7 +38,7 @@ export default function Upcoming({schedules}) {
             data = {schedules}
             renderItem = {singleItem}
             ListHeaderComponentStyle={styles.list_header}
-            ListEmptyComponent= {emptyListing}
+            ListEmptyComponent= {<Text style={styles.emptyText}>No new schedule found</Text>} 
             ItemSeparatorComponent={itemSeparator}
             keyExtractor={(item, index)=> item.label}
             numColumns={1}
@@ -52,5 +55,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0.7,
     borderBottomColor: COLORS.light_gray_1,
     marginBottom: 5,
+  },
+  emptyText: {
+    color: '#888',
+    textAlign: 'center',
+    marginTop: 20,
   },
 })

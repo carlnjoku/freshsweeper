@@ -48,22 +48,22 @@ export default function CleanerProfile({navigation, route}) {
 
   const cleanerLocation = { latitude: item.location.latitude, longitude: item.location.longitude }; // Cleaner location 
   const scheduleLocation = { latitude: selected_schedule.schedule.apartment_latitude, longitude: selected_schedule.schedule.apartment_longitude }; // schedule location 
-  console.log(cleanerLocation)
-  console.log(scheduleLocation)
+  // console.log(cleanerLocation)
+  // console.log(scheduleLocation)
   const distanceKm = haversineDistance(cleanerLocation, scheduleLocation);
   console.log(distanceKm)
 
   console.log("_________eeeeeeeeeeeeeeeeee__________117")
-  console.log(JSON.stringify(item, null, 2))
+  // console.log(JSON.stringify(item, null, 2))
   console.log("_________eeeeeeeeeeeeeeeeee__________")
 
   console.log("_________eeeeeeeeeeeeeeeeee__________111")
-  console.log(friendsWithLastMessagesUnread)
+  // console.log(friendsWithLastMessagesUnread)
   console.log("_________eeeeeeeeeeeeeeeeee__________")
 
 
   console.log("_________eeeeeeeeeeeeeeeeeeItem1__________")
-  console.log(JSON.stringify(selected_schedule.schedule, null, 2))
+  // console.log(JSON.stringify(selected_schedule.schedule, null, 2))
   console.log("_________eeeeeeeeeeeeeeeeeeItem__________")
 
   const[selectedUser, setSelectedUser]=useState("")
@@ -89,7 +89,7 @@ export default function CleanerProfile({navigation, route}) {
   };
 
   const callPhone = () => {
-    alert("hey")
+  
     makeCall(item.contact.phone)
   }
 
@@ -202,7 +202,7 @@ export default function CleanerProfile({navigation, route}) {
 
         // If friend exists, no need to add them again, just return
         // You make start another chat session with the user 
-        alert("start messaging")
+        // alert("start messaging")
         const modified_seleted_user = {
           "avatar": item.avatar,
           "chatroomId": newChatroomId,
@@ -327,7 +327,7 @@ export default function CleanerProfile({navigation, route}) {
   
   // Add Cleaner to my friend list
   const onAddFriend = async uid => {
-    alert(uid)
+    // alert(uid)
     try {
  
       //find user and add it to my friends and also add me to his friends
@@ -408,7 +408,7 @@ export default function CleanerProfile({navigation, route}) {
           return;
         }
 
-        alert("Is it there")
+        
         
         // create a chatroom and store the chatroom id
         // Create a new chatroom document in the database

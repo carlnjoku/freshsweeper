@@ -9,7 +9,7 @@ export default function calculateDistance(lat1, lon1, lat2, lon2) {
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     const distance = R * c; // Distance in kilometers or miles (depending on the R value)
 
-    return distance;
+    return parseFloat(distance.toFixed(1)); // Return distance rounded to 1 decimal place
 }
 
 function toRadians(degrees) {

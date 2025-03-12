@@ -21,18 +21,18 @@ import { AuthContext } from '../../context/AuthContext';
 import GoogleDirections from '../../components/GoogleDirections';
 import ROUTES from '../../constants/routes';
 import { acceptCleaningRequestPushNotification, sendPushNotifications } from '../../utils/sendPushNotification';
-
-
+import calculateDistance from '../../utils/calculateDistance';
+import { useNavigation } from '@react-navigation/native';
+import { Avatar, Chip } from 'react-native-paper';
 
 export default function SchedulePreview({route}) {
 
-    const {item, chatroomId} = route.params
+    const navigation = useNavigation()
+    const {item, requestId, scheduleId, hostId} = route.params
     const {geolocationData, currentUserId, currentUser} = useContext(AuthContext)
 
-    // alert(item.selected_schedule.hostInfo._id)
-    console.log("params")
-    // console.log(JSON.stringify(item.selected_schedule, null, 2))
-    console.log("params")
+
+
     const distanceInKm = 10; // Example distance in kilometers
     const averageSpeedKph = 50; // Example average speed in kilometers per hour
     const eta = calculateETA(distanceInKm, averageSpeedKph);
@@ -43,8 +43,6 @@ export default function SchedulePreview({route}) {
 
     console.log("ETA1:", time_to_destination+ " min"); // Output ETA in local date/time format
    
-    const cleaning_date = item.selected_schedule.schedule.cleaning_date
-    const cleaning_time = item.selected_schedule.schedule.cleaning_time
 
 
     const { width } = useWindowDimensions();
@@ -53,51 +51,103 @@ export default function SchedulePreview({route}) {
 
     const[isOpenConfirmation, setIsOpenConfirmatiom] = useState("")
     const[isOpenModal, setOpenModal] = useState(false)
-    const[host_expo_push_token, setExpoHostPushToken] = useState("")
-    const[room_type_and_size, setRoomTypeSize] = useState(item?.selected_schedule.schedule.selected_apt_room_type_and_size)
+
+    const[schedule, setSchedule] = useState({})
+
+    const[cleaning_date, setCleaningDate] = useState("")
+    const[cleaning_time, setCleaningTime] = useState("")
+    const[cleaning_end_time, setCleaningEndTime] = useState("")
+    const[room_type_and_size, setRoomTypeSize] = useState([])
     const[host_tokens, setHostPushToken] = useState([])
+    const[apartment_latitude, setApartmentLatitude] = useState("")
+    const[apartment_longitude, setApartmentLongitude] = useState("")
+    const[address, setAddress] = useState("")
+    const[apartment_name, setApartmentName] = useState("")
+    const[total_cleaning_fee, setTotalCleaningFee] = useState("")
+    const[regular_cleaning, setRegularCleaning] = useState([])
+    const[extra, setExtra] = useState([])
+    const[distance, setDistance] = useState([])
+
+    
+    
 
     // Retrieve the count for each room type
     const bedroomCount = room_type_and_size.find(room => room.type === "Bedroom")?.number || 0;
     const bathroomCount = room_type_and_size.find(room => room.type === "Bathroom")?.number || 0;
+    const kitchen = room_type_and_size.find(room => room.type === "Kitchen")?.number || 0;
     const livingroomCount = room_type_and_size.find(room => room.type === "Livingroom")?.number || 0;
 
-    console.log("Tasks", item.selected_schedule.schedule.regular_cleaning)
-    alert(item.selected_schedule._id)
+    const bedroomSize = room_type_and_size.find(room => room.type === "Bedroom")?.size || 0;
+    const bathroomSize = room_type_and_size.find(room => room.type === "Bathroom")?.size || 0;
+    const kitchenSize = room_type_and_size.find(room => room.type === "Kitchen")?.size || 0;
+    const livingroomSize = room_type_and_size.find(room => room.type === "Livingroom")?.size || 0;
+    // console.log("Tasks", item.selected_schedule.schedule.regular_cleaning)
+    // alert(requestId)
     useEffect(()=> {
-      const fetchUser = async () => {
-        
-        try {
-          
-          await userService.getUser(item.selected_schedule.hostInfo._id)
-          .then(response=> {
-            const res = response.data
-            // alert(res.expo_push_token)
-            setExpoHostPushToken(res.expo_push_token)
-            
-          })
-          
-         
-        } catch(e) {
-          // error reading value
-          console.log(e)
-        }
-      }
-      fetchUser()
-      fetchCleanerPushTokens()
+      
+      fetchHostPushTokens()
+      fetchSchedule()
     },[])
 
-    const fetchCleanerPushTokens = async() => {
-      await userService.getUserPushTokens(item.selected_schedule.hostInfo?._id)
+    const fetchHostPushTokens = async() => {
+      await userService.getUserPushTokens(hostId)
       .then(response => {
           const res = response.data.tokens
           setHostPushToken(res)
           console.log("User tokens", res)
       })
     }
+
+    const fetchSchedule = async() => {
+      try {
+          
+        await userService.getScheduleById(scheduleId)
+        .then(response=> {
+          const res = response.data
+          console.log("weeeeeeeekie")
+          console.log(res.schedule.cleaning_date)
+          setSchedule(res)
+          setRoomTypeSize(res.schedule.selected_apt_room_type_and_size)
+          setCleaningDate(res.schedule.cleaning_date)
+          setCleaningTime(res.schedule.cleaning_time)
+          setCleaningEndTime(res.schedule.cleaning_end_time)
+          const lat1 = geolocationData.latitude
+          const lon1 = geolocationData.longitude
+
+          const lat2 = res.schedule.apartment_latitude
+          const lon2 = res.schedule.apartment_longitude
+          const dist = calculateDistance(lat1, lon1, lat2, lon2)
+          setDistance(dist)
+          setApartmentLatitude(res.schedule.apartment_latitude)
+          setApartmentLongitude(res.schedule.apartment_longitude)
+          setAddress(res.schedule.address)
+          setApartmentName(res.schedule.apartment_name)
+          setTotalCleaningFee(res.schedule.total_cleaning_fee)
+          setRegularCleaning(res.schedule.regular_cleaning)
+          setExtra(res.schedule.extra)
+          // console.log(JSON.stringify(res.schedule.selected_apt_room_type_and_size, null, 2))
+          
+        })
+        
+       
+      } catch(e) {
+        // error reading value
+        console.log(e)
+      }
+    }
+
+    const handleOpenDirections = () => {
+      const url = `https://www.google.com/maps/dir/?api=1&origin=${currentUser.location.latitude},${currentUser.location.longitude }&destination=${apartment_latitude},${apartment_longitude}&travelmode=driving`;
+    
+      Linking.openURL(url).catch((err) =>
+        console.error("Failed to open Google Maps", err)
+      );
+    };
+
+    
     const taskItem = ( {item,index} ) => (
     <View style={[styles.tasks, { width: columnWidth2 }]}>
-        <Text style={{fontSize:13}}>{item.label}pii </Text>
+        <Text style={{fontSize:13}}>{item.label} </Text>
     </View>
     
     )
@@ -121,17 +171,13 @@ export default function SchedulePreview({route}) {
     // navigation.navigate(ROUTES.host_new_booking);
     }
     const handleCloseConfirmClockIn = () => {
-    setOpenModal(false)
+      setOpenModal(false)
     }
 
     const handleAccept = () => {
-      const status = "Accepted"
-      const cleanerFname = currentUser.firstname
-      const cleanerLname = currentUser.lastname
+     
       
-      // alert(item.selected_schedule.hostInfo._id)
-      
-      userService.acceptCleaningRequest(item.selected_schedule._id)
+      userService.acceptCleaningRequest(requestId)
       .then(response => {
         console.log(response.data)
       })
@@ -148,58 +194,28 @@ export default function SchedulePreview({route}) {
             {
             screen: ROUTES.host_dashboard,
             params: {
-                scheduleId:item.selected_schedule._id,
-                // hostId:currentUserId,
-                // hostFirstname:currentUser.firstname,
-                // hostLastname:currentUser.lastname,
-                // cleanerId: item.cleanerId,
-                // cleaning_date:selected_schedule.schedule.cleaning_date,
-                // cleaning_time:selected_schedule.schedule.cleaning_time,
-                // sender_expo_push_token:host_expo_push_token
+                scheduleId:scheduleId,
+                hostId:hostId,
+                requestId:hostId, 
+                
+                
             },
             }
 
       );
-
+      
       console.log("Accepted")
       // handleOpenConfirmClockIn()
+      navigation.navigate(ROUTES.cleaner_dashboard)
     }
 
-
     const handleDecline = () => {
-      const status = "Accepted"
+      const status = "Decline"
       const cleanerFname = currentUser.firstname
       const cleanerLname = currentUser.lastname
 
-      automatedChatMessage(
-        chatroomId, 
-        item.selected_schedule, 
-        item.selected_scheduleId,
-        status,
-        text_msg = cleanerFname +" "+cleanerLname + " accepted your request"
-      )
-
-      // Send push notification to friend
-      const expo_pn = {
-        // to:"ExponentPushToken[wFqHu7BrmdL5JivAJqpl6I]",
-        to:host_expo_push_token,
-        title:"Fresh Sweeper",
-        body: cleanerFname +" "+cleanerLname + " accepted your cleaning request",
-        data: {
-          "icon": "https://firebasestorage.googleapis.com/v0/b/fresh-sweeper.appspot.com/o/android_notification_icon.png?alt=media&token=90ec77ca-211d-4e27-8c66-bd6b9a47e2bb",
-          "screen": ROUTES.cleaner_profile,
-          "params": {
-              "id": "123",  
-              "name": "Item Name'"
-          }
-        }
-      }
-      userService.sendPushNotification(expo_pn)
-      .then(response => {
-        console.log(response.data)
-      })
-
       console.log("Declined")
+      
       // handleOpenConfirmClockIn()
     }
 
@@ -210,7 +226,7 @@ export default function SchedulePreview({route}) {
         backgroundColor:COLORS.backgroundColor,
       }}
     >
-        <StatusBar translucent backgroundColor="white" />
+        <StatusBar translucent backgroundColor="transparent" />
        
     
         {/* <GoogleDirections 
@@ -225,22 +241,21 @@ export default function SchedulePreview({route}) {
               /> */}
          
       <GoogleMapComponent 
-        latitude={item.selected_schedule.apartment_latitude}
-        longitude={item.selected_schedule.apartment_longitude}
+        latitude={apartment_latitude}
+        longitude={apartment_longitude}
       />
 
           
  
-        <View style={{height:"50%"}}>  
+        <View style={{height:"55%"}}>  
         <View style={styles.address_bar}>
             <View style={styles.addre}>
-              <Text style={{color:COLORS.light_gray_1}}>{item.selected_schedule.schedule.contact?.address}</Text>
-              {item.distance ? 
-                <Text style={{fontSize:13, color:COLORS.light_gray}}>{item?.distance.toFixed(1)} Miles away</Text>
-                :
-                <Text style={{fontSize:13, color:COLORS.light_gray}}>miles away</Text>
-                // <Text style={{fontSize:13, color:COLORS.light_gray}}>{distanceKm?.toFixed(1)} miles away</Text>
-              }
+              {/* <Text style={{color:COLORS.light_gray_1}}>{address}</Text> */}
+                <>
+                  <Text style={{fontSize:13, color:COLORS.light_gray}}>{distance || 0} Miles away</Text>
+                  <Text onPress={handleOpenDirections} style={{color:COLORS.light_gray_1, fontSize:16}}>Direction</Text>
+                </>
+                
             </View>
         </View>
         <ScrollView>
@@ -249,8 +264,8 @@ export default function SchedulePreview({route}) {
           
           <CardNoPrimary>
           <View style={styles.centerContent}>
-              <Text bold style={styles.headerText}>{item?.selected_schedule.schedule.apartment_name}</Text>
-              <Text style={{color:COLORS.gray, marginBottom:10, marginLeft:-5}}> <MaterialCommunityIcons name="map-marker" size={16} />{item?.selected_schedule.schedule.address}</Text>
+              <Text bold style={styles.headerText}>{apartment_name}</Text>
+              <Text style={{color:COLORS.gray, marginBottom:10, marginLeft:-5}}> <MaterialCommunityIcons name="map-marker" size={16} />{address}</Text>
             </View>
 
             <View style={{flexDirection:'row', justifyContent:'space-between', alignItems:'center', marginTop:0}}>
@@ -260,6 +275,7 @@ export default function SchedulePreview({route}) {
                     radiusSise={13}
                     iconSize={16}
                     title= {bedroomCount}
+                    roomSize={bedroomSize}
                     type="Bedrooms"
                 /> 
                 <CircleIcon 
@@ -268,14 +284,25 @@ export default function SchedulePreview({route}) {
                     radiusSise={13}
                     iconSize={16}
                     title= {bathroomCount}
+                    roomSize={bathroomSize}
                     type="Bathrooms"
                 /> 
+                <CircleIcon 
+                  iconName="silverware-fork-knife"
+                  buttonSize={26}
+                  radiusSise={13}
+                  iconSize={16}
+                  title= {kitchen}
+                  roomSize={kitchenSize}
+                  type="Kitchen"
+                />
                 <CircleIcon 
                     iconName="seat-legroom-extra"
                     buttonSize={26}
                     radiusSise={13}
                     iconSize={16}
                     title= {livingroomCount}
+                    roomSize={livingroomSize}
                     type="Livingroom"
                 /> 
               </View>
@@ -296,7 +323,7 @@ export default function SchedulePreview({route}) {
                  buttonSize={50}
                  radiusSise={25}
                  iconSize={26}
-                 title={moment(cleaning_time, 'h:mm:ss A').format('h:mm A')}
+                 title={`Starts ${moment(cleaning_time, 'h:mm:ss A').format('h:mm A')}`}
                  title_color={COLORS.white}
                 />
                 <CircleIconButton1
@@ -304,17 +331,17 @@ export default function SchedulePreview({route}) {
                  buttonSize={50}
                  radiusSise={25}
                  iconSize={26}
-                 title="2hrs Task"
+                 title={`Ends ${moment(cleaning_end_time, 'h:mm:ss A').format('h:mm A')}`}
                  title_color={COLORS.white}
                 />
               </View>
           </CardColored>
 
         <View>
-      
+        {/* {regular_cleaning.length > 0 && 
           <CardNoPrimary>
             <FlatList
-                data={item.selected_schedule.schedule.regular_cleaning}
+                data={regular_cleaning}
                 renderItem = {taskItem}
                     ListHeaderComponent={<Text bold style={{fontSize:16}}>Regular Cleaning</Text>}
                     ListHeaderComponentStyle={styles.list_header}
@@ -325,21 +352,44 @@ export default function SchedulePreview({route}) {
                     showsVerticalScrollIndicator={false}
             />
           </CardNoPrimary>
-          {item.selected_schedule.schedule.regular_cleaning.length > 0 && 
-          <CardNoPrimary>
-            <FlatList
-                data={item.selected_schedule.schedule.extra}
-                renderItem = {taskItem2}
-                ListHeaderComponent={<Text bold style={{fontSize:16}}>Deep Cleaning</Text>}
-                ListHeaderComponentStyle={styles.list_header}
-                // ListEmptyComponent= {emptyListing}
-                // ItemSeparatorComponent={itemSeparator}
-                keyExtractor={(item, index)=> item.label}
-                numColumns={numColumns2}
-                showsVerticalScrollIndicator={false}
-            />
-          </CardNoPrimary>
+        } */}
+
+        {regular_cleaning.length > 0 && 
+          <Card>
+            <Text bold style={{fontSize:16, marginBottom:10, marginHorizontal:5}}>Regular Cleaning</Text>
+            <View style={styles.chip_container}>
+              {regular_cleaning.map((item, index) => (
+                <Chip 
+                  key={index} 
+                  mode="outlined" 
+                  style={styles.chip}
+                  textStyle={styles.chipText}
+                  >
+                  <Text style={{fontSize:12}}>{item.label}</Text>
+                </Chip>
+              ))}
+            </View>
+          </Card>
         }
+        
+        {extra.length > 0 && 
+          <Card>
+            <Text bold style={{fontSize:16, marginBottom:10, marginHorizontal:5}}>Deep Cleaning</Text>
+            <View style={styles.chip_container}>
+              {extra.map((item, index) => (
+                <Chip 
+                  key={index} 
+                  mode="outlined" 
+                  style={styles.chip}
+                  textStyle={styles.chipText}
+                  >
+                  <Text style={{fontSize:12}}><MaterialCommunityIcons name={item.icon} size={14} /> {item.label} </Text>
+                </Chip>
+              ))}
+            </View>
+          </Card>
+        }
+          
           <View style={{marginTop:20}} />
         </View>
         </View>
@@ -365,7 +415,7 @@ export default function SchedulePreview({route}) {
         >
           <Text bold style={styles.buttonText}><MaterialCommunityIcons name="cancel" size={24} color={COLORS.black} /> Decline</Text>
         </TouchableOpacity>
-        <View><Text bold style={styles.price}>{geolocationData.currency.symbol}{item.selected_schedule.schedule.total_cleaning_fee}</Text></View>
+        <View><Text bold style={styles.price}>{geolocationData.currency.symbol}{total_cleaning_fee}</Text></View>
         
         <TouchableOpacity 
           style={styles.accept_button} onPress={handleAccept}
@@ -389,7 +439,7 @@ const styles = StyleSheet.create({
    mainContent: {
     position: 'absolute',
     bottom: 0,
-    height: '65%',
+    height: '75%',
     width: '100%',
     backgroundColor: 'white',
     borderTopLeftRadius: 20,
@@ -471,12 +521,36 @@ const styles = StyleSheet.create({
   },
   addre:{
     flex:0.7,
-    padding:10
+    padding:10,
+    marginTop:0
   },
 address_bar:{
-    minHeight:60,
+    minHeight:70,
     backgroundColor:COLORS.deepBlue,
     marginTop:-1
+  },
+  chip_container: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'flex-start',
+    alignItems: 'center', // Ensures wrapping works properly
+    padding: 5,
+    gap: 8, // Adjust spacing between chips
+  
+  },
+  chip: {
+    height: 35,   // Reduce the chip height
+    paddingHorizontal: 0,  // Reduce padding inside the chip
+    borderRadius: 17,  // Make it more compact
+    borderWidth:0.5,
+    borderColor:COLORS.light_gray,
+    backgroundColor:'#f9f9f9',
+    flexShrink: 1,
+  },
+  chipText: {
+    fontSize: 12,  // Reduce font size
+    fontWeight: 'normal',  // Normal font weight
+    color:COLORS.gray
   },
   })
 

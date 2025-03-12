@@ -5,11 +5,12 @@ import { createStackNavigator } from '@react-navigation/stack';
 import Onboarding from '../screens/auth/Onboarding';
 import Signin from '../screens/auth/Signin';
 import Signup from '../screens/auth/Signup';
-// import ForgotPassword from '../screens/auth/ForgotPassword';
+import ForgotPassword from '../screens/auth/ForgotPassword';
 // import Verification from '../screens/auth/Verification';
 import ROUTES from '../constants/routes';
 import COLORS from '../constants/colors';
 import GetStarted from '../screens/auth/GetStarted';
+import ResetPassword from '../screens/auth/ResetPassword';
 
 
 
@@ -108,7 +109,7 @@ const AuthStack = () => {
       />
 
       
-      {/* <Stack.Screen 
+      <Stack.Screen 
         name={ROUTES.forgot_password}
         component={ForgotPassword} 
         options={({route}) => ({
@@ -116,6 +117,13 @@ const AuthStack = () => {
           })}
       />
       <Stack.Screen 
+        name={ROUTES.reset_password}
+        component={ResetPassword} 
+        options={({route}) => ({
+            headerShown:false,
+          })}
+      />
+      {/* <Stack.Screen 
         name={ROUTES.verification}
         component={Verification} 
       /> */}

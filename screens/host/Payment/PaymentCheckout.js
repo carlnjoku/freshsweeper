@@ -54,7 +54,7 @@ const PaymentCheckout = ({ route, navigation }) => {
           const custData = {customerId:customerId}
           const response = await userService.fetchCustomerPaymentMethods(custData)
 
-          console.log(response.data.payment_methods)
+          // console.log(response.data.payment_methods)
           setSavedCards(response.data.payment_methods);
         } catch (error) {
           console.error("Failed to fetch saved cards:", error);
@@ -75,7 +75,7 @@ const PaymentCheckout = ({ route, navigation }) => {
         <ScrollView showsVerticalScrollIndicator={false}>
         {/* Centered Checkout Icon */}
       <Icon name="shopping-cart" size={48} color="#4CAF50" style={styles.icon} />
-      <Text style={styles.header}>Payment Checkout</Text>
+      <Text style={styles.header}>Payment Checkouts</Text>
       {saved_cards.length > 0 ? (
         <SavedCards savedCards={saved_cards} selectedCard={selectedCard} onSelectCard={handleCardSelection} />
       ) : (

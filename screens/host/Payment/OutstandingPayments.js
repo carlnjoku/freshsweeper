@@ -114,7 +114,7 @@ const OutstandingPayments = () => {
 
   // Handle proceed to checkout
   const handleProceedToCheckout = () => {
-    console.log(selectedPayments)
+    // console.log(selectedPayments)
     if (selectedPayments.length > 0) {
       navigation.navigate(ROUTES.host_checkout, { selectedPayments });
     } else {

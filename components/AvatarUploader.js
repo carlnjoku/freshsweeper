@@ -16,7 +16,7 @@ export default function UploadImage(props) {
 
   const {update_avatar, currentUser} = useContext(AuthContext)
 
-  console.log(props)
+  // console.log(props)
   const{userId, image_type, default_photo, get_uploaded_photo} = props;
   
   const[image, setImage] = useState("");

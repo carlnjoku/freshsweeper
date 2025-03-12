@@ -1,22 +1,28 @@
-import React from 'react';
+import React, {useState} from 'react';
 import Text from '../Text';
 import { View, StyleSheet,TouchableOpacity, FlatList } from 'react-native';
 import COLORS from '../../constants/colors';
 import { formatDate } from '../../utils/formatDate';
 import Card from '../Card';
+import { Chip } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import moment from 'moment';
 import ROUTES from '../../constants/routes';
 import { useNavigation } from '@react-navigation/native';
+import EditSchedule from '../../screens/host/EditSchedule';
+import { useBookingContext } from '../../context/BookingContext';
 
-const UpcomingScheduleListItem = ({item }) => {
+const UpcomingScheduleListItem = ({item, currency }) => {
 
   console.log("Scheduleeeeeeeeeeeeeeeeees")
-  // console.log(item)
+  console.log(item)
   console.log("Scheduleeeeeeeeeeeeeeeeees")
   const navigation = useNavigation();
 
-   
+
+
+  const {handleEdit}  = useBookingContext();
+
   return (
    
 
@@ -35,27 +41,50 @@ const UpcomingScheduleListItem = ({item }) => {
             
             
             <View style={styles.task_details}>
-                <Text style={styles.task}>{item.schedule.apartment_name}</Text>
+                <Text bold style={styles.task}>{item.schedule.apartment_name}</Text>
                 {/* <Text style={styles.task}>{item.schedule.apartment_name}</Text> */}
                 <Text style={styles.apartment}>{item.schedule.address} </Text>
-                <Text style={styles.status}>{item.status}</Text>
+                
+                <Chip
+                  mode="flat"
+                  style={styles.activeChip}
+                  textStyle={styles.text}
+                  label={item.total_cleaning_fee}
+                >
+                  {currency}{item.schedule.total_cleaning_fee || 0.0}
+                </Chip>
+
                 <View style={styles.action}>
+                  {item.status === "open" ?  
+                <View style={{flexDirection:'row', width:'85%', justifyContent:'space-between', alignItems:'center'}}>
+                
                 <TouchableOpacity 
                   onPress={() => navigation.navigate(ROUTES.host_schedule_details, {
-                    'item':item
+                    scheduleId:item._id
+                  })}
+                >
+                 
+                  <Text style={styles.details}> <MaterialCommunityIcons name="eye" size={14} color={COLORS.gray} /> View schedule</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  onPress={() => handleEdit(true, item)} // Pass item to handleEdit
+                >
+                  
+                  <Text style={styles.details}><MaterialCommunityIcons name="pencil" size={14} color={COLORS.gray} /> Edit schedule</Text>
+                </TouchableOpacity>
+                </View>
+                :
+                <TouchableOpacity 
+                  onPress={() => navigation.navigate(ROUTES.host_schedule_details, {
+                    scheduleId:item._id
                   })}
                 >
                   <Text style={styles.details}>View schedule</Text>
                 </TouchableOpacity>
-                {/* <TouchableOpacity 
-                  onPress={() => navigation.navigate(ROUTES.cleaner_schedule_details, {
-                    'item':item
-                  })}
-                >
-                    <Text style={styles.clockin}>CLOCK-IN</Text>
-                </TouchableOpacity> */}
+                }
                 </View>
             </View>
+            
             
       </View>
     </View>
@@ -68,8 +97,8 @@ const UpcomingScheduleListItem = ({item }) => {
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    marginBottom: 0,
-    marginTop:5
+    marginBottom: 10,
+    marginTop:15
   },
   dotline:{
     flex: 0.05,
@@ -96,6 +125,7 @@ const styles = StyleSheet.create({
   apartment:{
     color:COLORS.gray,
     fontSize:13,
+    marginBottom:5
   },
   date:{
     marginTop:-4,
@@ -116,7 +146,7 @@ const styles = StyleSheet.create({
     flex: 0.7,
     alignItems: 'flex-start',
     width:'100%',
-    marginTop:10
+    marginTop:-5
   },
   status:{
     textTransform:'capitalize',
@@ -133,6 +163,7 @@ const styles = StyleSheet.create({
   details:{
     fontSize:14,
     color:COLORS.primary,
+    textDecorationLine: "underline"
     // fontWeight:'bold'
   },
   clockin:{
@@ -146,6 +177,19 @@ const styles = StyleSheet.create({
     justifyContent:'space-evenly',
     marginTop:5,
     marginBottom: 5,
+  },
+  chip: {
+    backgroundColor: COLORS.light_gray_1,
+    // borderColor:COLORS.primary
+    borderRadius:50
+  },
+  activeChip: {
+    backgroundColor: COLORS.primary_light_1,
+    borderRadius:50
+    // borderColor:COLORS.black,
+  },
+  text:{
+    fontWeight:'400'
   }
 });
 

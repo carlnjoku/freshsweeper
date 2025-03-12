@@ -24,7 +24,7 @@ export default function Confirmation({route}) {
 
     const[room_type_and_size, setRoomTypeSize] = useState(item.selected_schedule.selected_apt_room_type_and_size)
     console.log("robiroooooooooooooooooo")
-    console.log([item])
+    // console.log([item])
     console.log("robiroooooooooooooooooo")
     const distanceInKm = 10; // Example distance in kilometers
     const averageSpeedKph = 50; // Example average speed in kilometers per hour

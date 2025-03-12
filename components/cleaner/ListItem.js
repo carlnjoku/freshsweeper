@@ -11,6 +11,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Avatar } from 'react-native-paper';
 import Chip from '../ChipIcon';
 import ButtonPrimary from '../ButtonPrimary';
+import CardNoPrimary from '../CardNoPrimary';
 
 const ListItem = ({item }) => {
 
@@ -28,15 +29,19 @@ const ListItem = ({item }) => {
   return (
    
     <View>
-     
-  
-
+             
         <View style={styles.centerContent}>
               <Text bold style={styles.headerText}>{item.schedule.apartment_name}</Text>
               <Text style={{color:COLORS.gray, marginBottom:10, marginLeft:-5}}> <MaterialCommunityIcons name="map-marker" size={16} />{item.schedule?.address} </Text>
 
               <Text style={styles.date}>{moment(item.schedule?.cleaning_date).format('ddd MMM DD')}</Text>
+              <View style={{flexDirection:'row', justifyContent:'space-between', alignItems:'center'}}>
               <Text style={styles.time}>{moment(item.schedule?.cleaning_time,'h:mm:ss A').format('h:mm A')}</Text>
+              <Text> - </Text>
+              <Text style={styles.time}> {moment(item.schedule?.cleaning_end_time,'h:mm:ss A').format('h:mm A')}</Text>
+         
+              </View>
+              
 
               {currentDate.isAfter(targetDate) && item?.status === 'in_progress' ? 
                 
@@ -45,7 +50,8 @@ const ListItem = ({item }) => {
                   title="Go Back To Work"
                   onPress = {()=>navigation.navigate(ROUTES.cleaner_attach_task_photos,{
                     scheduleId:item._id,
-                    schedule:item
+                    schedule:item,
+                    hostId:item.hostInfo._id
                   })}
 
                 />
@@ -62,7 +68,6 @@ const ListItem = ({item }) => {
                 
               }
             </View>
-
     </View>
         
       
@@ -161,6 +166,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',  // Center content horizontally
     marginVertical:5
   },
+  cardItem: {
+    alignItems: "center",
+    marginHorizontal: 16,
+    marginVertical: 40,
+    padding: 12,
+    backgroundColor: "#FFFFFF",
+    marginBottom: 8,
+    borderRadius: 8,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 1,
+    minHeight:200,
+    justifyContent:'center',
+    alignItems:'center'
+ },
   
 });
 

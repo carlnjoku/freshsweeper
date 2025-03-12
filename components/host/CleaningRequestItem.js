@@ -8,7 +8,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import moment from 'moment';
 import ROUTES from '../../constants/routes';
 import { useNavigation } from '@react-navigation/native';
-import { Avatar, Chip } from 'react-native-paper';
+import { Avatar, Chip, Badge } from 'react-native-paper';
 // import Chip from '../ChipIcon';
 
 const CleaningRequestItem = ({item }) => {
@@ -26,7 +26,7 @@ const CleaningRequestItem = ({item }) => {
   const selected_schedule = schedule.item.schedule
 
   console.log("Selected_schedule.....................")
-  // console.log(selected_schedule)
+  console.log(selected_schedule)
   console.log("Selected_schedule.....................s")
   // const host_expo_push_token = hostInfo.item.item
   // const host_expo_push_token = 
@@ -164,43 +164,25 @@ const CleaningRequestItem = ({item }) => {
                   </View>
                   <View style={{flex: 0.7}}>
                     <Text bold style={styles.apart_name}>{item.item?.cleaner.firstname} {item.item?.cleaner.lastname}</Text>
-                    <Text style={styles.apart_name}>{item.item.schedule.schedule.apartment_name}</Text>
-                    <Text style={styles.apartment}>{item.item.schedule.schedule?.address} </Text>
+                    <Text style={styles.apart_name}>{item.item?.schedule?.schedule.apartment_name}</Text>
+                    <Text style={styles.apartment}>{item.item?.schedule?.schedule?.address} </Text>
                     {/* <Text style={styles.apartment}>RequestId {item.item._id} </Text> */}
-                    
+                    <Badge
+                        style={[styles.statusApproveBadgeP, { alignSelf: 'flex-start' }]} // Add alignSelf
+                      >
+                        Pending Confirmation
+                      </Badge>
+
                   </View>
                   
                   <View style={{flex: 0.25, alignItems: 'flex-end'}}>
-                    <Text style={styles.date}>{moment(item.item.schedule.schedule?.cleaning_date).format('ddd MMM D')}</Text>
-                    <Text style={styles.time}>{moment(item.item.schedule.schedule?.cleaning_time, 'HH:mm:ss').format('h:mm A')}</Text>
+                    <Text style={styles.date}>{moment(item.item?.schedule?.schedule?.cleaning_date).format('ddd MMM D')}</Text>
+                    <Text style={styles.time}>{moment(item.item?.schedule?.schedule?.cleaning_time, 'HH:mm:ss').format('h:mm A')}</Text>
                     {/* <Ionicons name="chevron-forward-outline" color={COLORS.secondary} size={16}></Ionicons> */}
                   </View>
                 </View>
                 
-                <View style={styles.request_actions}>
-                  <TouchableOpacity>
-                  <Chip 
-                      onPress={() => navigation.navigate(ROUTES.cleaner_schedule_review, {
-                      item: {selected_schedule},
-                      host_expo_push_token : item.item?.sender_expo_push_token,
-                      chatroomId: item.item.chatroomId
-                    })}
-                    textStyle={{color:COLORS.white}}
-                    style={
-                        [styles.chip, { backgroundColor:COLORS.deepBlue, color:COLORS.white}]
-                      }>
-                        Pending acceptance
-                      </Chip>
-                    </TouchableOpacity>
-                  {/* <Chip 
-                    style={
-                      [styles.chip, { backgroundColor:COLORS.deepBlue, color:COLORS.white}]
-                    }
-                    textStyle={{color:COLORS.white}}
-                  >
-                    Withdraw
-                  </Chip> */}
-                </View>
+                
                 {/* <Text style={styles.requestDate}>{request.dateRequested}</Text>
                 <Text style={styles.requestDetails}>{request.details}</Text> */}
               </View>
@@ -316,7 +298,7 @@ const styles = StyleSheet.create({
   },
   request_actions:{
     flexDirection:'row',
-    justifyContent:'flex-end',
+    justifyContent:'flex-start',
     alignItems:'flex-end',
     width: '100%', // Ensure the container takes the full width
   },
@@ -325,8 +307,17 @@ const styles = StyleSheet.create({
     margin:5,
     fontWeight:'condensed',
     fontSize:14
-  }
+  },
+  statusApproveBadgeP: {
+    backgroundColor: COLORS.light_gray,
+    color: '#fff',
+    paddingHorizontal:7,
+    marginTop:10,
+    justifyContent:'flex-start',
+    alignItems:'flex-start'
+  },
 });
 
 export default CleaningRequestItem;
 
+                      

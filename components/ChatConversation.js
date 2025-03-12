@@ -31,11 +31,11 @@ export default function ChatConversation({navigation,route}) {
     const[selectedUserExpoToken, setSelectedUserExpoToken] = useState("");
  
     console.log("_____loggggggggg_____")
-    // console.log(selectedUser)
-    // console.log(JSON.stringify(selectedUser, null, 2))
+    console.log(schedule)
+    console.log(JSON.stringify(selectedUser, null, 2))
 
-    console.log("Received params in chat_conversation:", route.params);
-    console.log("_____1188___")
+    // console.log("Received params in chat_conversation:", route.params);
+    // console.log("_____1188___")
 
     const pickImage = () => {
       const options = {
@@ -188,7 +188,7 @@ export default function ChatConversation({navigation,route}) {
     try {
       await userService.getUser(selectedUser.userId).then((response) => {
         const res = response.data;
-        alert(res.expo_push_token)
+        // alert(res.expo_push_token)
         setSelectedUserExpoToken(res.expo_push_token)
         
       });
@@ -325,7 +325,6 @@ export default function ChatConversation({navigation,route}) {
 
     
           // Update the friend's entry
-          
           const friendRef = ref(database, `users/${selectedUser.userId}/friends/${friendIndex}`);
           update(friendRef, {
             lastmessage: {
@@ -355,9 +354,9 @@ export default function ChatConversation({navigation,route}) {
         updateMessageList(selectedUser.userId)
         setMessages(prevMessages => GiftedChat.append(prevMessages, msg));
         
-        console.log("Schedules", schedule.cleaning_date)
+       
 
-        alert(selectedUserExpoToken)
+        // alert(selectedUserExpoToken)
           // Prepare notification data
         //   const notificationData = {
         //     to: selectedUserExpoToken,
@@ -468,6 +467,7 @@ export default function ChatConversation({navigation,route}) {
 
 const renderCustomMessage = ({ currentMessage }) => {
   console.log("cureent.........")
+  
   // console.log(JSON.stringify(currentMessage, null, 2))
   console.log("cureent.........")
     if (currentMessage.system) {
@@ -475,40 +475,68 @@ const renderCustomMessage = ({ currentMessage }) => {
       return (
         <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
           {/* Render avatar or logo here */}
-          <Image
-            source={{ uri: currentMessage.user.avatar }}
-            size={26} // Adjust size as needed
-            style={styles.avatar}
-          />
+         
+          <Image source={require('../assets/logo.png')} style={styles.avatar} />
           <View style={styles.automated}>
-            <Text bold style={{fontSize:16, fontWeight:'500'}}>Fresh Sweeper</Text>
+            <Text bold style={{fontSize:16, fontWeight:'500'}}>Freshsweeper</Text>
+            
             <Text style={{ fontStyle: 'italic', color: '#777', marginLeft: 0 }}>
                 
-                {currentMessage.details.hostFname} {currentMessage.details.hostLname} 
-                  sent you {}
-                 {currentMessage.text}
+                {/* {currentMessage.details.hostFname} {currentMessage.details.hostLname} 
+                {}  sent you {} */}
+                {currentMessage.text}
                 
                 
             </Text>
-            {currentMessage.status === 'pending' &&
+            {currentMessage.status === 'payment_completed' &&
             <View>
                 <View style={styles.details}>
                     <Text style={{fontSize:14, fontWeight:'600'}}>{currentMessage.details.selected_schedule.apartment_name}</Text>
-                    <Text>{currentMessage.details.selected_schedule.address}</Text>
+                    <Text style={{fontSize:12}}>{currentMessage.details.selected_schedule.address}</Text>
                     <Text style={{fontSize:12, color:COLORS.gray}}>{currentMessage.details.selected_schedule.cleaning_date} @ {currentMessage.details.selected_schedule.cleaning_time}</Text>
-                    <Text style={{fontSize:16}}>$ {currentMessage.price}</Text>
+                    <View style={{flexDirection:'row', alignItems:'center', marginTop:5}}>
+                      <Text style={{fontSize:16}}>Cleaning Fees:</Text> 
+              
+                      <Text style={{fontSize:16, fontWeight:'600'}}>${currentMessage.details.selected_schedule.total_cleaning_fee}</Text>
+                    </View>
+                </View>
+                
+                
+                {schedule.userId !== currentMessage.details?.cleanerId ? 
+                <>
+                <View>
+                  <Text style={{color:COLORS.gray, fontStyle: 'italic',}}>
+                    The cleaner has been notified and will arrive as scheduled. If you need to communicate any specific details, feel free to chat here. Thank you for using Freshsweeper
+                  </Text>
                 </View>
                 <TouchableOpacity
-                style={styles.button}
-                onPress = {()=> navigation.navigate(ROUTES.cleaner_schedule_review,{
-                    item:currentMessage.details,
-                    chatroomId:selectedUser.chatroomId,
-                    
-                })}
+                  style={styles.button}
+                  onPress = {()=> navigation.navigate(ROUTES.host_schedule_details,{
+                      scheduleId:currentMessage.details.selected_scheduleId,
+                      item:currentMessage.details,
+                      chatroomId:selectedUser.chatroomId,
+                      
+                  })}
                 >
                     <Text style={styles.button_text}>View Details</Text>
                 </TouchableOpacity>
+                
+                </>
+                : 
+                <TouchableOpacity
+                  style={styles.button}
+                  onPress = {()=> navigation.navigate(ROUTES.cleaner_schedule_details_view,{
+                      item:currentMessage.details,
+                      chatroomId:selectedUser.chatroomId,
+                      scheduleId:currentMessage.details.selected_scheduleId
+                      
+                  })}
+                >
+                    <Text style={styles.button_text}>View Details</Text>
+                </TouchableOpacity>
+              }
                 <Text style={{fontSize:10, color:COLORS.light_gray}}>{moment(currentMessage.createdAt).format('h:mm A')}</Text>
+                
             </View>
             }
             {currentMessage.status === 'Accepted' &&
@@ -520,16 +548,16 @@ const renderCustomMessage = ({ currentMessage }) => {
                     <Text style={{fontSize:16}}>$ {currentMessage.details.selected_schedule.total_cleaning_fee}</Text>
                 </View>
                 <TouchableOpacity
-                style={styles.button}
-                onPress = {()=> navigation.navigate(ROUTES.host_confirm,{
-                    item:currentMessage.details,
-                    chatroomId:selectedUser.chatroomId,
-                    selectedUser:selectedUser,
-                    selectedSchedule:currentMessage.details.selected_schedule,
-                    totalPrice:currentMessage.details.selected_schedule.totalPrice,
-                    selected_scheduleId:currentMessage.details.selected_scheduleId,
-                    assigned_to:currentMessage.details.assigned_to
-                })}
+                  style={styles.button}
+                  onPress = {()=> navigation.navigate(ROUTES.host_confirm,{
+                      item:currentMessage.details,
+                      chatroomId:selectedUser.chatroomId,
+                      selectedUser:selectedUser,
+                      selectedSchedule:currentMessage.details.selected_schedule,
+                      totalPrice:currentMessage.details.selected_schedule.totalPrice,
+                      selected_scheduleId:currentMessage.details.selected_scheduleId,
+                      assigned_to:currentMessage.details.assigned_to
+                  })}
                 >
                     <Text style={styles.button_text}>Confirm</Text>
                 </TouchableOpacity>
@@ -617,7 +645,7 @@ const renderInputToolbar = (props) => {
     avatar: {
         width: 36, // Adjust size as needed
         height: 36, // Adjust size as needed
-        borderRadius: 20, // Make it circular,
+        borderRadius: 18, // Make it circular,
         marginLeft:6
       },
     automated:{

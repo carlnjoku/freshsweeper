@@ -56,7 +56,7 @@ import { Avatar} from 'react-native-paper';
     );
 
     console.log("schedule..................")
-    console.log(schedule)
+    // console.log(schedule)
     console.log("schedule..................")
 
       const estimatedTime = '10:54'
@@ -180,18 +180,10 @@ import { Avatar} from 'react-native-paper';
           
           <ScrollView>
 
-          <Animatable.View animation="slideInRight" duration={550}>
+          <Animatable.View animation="fadeIn" duration={550}>
           <View style={styles.container}>
-
-            {/* <Text bold style={{fontSize:16, marginBottom:5 }}>Before Photos</Text>
-            <Text style={{fontSize:14, marginBottom:15, color:COLORS.gray}}>
-              Uploaded photos before the cleaner started cleaning.
-            </Text> */}
-            
-          
-         
           <View>
-            <View style={{marginLeft:5}}>
+            <View style={{marginLeft:0}}>
       
               {isLoading ? (
             <ActivityIndicator size="large" color={COLORS.primary} style={styles.loader} />
@@ -296,7 +288,7 @@ const styles = StyleSheet.create({
       justifyContent: 'center'
     },
     photosContainer: {
-      marginLeft: 5,
+      marginLeft: 0,
     },
     thumbnails:{
       width: 102,
@@ -307,7 +299,7 @@ const styles = StyleSheet.create({
     thumbnailContainer: {
       position: 'relative',
       marginRight: 5,
-      marginTop:10
+      marginTop:5
     },
     previewContainer: {
       flexDirection: 'row',
@@ -317,9 +309,9 @@ const styles = StyleSheet.create({
       marginVertical: 20,
     },
     roomTitle: {
-      fontSize: 16,
+      fontSize: 14,
       fontWeight: 'bold',
-      marginBottom: 10,
+      marginBottom: 0,
     },
     imageContainer: {
       marginRight: 10,
@@ -329,6 +321,11 @@ const styles = StyleSheet.create({
       height: 100,
       borderRadius:5
     },
+    loader:{
+      flex:1,justifyContent:'center',
+      alignItems:'center',
+      marginTop:100
+    }
     
     
 })

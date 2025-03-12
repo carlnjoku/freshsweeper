@@ -42,6 +42,8 @@ export default function CleaningTask({onExtraSelect, extraTasks, totalTaskTime, 
     const[selected_extra_task, setSelectedExtraTask] = useState([]);
     const[totalTime, setTotalCleaningTime] = useState(0);
 
+    
+
 
     // Function to validate the form
     const validate = () => {
@@ -80,11 +82,11 @@ export default function CleaningTask({onExtraSelect, extraTasks, totalTaskTime, 
         onExtraSelect(updatedExtras);
 
         console.log("update.............")
-        console.log(updatedExtras)
+        // console.log(updatedExtras)
 
         // Extracting tasks
         const selected_tasks = updatedExtras.map(item => item.value);
-        console.log(selected_tasks)
+        // console.log(selected_tasks)
         console.log("update.............")
         extraTasks(selected_tasks, 'extraTaskTime')
         // extraTasks(updatedExtras.map(item => item.value))
@@ -94,7 +96,7 @@ export default function CleaningTask({onExtraSelect, extraTasks, totalTaskTime, 
         const cleaningTimeByTask = calculateCleaningTimeByTasks(selected_tasks, extra_cleaning_task_time)
   
         console.log("wooooooooooo........")
-        console.log(cleaningTimeByTask)
+        // console.log(cleaningTimeByTask)
 
         const extra_cleaning_time = calculateCleaningTimeByTasks(selected_extra_task, extra_cleaning_task_time)
         const regularCleaningTime = calculateRoomCleaningTime(room_type_and_size)
@@ -123,10 +125,10 @@ export default function CleaningTask({onExtraSelect, extraTasks, totalTaskTime, 
 
         }));
 
-        // Update ending Time after adding extra task
         const total_time = (formData.total_cleaning_time)+(extra_cleaning_time)
+        // alert(formData.total_cleaning_time)
         const cleaning_end_time = calculateEndTime(formData.cleaning_time, total_time)
-        alert(cleaning_end_time)
+        // alert(cleaning_end_time)
         setFormData((prevFormData) => ({
             ...prevFormData,
             cleaning_end_time: cleaning_end_time,
@@ -141,7 +143,7 @@ export default function CleaningTask({onExtraSelect, extraTasks, totalTaskTime, 
     
         const res = room_type_and_size.filter(room => room.type === type);
         console.log("pee......1")
-        console.log(res[0])
+        // console.log(res[0])
         const room_ = res[0]
 
         return room_
@@ -169,7 +171,7 @@ export default function CleaningTask({onExtraSelect, extraTasks, totalTaskTime, 
     const taskItem = ( {item,index} ) => (
         <View style={[styles.tasks, { width: columnWidth2 }]}>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 0 }}>
-        <Checkbox.Android status={isChecked ? 'checked' : 'unchecked'} color={COLORS.primary_light} />
+            <Checkbox.Android status={isChecked ? 'checked' : 'unchecked'} color={COLORS.primary_light} />
         <Text style={{ marginLeft: -2 }}>{item.label}</Text>
         </View>
         </View>
@@ -227,7 +229,7 @@ export default function CleaningTask({onExtraSelect, extraTasks, totalTaskTime, 
         newValue = 0;
         }
 
-        console.log(regular_cleaning)
+        // console.log(regular_cleaning)
 
         // Update the form data and perform validation
         setFormData((prevFormData) => ({
@@ -249,44 +251,7 @@ export default function CleaningTask({onExtraSelect, extraTasks, totalTaskTime, 
         <Text bold style={{fontSize:24, }}>Specify Cleaning Details</Text>
         <Text style={{fontSize:14, marginBottom:20, color:COLORS.gray}}>Outline Specific Tasks and Instructions for the Cleaner</Text>
         
-        <View>
-            <Text bold style={{fontSize:16}}>Property Rooms</Text>
-            <Text style={{fontSize:13, color:COLORS.gray, marginBottom:10}}>Details of the rooms in the selected property, including size and number.</Text>
-        </View>
-
-        <View style={{ borderRadius:8, borderWidth:0.5, borderColor:COLORS.gray, padding:10, marginBottom:40}}>
-            
-        <View style={styles.tableHeader}>
-            <Text style={styles.headerText}>Room Type</Text>
-            <Text style={styles.headerText}>Number</Text>
-            <Text style={styles.headerText}>Size </Text>
-        </View>
-
-      {/* Table Rows */}
-      {bedroomInfo &&
-        <View style={styles.tableRow}>
-          <Text style={styles.cell}>{bedroomInfo.type}</Text>
-          <Text style={styles.cell}>{bedroomInfo.number}</Text>
-          <Text style={styles.cell}>{bedroomInfo.size_range}</Text>
-        </View>
-      }
-      {bathroomInfo &&
-        <View style={styles.tableRow}>
-          <Text style={styles.cell}>{bathroomInfo.type}</Text>
-          <Text style={styles.cell}>{bathroomInfo.number}</Text>
-          <Text style={styles.cell}>{bathroomInfo.size_range}</Text>
-        </View>
-      }
-      {livingroomInfo &&
-        <View style={styles.tableRow}>
-          <Text style={styles.cell}>{livingroomInfo.type}</Text>
-          <Text style={styles.cell}>{livingroomInfo.number}</Text>
-          <Text style={styles.cell}>{livingroomInfo.size_range}</Text>
-        </View>
-      }
-   
-  
-        </View>
+        
         <View style={styles.regular_pricing}>
             <View>
                 <Text bold style={{fontSize:16}}>Included Regular Cleaning <Text style={{fontSize:13, marginBottom:0, marginLeft:20}}> ({currency}{formData.regular_cleaning_fee})</Text></Text>

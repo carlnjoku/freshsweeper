@@ -1,5 +1,6 @@
 import { db } from '../firebase/config';
 import { ref, push, set, update, get } from "firebase/database";
+import { Alert } from 'react-native';
 
 // Utility function to retrieve user data
 const findUserById = async (uid) => {
@@ -37,16 +38,18 @@ const updateFriendsList = async (db, userId, friendDetails) => {
 // Main function to add a friend
 const onAddFriend = async (uid, fbaseUser, schedule, scheduleId, cleaner_expo_token, host_expo_token) => {
     try {
+
+      // Fetch push tokens for cleaner and host
       // Find the user to be added
       const user = await findUserById(uid, db);
       if (!user) {
-        alert("User not found!");
+        // alert("User not found!");
         return;
       }
   
       // Prevent user from adding themselves
       if (user.userId === fbaseUser.userId) {
-        alert("You cannot add yourself!");
+        // alert("You cannot add yourself!");
         return;
       }
   
@@ -60,7 +63,7 @@ const onAddFriend = async (uid, fbaseUser, schedule, scheduleId, cleaner_expo_to
         friend => friend.userId === user.userId && friend.scheduleId === scheduleId
       );
       if (isAlreadyFriend) {
-        alert("This user is already your friend for this schedule!");
+        // alert("This user is already your friend for this schedule!");
         return;
       }
   
@@ -70,7 +73,8 @@ const onAddFriend = async (uid, fbaseUser, schedule, scheduleId, cleaner_expo_to
       // Send automated message to the new chatroom
       const automatedMessage = {
         _id: Math.random().toString(36).substring(7), // Generate unique message ID
-        text: 'A cleaning job has been successfully paid and assigned to you.', // Automated message content
+        
+        text: 'The cleaning job has been successfully paid for and confirmed!', // Automated message content
         details: {
           selected_schedule: schedule,
           selected_scheduleId: scheduleId,
@@ -81,6 +85,7 @@ const onAddFriend = async (uid, fbaseUser, schedule, scheduleId, cleaner_expo_to
           host_expo_token: host_expo_token,
         },
         cleaning_fee: schedule.total_cleaning_fee,
+        cleanerId: uid,
         status: 'payment_completed',
         createdAt: new Date().getTime(), // Timestamp of when the message was sent
         system: true, // Flag to indicate it's a system message
@@ -119,11 +124,13 @@ const onAddFriend = async (uid, fbaseUser, schedule, scheduleId, cleaner_expo_to
   
       await updateFriendsList(db, fbaseUser.userId, friendDetailsForCurrentUser);
       await updateFriendsList(db, user.userId, friendDetailsForUser);
+
+      
   
-      alert("Friend added successfully!");
+      // alert("Friend added successfully!");
     } catch (error) {
       console.error("Error adding friend:", error);
-      alert("An error occurred. Please try again.");
+      // Alert.alert("Error Message", "An error occurred. Please try again.");
     }
   };
 

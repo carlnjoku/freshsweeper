@@ -26,26 +26,33 @@ import ChatConversation1 from '../components/ChatConversation1';
 import CleanerProfileHost from '../screens/host/CleanerProfileHost';
 import SchedulePreview from '../screens/cleaner/SchedulePreview';
 import moment from 'moment';
+import ChangePassword from '../screens/host/ChangePassword';
+import ChangeLanguage from '../screens/host/ChangeLanguage';
+import EditApartment from '../screens/host/EditApartment';
+import { TransitionPresets } from '@react-navigation/stack';
+import CleanerProfilePay from '../screens/host/CleanerProfilePay';
 // import ScheduleApproval from '../screens/host/ScheduleApproval';
 
 
 
 export default function MainHostStack() {
 
+
+
   const navigation = useNavigation()
   const CustomChatHeader = ({schedule}) => (
     
     <View>
-      <View style={{ flexDirection: 'row', backgroundColor: COLORS.primary, paddingTop: 20, paddingBottom:10, paddingLeft:10}}> 
+      <View style={{ flexDirection: 'row', backgroundColor: COLORS.primary, paddingTop: 10, paddingBottom:10, paddingLeft:10}}> 
         <TouchableOpacity onPress={() => navigation.goBack()} style={{marginRight:15,  marginTop:10 }}>
           <AntDesign name="arrowleft" size={24} color={COLORS.white} />
         </TouchableOpacity>
         <View style={{ marginTop:10 }}>
-          <Text style={{ color: COLORS.white, fontSize: 20, fontWeight:'500' }}>{schedule.schedule.apartment_name}</Text>
-          <Text style={{ color: COLORS.white, fontSize: 14 }}>{schedule.schedule.address} </Text>
+          <Text style={{alignSelf:'center', color: COLORS.white, fontSize: 20, fontWeight:'500' }}>{schedule.schedule.apartment_name}</Text>
+          <Text style={{alignSelf:'center', color: COLORS.white, fontSize: 14 }}>{schedule.schedule.address} </Text>
         </View>
       </View>
-      <View style={{flexDirection: 'row', alignItems:'center', backgroundColor:COLORS.primary_light_1, paddingVertical:6, borderBottomWidth:0.5, borderBottomColor:COLORS.light_gray}}>
+      <View style={{flexDirection: 'row', justifyContent:'center', alignItems:'center', backgroundColor:COLORS.light_gray_1, paddingVertical:6, borderBottomWidth:0.5, borderBottomColor:COLORS.light_gray}}>
         <MaterialCommunityIcons name="calendar" style={{marginLeft:5}} size={20} color={COLORS.gray} />
         <Text style={{ fontSize: 14, marginTop:0, color:COLORS.gray }}> Schedule {moment(schedule.schedule.cleaning_date).format('ddd MMM D')},  {moment(schedule.schedule.cleaning_time, 'h:mm:ss A').format('h:mm A')}</Text>
       </View>
@@ -59,11 +66,17 @@ export default function MainHostStack() {
       <BookingProvider>
         <Stack.Navigator 
             screenOptions={{
+                ...TransitionPresets.ScaleFromCenterAndroid, // Zoom-In Effect
                 headerTintColor:COLORS.white,
                 headerBackTitleVisible:false,
-                headerStyle:{
-                    backgroundColor:COLORS.primary
-                }
+                headerStyle: {
+                  backgroundColor: '#fff', // Background color of the header
+                  elevation: 5, // Adds elevation for Android
+                  shadowColor: '#000', // Shadow color for iOS
+                  shadowOpacity: 0.3, // Shadow opacity for iOS
+                  shadowOffset: { width: 0, height: 2 }, // Shadow offset for iOS
+                  shadowRadius: 3, // Shadow radius for iOS
+                },
             }} 
             
         >
@@ -95,6 +108,52 @@ export default function MainHostStack() {
             })}
           />
           <Stack.Screen 
+            name={ROUTES.host_change_language}
+            component={ChangeLanguage} 
+            
+            options={({route}) => ({
+                headerShown:true,
+                headerTintColor: COLORS.white,
+                headerBackTitleVisible: false,
+                headerStyle: {
+                  backgroundColor: '#fff', // Background color of the header
+                  elevation: 5, // Adds elevation for Android
+                  shadowColor: '#000', // Shadow color for iOS
+                  shadowOpacity: 0.3, // Shadow opacity for iOS
+                  shadowOffset: { width: 0, height: 2 }, // Shadow offset for iOS
+                  shadowRadius: 3, // Shadow radius for iOS
+                },
+                title: "Change Language",
+                headerTintColor:COLORS.gray,
+                headerBackTitleVisible:false,
+                
+            })}
+          />
+          <Stack.Screen 
+            name={ROUTES.host_change_password}
+            component={ChangePassword} 
+            
+            options={({route}) => ({
+                headerShown:true,
+                headerTintColor: COLORS.white,
+                headerBackTitleVisible: false,
+                headerStyle: {
+                  backgroundColor: '#fff', // Background color of the header
+                  elevation: 5, // Adds elevation for Android
+                  shadowColor: '#000', // Shadow color for iOS
+                  shadowOpacity: 0.3, // Shadow opacity for iOS
+                  shadowOffset: { width: 0, height: 2 }, // Shadow offset for iOS
+                  shadowRadius: 3, // Shadow radius for iOS
+                },
+                title: "Change Password",
+                headerTintColor:COLORS.gray,
+                headerBackTitleVisible:false,
+                headerStyle:{
+                    backgroundColor:COLORS.white
+                }
+            })}
+          />
+          <Stack.Screen 
             name={ROUTES.host_schedule_details}
             component={ScheduleDetails} 
             
@@ -102,15 +161,20 @@ export default function MainHostStack() {
                 headerShown:true,
                 headerTintColor: COLORS.white,
                 headerBackTitleVisible: false,
-                headerStyle: {
-                  backgroundColor: COLORS.primary,
-                },
+                // headerStyle: {
+                //   backgroundColor: COLORS.primary,
+                // },
                 title: "Schedule Details",
-                headerTintColor:COLORS.white,
+                headerTintColor:COLORS.gray,
                 headerBackTitleVisible:false,
-                headerStyle:{
-                    backgroundColor:COLORS.primary
-                }
+                // headerStyle: {
+                //   backgroundColor: '#fff', // Background color of the header
+                //   elevation: 5, // Adds elevation for Android
+                //   shadowColor: '#000', // Shadow color for iOS
+                //   shadowOpacity: 0.3, // Shadow opacity for iOS
+                //   shadowOffset: { width: 0, height: 2 }, // Shadow offset for iOS
+                //   shadowRadius: 3, // Shadow radius for iOS
+                // },
             })}
           />
           
@@ -124,15 +188,18 @@ export default function MainHostStack() {
                 headerShown:true,
                 headerTintColor: COLORS.white,
                 headerBackTitleVisible: false,
-                headerStyle: {
-                  backgroundColor: COLORS.primary,
-                },
-                title: "Add Property",
-                headerTintColor:COLORS.white,
+                
+                title: "Add Apartment",
+                headerTintColor:COLORS.gray,
                 headerBackTitleVisible:false,
-                headerStyle:{
-                    backgroundColor:COLORS.primary
-                }
+                headerStyle: {
+                  backgroundColor: '#fff', // Background color of the header
+                  elevation: 5, // Adds elevation for Android
+                  shadowColor: '#000', // Shadow color for iOS
+                  shadowOpacity: 0.3, // Shadow opacity for iOS
+                  shadowOffset: { width: 0, height: 2 }, // Shadow offset for iOS
+                  shadowRadius: 3, // Shadow radius for iOS
+                },
             })}
           />
           <Stack.Screen 
@@ -142,14 +209,39 @@ export default function MainHostStack() {
             options={({route}) => ({
                 
                 headerShown:true,
-                headerTintColor: COLORS.white,
+                headerTintColor: COLORS.gray,
                 headerBackTitleVisible: false,
                 headerStyle: {
-                  backgroundColor: COLORS.primary,
+                  backgroundColor: '#fff', // Background color of the header
+                  elevation: 5, // Adds elevation for Android
+                  shadowColor: '#000', // Shadow color for iOS
+                  shadowOpacity: 0.3, // Shadow opacity for iOS
+                  shadowOffset: { width: 0, height: 2 }, // Shadow offset for iOS
+                  shadowRadius: 3, // Shadow radius for iOS
                 },
-                title: "Apartment Dashboard",
+                title: "Apartment",
               })}
           />
+
+            <Stack.Screen 
+              name={ROUTES.host_edit_apt}
+              component={EditApartment} 
+              
+              options={({route}) => ({
+                headerShown:true,
+                title: "Edit Apartment",
+                headerTintColor:COLORS.gray,
+                headerBackTitleVisible:false,
+                headerStyle: {
+                  backgroundColor: '#fff', // Background color of the header
+                  elevation: 5, // Adds elevation for Android
+                  shadowColor: '#000', // Shadow color for iOS
+                  shadowOpacity: 0.3, // Shadow opacity for iOS
+                  shadowOffset: { width: 0, height: 2 }, // Shadow offset for iOS
+                  shadowRadius: 3, // Shadow radius for iOS
+                },
+            })}
+            />
 
           <Stack.Screen 
             name={ROUTES.host_new_booking}
@@ -162,7 +254,7 @@ export default function MainHostStack() {
                 headerStyle: {
                   backgroundColor: COLORS.primary,
                 },
-                title: "Add Property",
+                title: "Create Schedule",
                 headerTintColor:COLORS.white,
                 headerBackTitleVisible:false,
                 headerStyle:{
@@ -235,6 +327,32 @@ export default function MainHostStack() {
             })}
           />
           <Stack.Screen 
+            name={ROUTES.cleaner_profile_Pay}
+            // component={CleanerProfile} 
+            component={CleanerProfilePay}
+            
+            options={({route}) => ({
+                headerShown:true,
+                headerTintColor: COLORS.white,
+                headerBackTitleVisible: false,
+                headerStyle: {
+                  backgroundColor: COLORS.primary,
+                },
+                title: "About Cleaner",
+                headerRight: () => (
+                  <View style={{ flexDirection:'row', paddingRight: 10 }}>
+                    <MaterialCommunityIcons name="bookmark" style={{marginLeft:5}} size={20} color={COLORS.white} />
+                    <MaterialCommunityIcons name="share" style={{marginLeft:5}} size={20} color={COLORS.white} />
+                  </View>
+                ),
+                headerTintColor:COLORS.white,
+                headerBackTitleVisible:false,
+                headerStyle:{
+                    backgroundColor:COLORS.primary
+                }
+            })}
+          />
+          <Stack.Screen 
             name={ROUTES.host_confirm}
             component={Confirmation} 
             
@@ -276,17 +394,19 @@ export default function MainHostStack() {
             
             options={({route}) => ({
                 headerShown:true,
-                headerTintColor: COLORS.white,
+                headerTintColor: COLORS.gray,
                 headerBackTitleVisible: false,
+                
+                title: "In-Progress Cleaning",
+                headerTintColor:COLORS.black,
                 headerStyle: {
-                  backgroundColor: COLORS.primary,
+                  backgroundColor: '#fff', // Background color of the header
+                  elevation: 5, // Adds elevation for Android
+                  shadowColor: '#000', // Shadow color for iOS
+                  shadowOpacity: 0.3, // Shadow opacity for iOS
+                  shadowOffset: { width: 0, height: 2 }, // Shadow offset for iOS
+                  shadowRadius: 3, // Shadow radius for iOS
                 },
-                title: "Task Progress",
-                headerTintColor:COLORS.white,
-                headerBackTitleVisible:true,
-                headerStyle:{
-                    backgroundColor:COLORS.primary
-                }
               })}
           />
           {/* <Stack.Screen 
@@ -334,17 +454,20 @@ export default function MainHostStack() {
             
             options={({route}) => ({
                 headerShown:true,
-                headerTintColor: COLORS.white,
-                headerBackTitleVisible: false,
                 headerStyle: {
-                  backgroundColor: COLORS.primary,
+                  backgroundColor: '#fff', // Background color of the header
+                  elevation: 5, // Adds elevation for Android
+                  shadowColor: '#000', // Shadow color for iOS
+                  shadowOpacity: 0.3, // Shadow opacity for iOS
+                  shadowOffset: { width: 0, height: 2 }, // Shadow offset for iOS
+                  shadowRadius: 3, // Shadow radius for iOS
                 },
                 title: "Checkout",
-                headerTintColor:COLORS.white,
-                headerBackTitleVisible:true,
-                headerStyle:{
-                    backgroundColor:COLORS.primary
-                }
+                headerTintColor:COLORS.gray,
+                headerBackTitleVisible:false,
+                // headerStyle:{
+                //     backgroundColor:COLORS.primary
+                // }
               })}
           />
           

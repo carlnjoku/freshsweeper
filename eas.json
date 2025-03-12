@@ -5,12 +5,12 @@
   "build": {
     "development": {
       "distribution": "internal",
+      "ios": {
+        "simulator": false,  
+        "credentialsSource": "remote" 
+      },
       "android": {
         "buildType": "apk"
-      },
-      "ios": {
-        "simulator": true, 
-        "credentialsSource": "remote"
       }
     },
     "production": {

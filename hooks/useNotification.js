@@ -90,7 +90,7 @@ export function useNotification() {
     const [expoPushToken, setExpoPushToken] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    // const navigation = useNavigation()
+
 
 
     const registerForPushNotificationsAsync = async (userId) => {
@@ -161,9 +161,12 @@ export function useNotification() {
     };
 
     const validateTokenWithBackend = async (tdata) => {
+        console.log("token",tdata)
         try {
             const response = await userService.validateToken(tdata);
+            console.log(response.data.isValid)
             return response.data.isValid; // Backend should return { isValid: true/false }
+            
         } catch (error) {
             console.error('Error validating push token:', error);
             return false;
@@ -194,7 +197,8 @@ export function useNotification() {
 
         // Extract notification data
         const { screen, params } = response?.notification?.request?.content?.data || {};
-
+        console.log(screen)
+        console.log(params)
         if (screen) {
             // Navigate to the specified screen with params
             navigate(screen, params);
@@ -202,6 +206,8 @@ export function useNotification() {
             console.log("No screen specified in notification data.");
         }
     };
+
+    
 
 
     // Handle notification when received in the foreground

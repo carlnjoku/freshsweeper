@@ -33,34 +33,7 @@ import axios from 'axios';
 import * as Device from 'expo-device';
 
 
-const api = axios.create({
-  // Uncomment the appropriate base URL for your needs
-  // baseURL: 'http://rntws-67-80-224-161.a.free.pinggy.link',
-  // baseURL: 'http://3.23.89.171:8000',
-  // baseURL: 'http://18.191.219.237:8000',
-  baseURL: 'https://jsonplaceholder.typicode.com/posts',
-  headers: {
-    'Content-type': 'application/json',
-  },
-});
 
-// Request Interceptor
-api.interceptors.request.use((config) => {
-  console.log('Request:', config); // Log request details
-  return config;
-}, (error) => {
-  console.error('Request Error:', error); // Log request error
-  return Promise.reject(error);
-});
-
-// Response Interceptor
-api.interceptors.response.use((response) => {
-  // console.log('Response:', response); // Log response details
-  return response;
-}, (error) => {
-  console.error('Response Error:', error); // Log response error
-  return Promise.reject(error);
-});
 
 
 
@@ -105,17 +78,7 @@ const Signin = () => {
     //     }
     //   },[])
 
-    const fetchData = async () => {
-      console.log('Making API call...');
-      try {
-        const response = await axios.get('https://jsonplaceholder.typicode.com/posts');
-        console.log("........................................................")
-        // console.log('Data received:', response.data);
-        console.log("........................................................")
-      } catch (error) {
-        console.error('Axios error:', error);
-      }
-    };
+    
 
 
     const getDeviceInfo = async () => {
@@ -142,9 +105,9 @@ const Signin = () => {
   
 
     useEffect(() => {
-      api()
+      // alert(expoPushToken)
       if (expoPushToken) {
-          console.log('Expo Push Token:', expoPushToken);
+          // alert('Expo Push Token:', expoPushToken);
           // You can perform additional actions here, e.g., storing the token in the database
       }
 
@@ -195,7 +158,7 @@ const Signin = () => {
 
     
 
-    alert(response.expo_push_token)
+   
     // Check if expo_push_token already exisit if exisit do nothing otherwise update
     if(response.expo_push_token !== expoPushToken){
       const userTokenData = {
@@ -205,11 +168,11 @@ const Signin = () => {
 
     
       // console.log(userTokenData)
-      userService.updateExpoPushToken(userTokenData)
-      .then(response => {
-        const res = response.data.data
-        // console.log(res)
-      })
+      // userService.updateExpoPushToken(userTokenData)
+      // .then(response => {
+      //   const res = response.data.data
+      //   // console.log(res)
+      // })
     }
     
   }
@@ -245,19 +208,20 @@ const Signin = () => {
             if(response.status === 200){
               const res = response.data.data
               console.log("Meeeeeeeeeeeee")
-              // console.log(res)
+              // console.log(JSON.stringify(res, null, 2))
               // writeUserData(res)
               fetchUserFirebaseData(res._id,res)
               
               // Register for push notifications
               console.log("UserId", res._id)
+              
               registerForPushNotificationsAsync(res._id);
 
               console.log("fbbbbbbbbbbbbbbbbbbbbbbb")
               // console.log(fbCurrentUser)
               console.log("fbbbbbbbbbbbbbbbbbbbbbbb")
               
-              console.log("is it login")
+             
     
       
             }else {
@@ -347,7 +311,7 @@ const Signin = () => {
                 <Button title="Log In" loading={loading} onPress={validate} />
 
                 <Text
-                    onPress={() => navigation.navigate(ROUTES.signup)}
+                    onPress={() => navigation.navigate(ROUTES.getting_started)}
                     style={{
                         color: COLORS.black,
                         fontWeight: 'bold',

@@ -73,7 +73,7 @@ const Certification = ({userId,close_modal}) => {
 
     const validate = async () => {
       let isValid = true;
-      alert("two")
+  
       if (inputs.name === "") {
           handleError(
               <Text style={{ color: "red", fontSize: 12, marginTop: -5 }}>
@@ -103,7 +103,6 @@ const Certification = ({userId,close_modal}) => {
   const onSubmit = async()=> {
     try {
    
-      alert("wetin")
       await userService.updateCleanerCertification(inputs)
       .then(response => {
           const status = response.status

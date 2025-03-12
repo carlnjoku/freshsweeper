@@ -10,7 +10,7 @@ export default function Checkout({ navigation, route }) {
 
     const{pendingPayments} = route.params
     console.log("pendiinng.............")
-    console.log(pendingPayments)
+    // console.log(pendingPayments)
     console.log("pendiinng.............")
     // Example array of pending payments
   const totalSum = pendingPayments.reduce((sum, schedule) => {
@@ -46,7 +46,7 @@ export default function Checkout({ navigation, route }) {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Payment Method</Text>
         
-        <StripeProvider publishableKey="pk_test_EFN6niSZSH7zAp3qWMHKcRWw">
+        <StripeProvider>
             {/* Your app content */}
             <PaymentScreen />
             </StripeProvider>

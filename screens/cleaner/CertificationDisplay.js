@@ -3,8 +3,31 @@ import { SafeAreaView,Text, StyleSheet, StatusBar, Linking, FlatList, ScrollView
 import CardNoPrimary from '../../components/CardNoPrimary';
 import CircleIconNoLabel from '../../components/CirecleIconNoLabel';
 import COLORS from '../../constants/colors';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import EmptyListing from '../../components/EmptyListing';
+import { EmptyListingNoButton } from '../../components/EmptyListingNoButton';
 
 export default function CertificationDisplay({certification, handleOpenCertification, mode}) {
+  
+  // const emptyListing = () => (
+  //   <View style={styles.container}>
+  //     {/* Empty Envelope Icon */}
+  //     <MaterialCommunityIcons 
+  //       name="email-outline" // MaterialCommunityIcon for an empty envelope
+  //       size={54}
+  //       color="#ccc"
+  //       style={styles.icon}
+  //     />
+      
+  //     {/* Placeholder Message */}
+  //     <Text style={styles.message}>
+  //     You have not messages yet. Please check back later or refresh to load the latest messages.
+  //     </Text>
+  //   </View>
+  //   // <View style={styles.empty_listing}><Text>You have nothing here</Text></View>
+  // )
+
+  
   return (
     <CardNoPrimary>
               <View style={styles.titleContainer}>
@@ -36,17 +59,29 @@ export default function CertificationDisplay({certification, handleOpenCertifica
                 {certification < 0 && <Text>Add Certification</Text>}
                 
                 
-                {certification?.map((item, index) => (
-                    <View style={{marginVertical:10}}>
-                    <Text style={{fontSize:14, fontWeight:'600'}}>{item?.name}</Text>
-                    <Text>{item?.institution_name}</Text>
-                    <Text style={styles.url_text}>{item?.credentialUrl}</Text>
-                    {/* <Text>{item?.startDate}</Text>
-                    <Text>{item?.entDate}</Text>
-                    <Text>{item?.expiryDate}</Text> */}
-                    
+                
+
+                <FlatList
+                  data={certification}
+                  renderItem={({ item }) => (
+                    <View style={{ marginVertical: 10 }}>
+                      <Text style={{ fontSize: 14, fontWeight: '600' }}>{item?.name}</Text>
+                      <Text>{item?.institution_name}</Text>
+                      <Text style={styles.url_text}>{item?.credentialUrl}</Text>
                     </View>
-                ))}
+                  )}
+                  keyExtractor={(item, index) => item?.id?.toString() || index.toString()}
+                  numColumns={2}
+                  ListEmptyComponent= {
+                    <EmptyListingNoButton 
+                      message="The cleaner has not upload their certification yet."
+                      iconName="certificate"
+                      size={24} 
+                    />
+                  }
+                  // columnWrapperStyle={styles.columnWrapper}
+                />
+                
               </View>
             </CardNoPrimary>
   )

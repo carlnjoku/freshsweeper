@@ -8,6 +8,7 @@ import COLORS from '../constants/colors';
 import BottomTabsHost from './BottomTabsHost';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import AntDesign from '@expo/vector-icons/AntDesign';
 import CustomDrawer from '../components/CustomDrawer';
 import Dashboard from '../screens/host/Dashboard';
 import Support from '../screens/host/Support';
@@ -16,10 +17,11 @@ import Profile from '../screens/host/Profile';
 import Applications from '../screens/cleaner/Applications';
 import Application from '../screens/host/Application';
 import { AuthContext } from '../context/AuthContext';
-// import PaymentHistory from '../screens/host/PaymentHistory';
+import PaymentHistory from '../screens/host/Payment/PaymentHistory';
 import Apartments from '../screens/host/Apartments';
 import PaymentScreen from '../screens/host/Payment';
 import OutstandingPayments from '../screens/host/Payment/OutstandingPayments';
+import EditApartment from '../screens/host/EditApartment';
 
 
 
@@ -58,6 +60,7 @@ const ApartmentStack = () => {
       })}
       />
       
+      
 
       
       
@@ -77,7 +80,15 @@ const DrawerNavigator = () => {
         drawerActiveTintColor:COLORS.primary,
         drawerLabelStyle: {
             marginLeft:-20
-        }
+        },
+        headerStyle: {
+          backgroundColor: '#fff', // Background color of the header
+          elevation: 5, // Adds elevation for Android
+          shadowColor: '#000', // Shadow color for iOS
+          shadowOpacity: 0.3, // Shadow opacity for iOS
+          shadowOffset: { width: 0, height: 2 }, // Shadow offset for iOS
+          shadowRadius: 3, // Shadow radius for iOS
+        },
     }} 
     >
       <Drawer.Screen 
@@ -92,14 +103,19 @@ const DrawerNavigator = () => {
         }}
       />
       
-      <Drawer.Screen 
+      {/* <Drawer.Screen 
         name={ROUTES.cleaner_personal_profile_drawer} component={Dashboard}
         options={{
-            title:"More",
-            headerTintColor:COLORS.white,
+            title:"Notifications",
+            headerTintColor:COLORS.gray,
             headerBackTitleVisible:true,
-            headerStyle:{
-                backgroundColor:COLORS.primary
+            headerStyle: {
+              backgroundColor: '#fff', // Background color of the header
+              elevation: 5, // Adds elevation for Android
+              shadowColor: '#000', // Shadow color for iOS
+              shadowOpacity: 0.3, // Shadow opacity for iOS
+              shadowOffset: { width: 0, height: 2 }, // Shadow offset for iOS
+              shadowRadius: 3, // Shadow radius for iOS
             },
             
             headerTitleStyle: {
@@ -107,12 +123,38 @@ const DrawerNavigator = () => {
               fontSize:16,
               color:COLORS.white,
             },
-            drawerIcon:({focus, color, size}) => (
-                <Ionicons name="person-outline" size={20} color={color} />
-            )
+            // drawerIcon:({focus, color, size}) => (
+            //     <MaterialCommunityIcons name="bell-outline" size={20} color={color} />
+            // )
+
+            drawerLabel: ({ focused,color }) => (
+              <View style={{ flexDirection: 'row', alignItems: 'center'}}>
+                <MaterialCommunityIcons name="bell-outline" size={20} color={color} />
+                <View style={{flexDirection: 'row', alignItems: 'center', justifyContent:'space-between', width:'100%' }}>
+                <Text style={{ color, fontSize: 16, marginLeft: 10 }}>Notifications</Text>
+                {applicationCounts > 0 && (
+                  <View
+                    style={{
+                      backgroundColor: 'red',
+                      borderRadius: 10,
+                      width: 20,
+                      height: 20,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      marginLeft: 8,
+                    }}
+                  >
+                    <Text style={{ color: 'white', fontSize: 12 }}>{applicationCounts}</Text>
+                  </View>
+                )}
+                </View>
+                
+                
+              </View>
+            ),
         }} 
-      />
-      <Drawer.Screen 
+      /> */}
+      {/* <Drawer.Screen 
         name={ROUTES.host_application} 
         component={Application} 
         options={{
@@ -133,6 +175,7 @@ const DrawerNavigator = () => {
             drawerLabel: ({ focused,color }) => (
               <View style={{ flexDirection: 'row', alignItems: 'center'}}>
                 <MaterialCommunityIcons name="storefront-outline" size={20} color={color} />
+                <View style={{flexDirection: 'row', alignItems: 'center', justifyContent:'space-between', width:'100%' }}>
                 <Text style={{ color, fontSize: 16, marginLeft: 10 }}>Applications</Text>
                 {applicationCounts > 0 && (
                   <View
@@ -149,28 +192,36 @@ const DrawerNavigator = () => {
                     <Text style={{ color: 'white', fontSize: 12 }}>{applicationCounts}</Text>
                   </View>
                 )}
+                </View>
+                
+                
               </View>
             ),
         }}
-      />
+      /> */}
       <Drawer.Screen 
         name={ROUTES.host_profile} 
         component={Profile} 
         options={{
             title:"My Profile",
-            headerTintColor:COLORS.white,
+            headerTintColor:COLORS.gray,
             headerBackTitleVisible:true,
-            headerStyle:{
-                backgroundColor:COLORS.primary
+            headerStyle: {
+              backgroundColor: '#fff', // Background color of the header
+              elevation: 5, // Adds elevation for Android
+              shadowColor: '#000', // Shadow color for iOS
+              shadowOpacity: 0.3, // Shadow opacity for iOS
+              shadowOffset: { width: 0, height: 2 }, // Shadow offset for iOS
+              shadowRadius: 3, // Shadow radius for iOS
             },
             
             headerTitleStyle: {
               fontWeight: '600',
               fontSize:16,
-              color:COLORS.white,
+              color:COLORS.gray,
             },
             drawerIcon:({focus, color, size}) => (
-                <MaterialCommunityIcons name="storefront-outline" size={20} color={color} />
+                <MaterialCommunityIcons name="account-outline" size={20} color={color} />
             )
         }}
       />
@@ -181,44 +232,54 @@ const DrawerNavigator = () => {
         
         options={{
             title:"My Apartments",
-            headerTintColor:COLORS.white,
+            headerTintColor:COLORS.gray,
             headerBackTitleVisible:true,
-            headerStyle:{
-                backgroundColor:COLORS.primary
+            headerStyle: {
+              backgroundColor: '#fff', // Background color of the header
+              elevation: 5, // Adds elevation for Android
+              shadowColor: '#000', // Shadow color for iOS
+              shadowOpacity: 0.3, // Shadow opacity for iOS
+              shadowOffset: { width: 0, height: 2 }, // Shadow offset for iOS
+              shadowRadius: 3, // Shadow radius for iOS
             },
             
             headerTitleStyle: {
               fontWeight: '600',
               fontSize:16,
-              color:COLORS.white,
+              color:COLORS.gray,
             },
             drawerIcon:({focus, color, size}) => (
-                <MaterialCommunityIcons name="storefront-outline" size={20} color={color} />
+                <AntDesign name="home" size={19} color={color} />
             )
         }}
       />
 
       <Drawer.Screen 
-        name={ROUTES.host_payment_setting} 
+        name={ROUTES.host_payment_history} 
         // component={PaymentHistory} 
         // component={PaymentScreen} 
-        component={OutstandingPayments}
+        component={PaymentHistory}
         options={{
             title:"Payment History",
-            headerTintColor:COLORS.white,
+            headerTintColor:COLORS.gray,
             headerBackTitleVisible:true,
-            headerStyle:{
-                backgroundColor:COLORS.primary
+            headerStyle: {
+              backgroundColor: '#fff', // Background color of the header
+              elevation: 5, // Adds elevation for Android
+              shadowColor: '#000', // Shadow color for iOS
+              shadowOpacity: 0.3, // Shadow opacity for iOS
+              shadowOffset: { width: 0, height: 2 }, // Shadow offset for iOS
+              shadowRadius: 3, // Shadow radius for iOS
             },
             
             headerTitleStyle: {
               fontWeight: '600',
               fontSize:16,
-              color:COLORS.white,
+              color:COLORS.gray,
             },
             
             drawerIcon:({focus, color, size}) => (
-                <Ionicons name="settings-outline" size={20} color={color} />
+                <MaterialCommunityIcons name="credit-card-outline" size={20} color={color} />
             )
         }}
         
@@ -229,19 +290,24 @@ const DrawerNavigator = () => {
         component={Support} 
         options={{
             title:"Support",
-            headerTintColor:COLORS.white,
+            headerTintColor:COLORS.gray,
             headerBackTitleVisible:true,
-            headerStyle:{
-                backgroundColor:COLORS.primary
+            headerStyle: {
+              backgroundColor: '#fff', // Background color of the header
+              elevation: 5, // Adds elevation for Android
+              shadowColor: '#000', // Shadow color for iOS
+              shadowOpacity: 0.3, // Shadow opacity for iOS
+              shadowOffset: { width: 0, height: 2 }, // Shadow offset for iOS
+              shadowRadius: 3, // Shadow radius for iOS
             },
             
             headerTitleStyle: {
               fontWeight: '600',
               fontSize:16,
-              color:COLORS.white,
+              color:COLORS.gray,
             },
             drawerIcon:({focus, color, size}) => (
-                <MaterialCommunityIcons name="storefront-outline" size={20} color={color} />
+                <MaterialCommunityIcons name="lifebuoy" size={20} color={color} />
             )
         }}
       />
@@ -301,16 +367,21 @@ const DrawerNavigator = () => {
         component={Settings} 
         options={{
             title:"Settings",
-            headerTintColor:COLORS.white,
+            headerTintColor:COLORS.gray,
             headerBackTitleVisible:true,
-            headerStyle:{
-                backgroundColor:COLORS.primary
+            headerStyle: {
+              backgroundColor: '#fff', // Background color of the header
+              elevation: 5, // Adds elevation for Android
+              shadowColor: '#000', // Shadow color for iOS
+              shadowOpacity: 0.3, // Shadow opacity for iOS
+              shadowOffset: { width: 0, height: 2 }, // Shadow offset for iOS
+              shadowRadius: 3, // Shadow radius for iOS
             },
             
             headerTitleStyle: {
               fontWeight: '600',
               fontSize:16,
-              color:COLORS.white,
+              color:COLORS.gray,
             },
             drawerIcon:({focus, color, size}) => (
                 <Ionicons name="settings-outline" size={20} color={color} />

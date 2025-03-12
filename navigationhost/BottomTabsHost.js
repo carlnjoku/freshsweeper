@@ -17,6 +17,7 @@ import Profile from '../screens/host/Profile';
 import More from '../screens/host/more/More';
 import Bookings from '../screens/host/Bookings';
 import FindCleaners from '../screens/host/FindCleaners';
+import { TransitionPresets } from '@react-navigation/stack';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -27,6 +28,7 @@ const MessageStack = () => {
     return (
       <Stack.Navigator 
         screenOptions={{
+          ...TransitionPresets.FadeFromBottomAndroid, // Zoom-In Effect
           headerTintColor:COLORS.white,
           headerBackTitleVisible:false,
           headerStyle:{
@@ -40,7 +42,7 @@ const MessageStack = () => {
           component={Messages} 
           
           options={({route}) => ({
-            headerShown:true,
+            headerShown:false,
             title: "Chat Messages",
             headerTintColor:COLORS.white,
             headerBackTitleVisible:false,
@@ -114,7 +116,16 @@ function BottomTabsHost() {
     <Tab.Navigator 
     
       screenOptions={({ route }) => ({
-        headerShown:false,
+        ...TransitionPresets.FadeFromBottomAndroid, // Zoom-In Effect
+        headerShown:true,
+        headerStyle: {
+          backgroundColor: '#fff', // Background color of the header
+          elevation: 5, // Adds elevation for Android
+          shadowColor: '#000', // Shadow color for iOS
+          shadowOpacity: 0.3, // Shadow opacity for iOS
+          shadowOffset: { width: 0, height: 2 }, // Shadow offset for iOS
+          shadowRadius: 3, // Shadow radius for iOS
+        },
         tabBarActiveTintColor:COLORS.primary,
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
@@ -162,12 +173,18 @@ function BottomTabsHost() {
 
 
 
-      <Tab.Screen name={ROUTES.host_home_tab} component={Dashboard} />
+      <Tab.Screen name={ROUTES.host_home_tab} 
+        component={Dashboard}
+        options={({route}) => ({
+          headerShown:true,
+          title: "Dashboard",
+        })}
+      />
       <Tab.Screen 
         name={ROUTES.host_bookings} 
         component = {Bookings} 
         options={({route}) => ({
-          headerShown:true,
+          headerShown:false,
           headerTintColor: COLORS.white,
           headerBackTitleVisible: false,
           headerStyle: {
@@ -194,13 +211,13 @@ function BottomTabsHost() {
             backgroundColor: COLORS.primary,
           },
           title: "Find Cleaners",
-          headerTintColor:COLORS.primary,
-          headerBackTitleVisible:false,
           headerStyle:{
               backgroundColor:COLORS.primary
           }
       })}
       />
+
+      
       <Tab.Screen name={ROUTES.host_messages} component={MessageStack} />
       <Tab.Screen 
         name={ROUTES.cleaner_more} 

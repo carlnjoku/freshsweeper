@@ -38,8 +38,17 @@ const MessageStack = () => {
           headerBackTitleVisible:false,
           headerStyle:{
             backgroundColor:COLORS.primary
-          }
+          },
+          headerStyle: {
+            backgroundColor: '#fff', // Background color of the header
+            elevation: 5, // Adds elevation for Android
+            shadowColor: '#000', // Shadow color for iOS
+            shadowOpacity: 0.3, // Shadow opacity for iOS
+            shadowOffset: { width: 0, height: 2 }, // Shadow offset for iOS
+            shadowRadius: 3, // Shadow radius for iOS
+          },
         }} 
+        
         initialRouteName={ROUTES.cleaner_messages}  
        
       >
@@ -50,11 +59,16 @@ const MessageStack = () => {
           options={({route}) => ({
             headerShown:true,
             title: "Chat Messages",
-            headerTintColor:COLORS.white,
+            headerTintColor:COLORS.gray,
             headerBackTitleVisible:false,
-            headerStyle:{
-                backgroundColor:COLORS.primary
-            }
+            headerStyle: {
+              backgroundColor: '#fff', // Background color of the header
+              elevation: 5, // Adds elevation for Android
+              shadowColor: '#000', // Shadow color for iOS
+              shadowOpacity: 0.3, // Shadow opacity for iOS
+              shadowOffset: { width: 0, height: 2 }, // Shadow offset for iOS
+              shadowRadius: 3, // Shadow radius for iOS
+            },
         })}
         />
 
@@ -97,7 +111,7 @@ const ScheduleStack = () => {
           component={Schedules} 
           
           options={({route}) => ({
-            headerShown:true,
+            headerShown:false,
             title: "My Schedules",
             headerTintColor:COLORS.white,
             headerBackTitleVisible:false,
@@ -245,7 +259,23 @@ function BottomTabs() {
 
 
 
-      <Tab.Screen name={ROUTES.cleaner_home_tab} component={Dashboard} />
+      <Tab.Screen 
+        name={ROUTES.cleaner_home_tab} 
+        component={Dashboard} 
+        options={({route})=>({
+          
+          headerShown:true,
+          title: "",
+          headerTintColor:COLORS.white,
+          // headerBackTitleVisible:true,
+          headerStyle:{
+              backgroundColor:COLORS.primary
+          }
+      
+      //   cardStyleInterpolator:
+      //   CardStyleInterpolators.forFadeFromBottomAndroid,
+      })}
+        />
       
       <Tab.Screen 
         name={ROUTES.cleaner_jobs} 

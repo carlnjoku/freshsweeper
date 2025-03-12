@@ -101,8 +101,14 @@ const mapRef = useRef(null); // Reference to map
 // Retrieve the count for each room type
 const bedroomCount = room_type_and_size.find(room => room.type === "Bedroom")?.number || 0;
 const bathroomCount = room_type_and_size.find(room => room.type === "Bathroom")?.number || 0;
+const kitchen = room_type_and_size.find(room => room.type === "Kitchen")?.number || 0;
 const livingroomCount = room_type_and_size.find(room => room.type === "Livingroom")?.number || 0;
 
+
+const bedroomSize = room_type_and_size.find(room => room.type === "Bedroom")?.size || 0;
+const bathroomSize = room_type_and_size.find(room => room.type === "Bathroom")?.size || 0;
+const kitchenSize = room_type_and_size.find(room => room.type === "Kitchen")?.size || 0;
+const livingroomSize = room_type_and_size.find(room => room.type === "Livingroom")?.size || 0;
 
 const cleaning_date = item.schedule.cleaning_date
 const cleaning_time = item.schedule.cleaning_time
@@ -241,6 +247,7 @@ const renderItem = ({ item }) => {
                   buttonSize={26}
                   radiusSise={13}
                   iconSize={16}
+                  roomSize={bedroomSize}
                   title= {bedroomCount}
                   type="Bedrooms"
                 /> 
@@ -249,14 +256,25 @@ const renderItem = ({ item }) => {
                   buttonSize={26}
                   radiusSise={13}
                   iconSize={16}
+                  roomSize={bathroomSize}
                   title= {bathroomCount}
                   type="Bathrooms"
                 /> 
+                <CircleIcon 
+                  iconName="silverware-fork-knife"
+                  buttonSize={26}
+                  radiusSise={13}
+                  iconSize={16}
+                  title= {kitchen}
+                  roomSize={kitchenSize}
+                  type="Kitchen"
+                />
                 <CircleIcon 
                   iconName="seat-legroom-extra"
                   buttonSize={26}
                   radiusSise={13}
                   iconSize={16}
+                  roomSize={livingroomSize}
                   title= {livingroomCount}
                   type="Livingroom"
                 /> 
@@ -358,11 +376,11 @@ const getDistance = (a) => {
 
 const handleModeChange = (mode) => {
   // alert("latitude", origin.latitude);
-  alert(mode)
+  
   setSelectedMode(mode);
   setDirections(allDirections[mode]);
   console.log("All directions..........................")
-  console.log(allDirections[mode])
+  // console.log(allDirections[mode])
 
   if (mapRef.current) {
       mapRef.current.fitToCoordinates(allDirections[mode], {
@@ -397,7 +415,7 @@ const handleModeChange = (mode) => {
 };
 
   return (
-    <SafeAreaView style={{ flex: 1}}>
+    <SafeAreaView style={{ flex: 1, backgroundColor:COLORS.primary}}>
   {/* Google Directions Component */}
   <GoogleDirections 
     // origin={{ latitude: !coordinates.latitude? currentUser.location.latitude, longitude: !coordinates.longitude?currentUser.location.longitude }}
@@ -541,7 +559,7 @@ const styles = StyleSheet.create({
   mainContent: {
     position: 'absolute',
     bottom: 0,
-    height: '65%',
+    height: '55%',
     width: '100%',
     backgroundColor: 'white',
     borderTopLeftRadius: 20,

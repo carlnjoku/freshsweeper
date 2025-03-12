@@ -30,7 +30,7 @@ const styles = StyleSheet.create({
         marginVertical:10
     },
     input_container_inner:{
-        backgroundColor:COLORS.backgroundColor,
+        backgroundColor:COLORS.white,
         flexDirection:'row',
         justifyContent:'space-between'
     }

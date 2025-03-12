@@ -9,7 +9,7 @@ const JobCard = ({ job }) => {
     const [images, setImages] = useState([]);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-    console.log(job.after_task_photos)
+    // console.log(job.after_task_photos)
 
     // Function to open the Before Photos modal
     const openBeforeModal = (startIndex) => {

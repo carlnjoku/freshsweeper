@@ -13,7 +13,7 @@ const TimeConversion = ({minutes}) => {
 
   return (
     <View>
-      <Text style={{fontSize:11}}>Est. Time {`${hours} hr  ${remainingMinutes} min.`}</Text>
+      <Text style={{fontSize:14}}>Est. Time {`${hours} hr  ${remainingMinutes} min.`}</Text>
     </View>
   );
 };

@@ -16,6 +16,7 @@ import Profile from '../screens/cleaner/Profile';
 import JobDetails from '../screens/cleaner/JobDetails';
 import ApplicationDetails from '../screens/cleaner/ApplicationDetails';
 import Payment from '../screens/cleaner/Payment';
+import PaymentHistory from '../screens/cleaner/Payments/PaymentHistory';
 
 
 
@@ -49,7 +50,7 @@ const DrawerNavigator = () => {
         }}
       />
       
-      <Drawer.Screen 
+      {/* <Drawer.Screen 
         name={ROUTES.cleaner_personal_profile_drawer} component={Dashboard}
         options={{
             title:"More",
@@ -68,12 +69,12 @@ const DrawerNavigator = () => {
                 <Ionicons name="person-outline" size={20} color={color} />
             )
         }} 
-      />
+      /> */}
       <Drawer.Screen 
         name={ROUTES.cleaner_profile} 
         component={Profile} 
         options={{
-            title:"Edit Profile",
+            title:"My Profile",
             headerTintColor:COLORS.white,
             headerBackTitleVisible:true,
             headerStyle:{
@@ -91,29 +92,7 @@ const DrawerNavigator = () => {
         }}
       />
       
-      <Drawer.Screen 
-        name={ROUTES.cleaner_support} 
-        component={Support} 
-        options={{
-            title:"Support",
-            headerTintColor:COLORS.white,
-            headerBackTitleVisible:true,
-            headerStyle:{
-                backgroundColor:COLORS.primary
-            },
-            
-            headerTitleStyle: {
-              fontWeight: '600',
-              fontSize:16,
-              color:COLORS.white,
-            },
-            drawerIcon:({focus, color, size}) => (
-                <MaterialCommunityIcons name="storefront-outline" size={20} color={color} />
-            )
-        }}
-      />
-      
-      <Drawer.Screen 
+      {/* <Drawer.Screen 
         name={ROUTES.cleaner_application} component={Applications} 
         options={{
             title:"Applications",
@@ -132,23 +111,29 @@ const DrawerNavigator = () => {
                 <Ionicons name="list-sharp" size={20} color={color} />
             )
         }}
-      />
-
+      /> */}
       <Drawer.Screen 
-          name={ROUTES.cleaner_job_application_details}
-          component={ApplicationDetails} 
-          
-          options={({route}) => ({
-            headerShown:true,
-            title: "Job Application Details",
+        name={ROUTES.cleaner_payment_history} 
+        component={PaymentHistory} 
+        options={{
+            title:"Payment History",
             headerTintColor:COLORS.white,
-            headerBackTitleVisible:false,
+            headerBackTitleVisible:true,
             headerStyle:{
                 backgroundColor:COLORS.primary
             },
             
-          })}
-        />
+            headerTitleStyle: {
+              fontWeight: '600',
+              fontSize:16,
+              color:COLORS.white,
+            },
+            drawerIcon:({focus, color, size}) => (
+                <MaterialCommunityIcons name="credit-card-outline" size={20} color={color} />
+            )
+        }}
+      />
+      
       {/* <Drawer.Screen 
         name={ROUTES.my_rating_reviews} 
         component={MyReviews} 
@@ -201,6 +186,29 @@ const DrawerNavigator = () => {
         }}
         
       />
+
+      <Drawer.Screen 
+        name={ROUTES.cleaner_support} 
+        component={Support} 
+        options={{
+            title:"Support",
+            headerTintColor:COLORS.white,
+            headerBackTitleVisible:true,
+            headerStyle:{
+                backgroundColor:COLORS.primary
+            },
+            
+            headerTitleStyle: {
+              fontWeight: '600',
+              fontSize:16,
+              color:COLORS.white,
+            },
+            drawerIcon:({focus, color, size}) => (
+                <MaterialCommunityIcons name="storefront-outline" size={20} color={color} />
+            )
+        }}
+      />
+      
       
       
     </Drawer.Navigator>

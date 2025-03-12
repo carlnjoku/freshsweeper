@@ -8,10 +8,11 @@ import ROUTES from '../../constants/routes';
 import { useNavigation } from '@react-navigation/native';
 
 import ButtonPrimary from '../ButtonPrimary';
+import { Badge } from 'react-native-paper';
 
-const CleaninRequestItemtItem = ({item }) => {
+const CleaninRequestItemtItem = ({item, status, currency }) => {
 
-  // alert(item.hostIfo.expo_push_token)
+
   console.log("Iteeeeeeeeeeeeeeeeeeeeeeeem")
   // console.log(item.item?.sender_expo_push_token)
   // console.log(item.item?.schedule.schedule)
@@ -21,16 +22,11 @@ const CleaninRequestItemtItem = ({item }) => {
 
   //Rename item to "selected_schedule"
   const schedule = item
+  console.log("Scheduleee", schedule)
   const selected_schedule = schedule.item.schedule
 
-  console.log("Selected_schedule.....................")
-  // console.log(selected_schedule.schedule)
-  console.log("Selected_schedule.....................")
-  // const host_expo_push_token = hostInfo.item.item
-  // const host_expo_push_token = 
-  // {"address": "171 Scheerer Avenue, Newark, NJ, USA", "apartment_latitude": 40.7119653, "apartment_longitude": -74.2087581, "apartment_name": "Bedrock Apartment ", "bathroom": "1", "bedroom": "3", "cleaning_date": "Mon Apr 29 2024", "cleaning_time": "11:17:00 AM", "extra": [{"icon": "rug", "label": "Carpet", "price": 20, "value": "Carpet Cleaning"}, {"icon": "window-closed-variant", "label": "Window", "price": 20, "value": "Window Washing"}, {"icon": "locker-multiple", "label": "Inside Cabinets", "price": 20, "value": "Inside Cabinets"}, {"icon": "dog-side", "label": "Pet Cleanup", "price": 20, "value": "Pet Cleanup"}], "regular_cleaning": [{"label": "Sweeping and Mopping", "value": "Sweeping and Mopping"}, {"label": "Vacuuming", "value": "Vacuuming"}, {"label": "Kitchen", "value": "Kitchen"}, {"label": "Bathroom", "value": "Bathroom "}, {"label": "Dishwashing", "value": "Dishwashing"}, {"label": "Trash Removal", "value": "Trash Removal"}, {"label": "Room Cleaning", "value": "Room Cleaning"}, {"label": "Livingroom", "value": "Livingroom"}, {"label": "Window Cleaning", "value": "Window Cleaning"}, {"label": "Air Freshening", "value": "Air Freshening"}, {"label": "Appliance Cleaning", "value": "Appliance Cleaning"}, {"label": "Final Inspection", "value": "Final Inspection"}, {"label": "Dusting", "value": "Dusting"}], "totalPrice": 80}
   const navigation = useNavigation();
-
+  // console.log("my request", JSON.stringify(item.item.schedule, null, 2))
   return (
    
 
@@ -143,28 +139,54 @@ const CleaninRequestItemtItem = ({item }) => {
         >
               <View style={styles.requestCard}>
                
-                <View style={{flex: 0.7}}>
-                  <Text bold style={styles.apart_name}>{item.item.schedule.hostInfo?.firstname} {item.item.schedule.hostInfo?.lastname}</Text>
-                  <Text style={styles.apart_name}>{item.item.schedule.schedule.apartment_name}</Text>
-                  <Text style={styles.apartment}>{item.item.schedule.schedule?.address} </Text>
+              <View style={{ flex: 0.7, alignItems: 'flex-start' }}>
+                <Text bold style={styles.apart_name}>
+                  {item.item.schedule.hostInfo?.firstname} {item.item.schedule.hostInfo?.lastname}
+                </Text>
+                <Text style={styles.apart_name}>
+                  {item.item.schedule.schedule.apartment_name}
+                </Text>
+                <Text style={styles.apartment}>
+                  {item.item.schedule.schedule?.address}
+                </Text>
+                <View style={{flexDirection:'row', alignItems:'center'}}>
+                    
 
-                  
-                   <ButtonPrimary 
-                      onPress={() => navigation.navigate(ROUTES.cleaner_schedule_review, {
-                        item: {selected_schedule},
-                        // item: item.item.schedule,
-                        host_expo_push_token : item.item?.sender_expo_push_token,
-                        // chatroomId: item.item.chatroomId
-                        })}
-                        title="View Details"
-                   />
-                   
+                    {status === "pending_payment" && (
+                      <Badge
+                        style={[styles.statusApproveBadgeP, { alignSelf: 'flex-start' }]} // Add alignSelf
+                      >
+                        Pending Confirmation
+                      </Badge>
+                    )}
                 </View>
+              </View>
 
+                
                 <View style={{flex: 0.3, alignItems: 'flex-end'}}>
                   <Text style={styles.date}>{moment(item.item.schedule.schedule?.cleaning_date).format('ddd MMM D')}</Text>
                   <Text style={styles.time}>{moment(item.item.schedule.schedule?.cleaning_time, 'h:mm:ss A').format('h:mm A')}</Text>
                   {/* <Ionicons name="chevron-forward-outline" color={COLORS.secondary} size={16}></Ionicons> */}
+                  <Text style={styles.price}>
+                    {currency}{item.item.schedule.schedule.total_cleaning_fee}
+                  </Text>
+                  
+
+                  {item.item.status ==="pending_acceptance" &&
+                  <Badge 
+                    style={styles.statusApproveBadge}
+                    onPress={() => navigation.navigate(ROUTES.cleaner_schedule_review, {
+                      item: {selected_schedule},
+                      requestId: item.item.requestId,
+                      scheduleId:item.item.schedule._id,
+                      hostId:item.item.schedule.hostInfo._id
+                    })}
+                  >
+                      Accept Request
+                    </Badge>
+                  }
+
+                  
                 </View>
                 
                 {/* <Text style={styles.requestDate}>{request.dateRequested}</Text>
@@ -190,6 +212,20 @@ const styles = StyleSheet.create({
     flex: 0.05,
     height:'100%',
     alignItems: 'flex-start'
+  },
+  statusApproveBadge: {
+    backgroundColor: COLORS.deepBlue,
+    color: '#fff',
+    paddingHorizontal:7,
+    marginTop:20
+  },
+  statusApproveBadgeP: {
+    backgroundColor: COLORS.light_gray,
+    color: '#fff',
+    paddingHorizontal:7,
+    marginTop:10,
+    justifyContent:'flex-start',
+    alignItems:'flex-start'
   },
   line: {
     borderLeftWidth: 0.7, // Adjust the thickness of the line as needed
@@ -274,6 +310,12 @@ const styles = StyleSheet.create({
     alignItems:'flex-start'
   },
   title: { fontSize: 18, fontWeight: 'bold', marginBottom: 10 },
+  price:{
+    fontSize:18,
+    color:COLORS.deepBlue,
+    fontWeight:'700',
+    marginTop:25
+  }
 });
 
 export default CleaninRequestItemtItem;

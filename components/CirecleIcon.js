@@ -4,7 +4,7 @@ import { TouchableOpacity, StyleSheet, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import COLORS from '../constants/colors';
 
-const CircleIcon = ({ iconName, onPress, buttonSize, type, radiusSise, iconSize, title, title_color }) => {
+const CircleIcon = ({ iconName, onPress, buttonSize,roomSize, type, radiusSise, iconSize, title, title_color }) => {
 
 
   const styles = StyleSheet.create({
@@ -31,6 +31,10 @@ const CircleIcon = ({ iconName, onPress, buttonSize, type, radiusSise, iconSize,
     marginRight:10,
     fontSize:13, 
     color:COLORS.gray
+    },
+    roomSize:{
+      fontSize:11,
+      color:COLORS.light_gray
     }
 });
   return (
@@ -39,6 +43,7 @@ const CircleIcon = ({ iconName, onPress, buttonSize, type, radiusSise, iconSize,
             <MaterialCommunityIcons name={iconName} size={iconSize} color={COLORS.gray} />
         </TouchableOpacity>
         <Text style={styles.title_color}>{title} {type}</Text>
+        <Text style={styles.roomSize}>{roomSize} ft²</Text>
     </View>
   );
 };

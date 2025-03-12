@@ -7,6 +7,9 @@ import { MaterialCommunityIcons, FontAwesome, AntDesign } from '@expo/vector-ico
 import ChipWithBackground from '../ChipWithBackground';
 import { useNavigation } from '@react-navigation/native';
 import ROUTES from '../../constants/routes';
+import moment from 'moment';
+import CircleIconNoLabel from '../CirecleIconNoLabel';
+
 export default function OngoingWorkListItem({item}) {
 
   const navigation = useNavigation();
@@ -17,14 +20,6 @@ export default function OngoingWorkListItem({item}) {
     <View>
       
           <TouchableOpacity 
-            // onPress={() => navigation.navigate(ROUTES.cleaner_profile_info, {
-            //   item:item,
-            //   selected_schedule:item,
-            //   selected_scheduleId:item._id,
-            //   hostId:currentUserId,
-            //   hostFname: currentUser.firstname,
-            //   hostLname: currentUser.lastname
-            // })}
             onPress={() =>navigation.navigate(ROUTES.host_task_progress,{
               scheduleId:item._id,
               schedule:item
@@ -32,21 +27,22 @@ export default function OngoingWorkListItem({item}) {
           >
               <View style={{flexDirection: 'row', paddingVertical:5}}>
                 <View style={{flex: 0.1}}>
-                {item.assigned_to?.map((row, i) => (
-                          row ? 
-                            <Image 
-                                source={{uri:row.avatar}}
-                                style={{height:40, width:40, borderRadius:20, marginLeft: -10, borderWidth:1, borderColor:COLORS.light_gray_1, marginBottom:10}} 
+                {item.assignedTo ? 
+                          
+                            <Avatar.Image 
+                                source={{uri:item.assignedTo.avatar}}
+                                size={36}
+                                style={{height:36, width:36, borderRadius:18, marginLeft: -1, borderWidth:1, borderColor:COLORS.light_gray_1, backgroundColor:COLORS.light_gray, marginBottom:10}} 
                             />
                             :
       
                             <Avatar.Image
-                              size={50}
+                              size={40}
                               source={require('../../assets/default_avatar.png')}
                               style={{ backgroundColor: COLORS.gray }}
                             />
                         
-                      ))}
+                      }
                 </View>
                 <View style={{flex: 0.8}}>
                     <View style={{flexDirection:'row', justifyContent:'space-between'}}>
@@ -62,8 +58,8 @@ export default function OngoingWorkListItem({item}) {
                     <View style={{flexDirection:'column', justifyContent:'space-between', alignItems:'flex-start', marginTop:2}}> 
                       
                       <View style={styles.schedule}>
-                        <Text style={{fontSize:12, marginRight:10}}>{item.schedule.cleaning_date.slice(0, -5)}</Text>
-                        <Text style={{fontSize:12, color:COLORS.gray}}>{item.schedule.cleaning_time}</Text>
+                        <Text style={{fontSize:12, marginRight:10}}>{moment(item.schedule.cleaning_date, 'ddd MMM DD YYYY').format('ddd MMM DD')}</Text>
+                        <Text style={{fontSize:12, color:COLORS.gray}}>{moment(item.schedule.cleaning_time, 'h:mm:ss A').format('h:mm A')}</Text>
                       </View>
                       
                     </View>
@@ -78,9 +74,24 @@ export default function OngoingWorkListItem({item}) {
                     </View>
                     
                 </View>
+
+                
                     
                 </View>
-            
+                <View style={{flex: 0.1}}>
+                  <View style={styles.rightContainer}>
+                    <CircleIconNoLabel
+                      iconName="chevron-right"
+                      buttonSize={30}
+                      radiusSise={15}
+                      iconSize={16}
+                      onPress={() =>navigation.navigate(ROUTES.host_task_progress,{
+                        scheduleId:item._id,
+                        schedule:item
+                      })}
+                    />
+                  </View>
+                </View>
             </View>
           </TouchableOpacity>
               
@@ -178,7 +189,14 @@ const styles = StyleSheet.create({
       justifyContent:'space-evenly',
       marginTop:5,
       marginBottom: 5,
-    }
+    },
+    rightContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'flex-end',
+      paddingLeft: 10,
+      marginRight:0
+    },
   });
   
  

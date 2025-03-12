@@ -1,14 +1,16 @@
 import React from 'react';
 import { View, Text, FlatList, StyleSheet } from 'react-native';
 import JobCard from './JobCard';
-
+import { EmptyListingNoButton } from '../../../components/EmptyListingNoButton';
+import CardNoPrimary from '../../../components/CardNoPrimary';
 const Portfolio = ({ portfolio, portfolio2 }) => {
 
     console.log("pooooooooorto")
-    console.log(portfolio2)
+    // console.log(portfolio2)
     console.log("pooooooooorto")
   return (
     <View style={styles.container}>
+    <CardNoPrimary>
       <Text style={styles.header}>Cleaner Portfolio</Text>
       <FlatList
         // data={portfolio.jobs}
@@ -17,10 +19,16 @@ const Portfolio = ({ portfolio, portfolio2 }) => {
         renderItem={({ item }) => (
           <JobCard job={item} />
         )}
+        ListEmptyComponent={<EmptyListingNoButton 
+          message="The cleaner has not uploaded their profile."
+          iconName="briefcase"
+          size={24} 
+        />}
         nestedScrollEnabled={true}
         contentContainerStyle={styles.listContent} // Optional: styling for list content
       
       />
+      </CardNoPrimary>
     </View>
   );
 };
@@ -28,13 +36,13 @@ const Portfolio = ({ portfolio, portfolio2 }) => {
 const styles = StyleSheet.create({
   container: {
     // flex: 1,
-    padding: 10,
+    // padding: 10,
     
   },
   header: {
     fontSize:16,
     fontWeight:'bold',
-    marginTop:10,
+    marginTop:0,
     marginBottom:10
   },
   listContent:{

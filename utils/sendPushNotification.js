@@ -138,14 +138,20 @@ export const sendExpoPushNotification = async(expoPushToken, title, body, data =
 //   }
 // };
 
-export const sendPushNotifications = async (tokens, title, body) => {
+export const sendPushNotifications = async (tokens, title, body, { screen, params }) => {
   try {
     const messages = tokens.map((tokenData) => ({
       to: tokenData.token,
       sound: 'default',
       title: title,
       body: body,
+      data: {
+        screen: screen,  // Navigate to this screen when the notification is tapped
+        params: params,  // Additional parameters to pass for navigation
+      },
     }));
+
+   
 
     // Send notifications to Expo push service
     const response = await fetch(push_url, {

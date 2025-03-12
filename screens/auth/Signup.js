@@ -199,7 +199,7 @@ export default function Signup({navigation, route}) {
     
     try {
         const usersCollection = collection(db, "users"); // Replace "users" with your collection name
-        alert("You")
+     
         const newUserRef = await addDoc(usersCollection, userData);
         console.log("New user added with ID: ", newUserRef.id);
     } catch (error) {

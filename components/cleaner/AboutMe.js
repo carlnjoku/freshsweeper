@@ -97,7 +97,7 @@ export default function AboutMe({aboutme, update_aboutme, userId, close_modal}) 
         }
         await userService.updateCleanerAbout(data)
         .then(response => {
-            alert("suuu")
+            // alert("suuu")
             const status = response.status
             const res = response.data
             console.log(status)

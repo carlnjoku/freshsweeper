@@ -1,5 +1,5 @@
-import React, { useContext, useEffect, useRef,useState } from 'react';
-import { SafeAreaView,StyleSheet, StatusBar, Button, Linking,  Animated, PanResponder, FlatList, ScrollView, Modal, Image, View, useWindowDimensions, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React, { useContext, useEffect,useState } from 'react';
+import { SafeAreaView,StyleSheet, StatusBar, Linking, FlatList, ScrollView, Modal, Image, View, useWindowDimensions, TouchableOpacity, ActivityIndicator } from 'react-native';
 import ChipIcon from '../../components/ChipIcon';
 import GoogleMapComponent from '../../components/GoogleMap';
 import GoogleMapWithRoute from '../../components/GoogleMapWithRoute';
@@ -11,560 +11,350 @@ import calculateETA from '../../utils/calculateETA';
 import moment from 'moment';
 import CardColored from '../../components/CardColored';
 import Card from '../../components/Card';
+import CardNoPrimary from '../../components/CardNoPrimary';
 import CircleIconButton1 from '../../components/CircleButton1';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import ClockInConfirmation from './ClockInConfirmation';
+import { automatedChatMessage } from '../../utils/automatedChatMessage';
 import CircleIcon from '../../components/CirecleIcon';
 import { AuthContext } from '../../context/AuthContext';
-import ROUTES from '../../constants/routes';
-import { useNavigation } from '@react-navigation/native';
 import GoogleDirections from '../../components/GoogleDirections';
-import CardNoPrimary from '../../components/CardNoPrimary';
-import ModeSelector from './ModeSelector';
-import * as Location from 'expo-location';  // Import the location module from Expo
+import ROUTES from '../../constants/routes';
+import { acceptCleaningRequestPushNotification, sendPushNotifications } from '../../utils/sendPushNotification';
+import calculateDistance from '../../utils/calculateDistance';
+import { useNavigation } from '@react-navigation/native';
+import { Avatar, Chip } from 'react-native-paper';
 
 
-export default function ScheduleDetailsView({route}) {
-
-const navigation = useNavigation();
-
-const {item} = route.params
-const {currentUserId, currentUser} = useContext(AuthContext)
-const pan = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
-
-console.log("params2")
-console.log(item)
-console.log("params2")
-const distanceInKm = 10; // Example distance in kilometers
-const averageSpeedKph = 50; // Example average speed in kilometers per hour
-const eta = calculateETA(distanceInKm, averageSpeedKph);
-
-console.log("eta--------------")
-console.log(eta.toLocaleString())
-console.log(new Date().toLocaleString())
-const date1 = moment(eta.toLocaleString(), "M/DD/YYYY, h:mm:ss A");
-const date2 = moment(new Date().toLocaleString(), "M/DD/YYYY, h:mm:ss A");
-const differenceInMinutes = date1.diff(date2, 'minutes');
-console.log(differenceInMinutes)
-console.log("eta--------------")
-
-const dateTime = moment(eta.toLocaleString(), 'M/D/YYYY, h:mm:ss A');
-
-const time_to_destination = dateTime.minutes()
-
-console.log("ETA1:", time_to_destination+ " min"); // Output ETA in local date/time format
-const date = moment("Sun Mar 24 2024").format('ddd MMM D')
-const time = moment("9:51:00 AM").format('h:mm A')
-console.log(date)
-console.log(time)
-
-
-const { width } = useWindowDimensions();
-const numColumns2 = 2
-const columnWidth2 = width / numColumns2 - 10; // Adjusted width to accommodate margins
-
-const[isOpenConfirmation, setIsOpenConfirmatiom] = useState("")
-const[isOpenModal, setOpenModal] = useState(false)
-const[regular_cleaning, setRegularCleaning] = useState(item.regular_cleaning)
-const[extra_cleaning, setExtarCleaning] = useState(item.extra)
-const[apartment_name, setApartmentName] = useState(item.apartment_name)
-const[address, setAddress] = useState(item.address)
-const[bedroom, setBedroom] = useState(item.bedroom)
-const[bathroom, setBathroom] = useState(item.bathroom)
-const[room_type_and_size, setRoomTypeSize] = useState(item.selected_apt_room_type_and_size)
-const[mode_distance, setModeDistance] = useState({})
-const[selectedMode, setSelectedMode] = useState('driving'); // State for selected mode
-const[mapRegion, setMapRegion] = useState(null);
-const[etaDistance, setEtaDistance] = useState({});
-const[directions, setDirections] = useState(null); // State for directions to display on the map
-const [coordinates, setCoordinates] = useState(null);
-const [errorMsg, setErrorMsg] = useState(null);
-
-const mapRef = useRef(null); // Reference to map
-// const allEta = {
-//     driving: '10 mins',
-//     transit: '20 mins',
-//     walking: '30 mins',
-// };
-// const allDistances = {
-//     driving: 5,
-//     transit: 10,
-//     walking: 2,
-// };
-// const allDirections = {
-//     driving: [{ latitude: 10, longitude: 20 }], // Replace with actual coordinates
-//     transit: [{ latitude: 15, longitude: 25 }],
-//     walking: [{ latitude: 30, longitude: 40 }],
-// };
-// const origin = { latitude: 12.34, longitude: 56.78 };
-
-
-// Retrieve the count for each room type
-const bedroomCount = room_type_and_size.find(room => room.type === "Bedroom")?.number || 0;
-const bathroomCount = room_type_and_size.find(room => room.type === "Bathroom")?.number || 0;
-const livingroomCount = room_type_and_size.find(room => room.type === "Livingroom")?.number || 0;
-
-
-const cleaning_date = item.cleaning_date
-const cleaning_time = item.cleaning_time
-
-
-
-useEffect(() => {
-  (async () => {
-    let { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== 'granted') {
-      setErrorMsg('Permission to access location was denied');
-      return;
-    }
-
-    let location = await Location.getCurrentPositionAsync({});
-    
-    setCoordinates({
-      latitude: location.coords.latitude,
-      longitude: location.coords.longitude,
-    });
-  })();
   
-}, []);
-
-const [lastPosition, setLastPosition] = useState(0);
-
-const initialPosition = 0; // Original position at the top
-const dragLimit = 300; // Maximum distance allowed for dragging down
-
-const panResponder = PanResponder.create({
-  onMoveShouldSetPanResponder: () => true,
-  onPanResponderMove: (evt, gestureState) => {
-    // Allow dragging both up and down but within the drag limit
-    const newTranslateY = gestureState.dy + lastPosition;
-    if (newTranslateY <= dragLimit && newTranslateY >= initialPosition) {
-      pan.setValue({ x: 0, y: newTranslateY });
-    }
-  },
-  onPanResponderRelease: (evt, gestureState) => {
-    const newPosition = gestureState.dy + lastPosition;
-
-    if (newPosition < dragLimit / 2) {
-      // Snap back up if dragged less than halfway down
-      Animated.spring(pan, {
-        toValue: { x: 0, y: initialPosition },
-        useNativeDriver: true,
-      }).start(() => setLastPosition(initialPosition));
-    } else {
-      // Else, stay at the dragged position
-      setLastPosition(newPosition);
-      pan.flattenOffset();
-    }
-  },
-});
-
-useEffect(()=> {
-  getDistance()
-},[])
-
-const taskItem = ( {item, index} ) => (
-  <View style={[styles.tasks, { width: columnWidth2 }]}>
-      <Text style={{fontSize:13}}>{item.label} </Text>
-  </View>
-  
-)
-
-const onClose = () => {
-  setOpenModal(false)
-}
-const taskItem2 = ( {item,index} ) => (
-  <View style={[styles.tasks, { width: columnWidth2 }]}>
-      <Text style={{fontSize:14}}><MaterialCommunityIcons name={item.icon} size={16} /> {item.label} </Text>
-  </View>
-  
-)
-
-const openModal = () => {
-  setIsOpenConfirmatiom(true)
-}
-
-const handleOpenConfirmClockIn = () => {
-  setOpenModal(true)
-  // navigation.navigate(ROUTES.host_new_booking);
-}
-const handleCloseConfirmClockIn = () => {
-  setOpenModal(false)
-}
-
-const handleClockIn = () => {
-  handleOpenConfirmClockIn()
-}
-
-const gotToTaskScreen = () => {
-  navigation.navigate(ROUTES.cleaner_attach_task_photos,{scheduleId:item._id})
-}
 
 
-const handleOpenDirections = () => {
-  const url = `https://www.google.com/maps/dir/?api=1&origin=${currentUser.location.latitude},${currentUser.location.longitude }&destination=${item.apartment_latitude},${item.apartment_longitude}&travelmode=driving`;
+export default function SchedulePreview({route}) {
 
-  Linking.openURL(url).catch((err) =>
-    console.error("Failed to open Google Maps", err)
-  );
-};
+    const navigation = useNavigation()
+    const {item, requestId, scheduleId, hostId} = route.params
+    const {geolocationData, currentUserId, currentUser} = useContext(AuthContext)
 
-const renderItem = ({ item }) => {
-  switch (item.type) {
+
+
+    const distanceInKm = 10; // Example distance in kilometers
+    const averageSpeedKph = 50; // Example average speed in kilometers per hour
+    const eta = calculateETA(distanceInKm, averageSpeedKph);
+
+    const dateTime = moment(eta.toLocaleString(), 'M/D/YYYY, h:mm:ss A');
+
+    const time_to_destination = dateTime.minutes()
+
+    console.log("ETA1:", time_to_destination+ " min"); // Output ETA in local date/time format
+   
+
+
+    const { width } = useWindowDimensions();
+    const numColumns2 = 2
+    const columnWidth2 = width / numColumns2 - 10; // Adjusted width to accommodate margins
+
+    const[isOpenConfirmation, setIsOpenConfirmatiom] = useState("")
+    const[isOpenModal, setOpenModal] = useState(false)
+
+    const[schedule, setSchedule] = useState({})
+
+    const[cleaning_date, setCleaningDate] = useState("")
+    const[cleaning_time, setCleaningTime] = useState("")
+    const[cleaning_end_time, setCleaningEndTime] = useState("")
+    const[room_type_and_size, setRoomTypeSize] = useState([])
+    const[host_tokens, setHostPushToken] = useState([])
+    const[apartment_latitude, setApartmentLatitude] = useState("")
+    const[apartment_longitude, setApartmentLongitude] = useState("")
+    const[address, setAddress] = useState("")
+    const[apartment_name, setApartmentName] = useState("")
+    const[total_cleaning_fee, setTotalCleaningFee] = useState("")
+    const[regular_cleaning, setRegularCleaning] = useState([])
+    const[extra, setExtra] = useState([])
+    const[distance, setDistance] = useState([])
+    const[status, setStatus] = useState([])
     
 
-      case 'circleicons' :
-      return (
+    
+    
+
+    // Retrieve the count for each room type
+    const bedroomCount = room_type_and_size.find(room => room.type === "Bedroom")?.number || 0;
+    const bathroomCount = room_type_and_size.find(room => room.type === "Bathroom")?.number || 0;
+    const kitchen = room_type_and_size.find(room => room.type === "Kitchen")?.number || 0;
+    const livingroomCount = room_type_and_size.find(room => room.type === "Livingroom")?.number || 0;
+
+    const bedroomSize = room_type_and_size.find(room => room.type === "Bedroom")?.size || 0;
+    const bathroomSize = room_type_and_size.find(room => room.type === "Bathroom")?.size || 0;
+    const kitchenSize = room_type_and_size.find(room => room.type === "Kitchen")?.size || 0;
+    const livingroomSize = room_type_and_size.find(room => room.type === "Livingroom")?.size || 0;
+
+
+    useEffect(()=> {
+      fetchSchedule()
+    },[])
+
+    const fetchSchedule = async() => {
+      try {
+          
+        await userService.getScheduleById(scheduleId)
+        .then(response=> {
+          const res = response.data
+      
+          setSchedule(res)
+          setRoomTypeSize(res.schedule.selected_apt_room_type_and_size)
+          setCleaningDate(res.schedule.cleaning_date)
+          setCleaningTime(res.schedule.cleaning_time)
+          setCleaningEndTime(res.schedule.cleaning_end_time)
+          const lat1 = geolocationData.latitude
+          const lon1 = geolocationData.longitude
+
+          const lat2 = res.schedule.apartment_latitude
+          const lon2 = res.schedule.apartment_longitude
+          const dist = calculateDistance(lat1, lon1, lat2, lon2)
+          setDistance(dist)
+          setApartmentLatitude(res.schedule.apartment_latitude)
+          setApartmentLongitude(res.schedule.apartment_longitude)
+          setAddress(res.schedule.address)
+          setApartmentName(res.schedule.apartment_name)
+          setTotalCleaningFee(res.schedule.total_cleaning_fee)
+          setRegularCleaning(res.schedule.regular_cleaning)
+          setExtra(res.schedule.extra)
+          setStatus(res.status)
+          
+        })
+        
+       
+      } catch(e) {
+        // error reading value
+        console.log(e)
+      }
+    }
+
+    const handleOpenDirections = () => {
+      const url = `https://www.google.com/maps/dir/?api=1&origin=${currentUser.location.latitude},${currentUser.location.longitude }&destination=${apartment_latitude},${apartment_longitude}&travelmode=driving`;
+    
+      Linking.openURL(url).catch((err) =>
+        console.error("Failed to open Google Maps", err)
+      );
+    };
+
+    
+
+    const gotToTaskScreen = () => {
+        navigation.navigate(ROUTES.cleaner_attach_task_photos,{scheduleId:scheduleId})
+      }
+
+    const handleClockIn = () => {
+      navigation.navigate(ROUTES.cleaner_clock_in, {
+        scheduleId:scheduleId,
+        schedule:schedule
+      })
+    }
+
+  return (
+    <SafeAreaView
+      style={{
+        flex:1,
+        backgroundColor:COLORS.white,
+      }}
+    >
+        <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
+       
+        <GoogleMapComponent 
+          latitude={apartment_latitude}
+          longitude={apartment_longitude}
+        />
+
+        <View style={{height:"55%"}}>  
+        <View style={styles.address_direction}>
+          <Image source={require('../../assets/google_direction.png')} style={styles.google_direction} />
+          <TouchableOpacity 
+            onPress={handleOpenDirections}
+          >
+            <Text bold style={{color:COLORS.gray, fontSize:14}}> Direction</Text>
+          </TouchableOpacity>
+        </View>
+        <ScrollView>
+        
         <View style={styles.container}>
-          <Card>
-          <View style={styles.centerContent}>
-            {/* <AntDesign name="home" size={60} color={COLORS.gray}/>  */}
-            <Text bold style={styles.headerText}>{apartment_name}</Text>
-            <Text style={{color:COLORS.gray, marginBottom:10, marginLeft:-5}}> <MaterialCommunityIcons name="map-marker" size={16} />{address}</Text>
-          </View>
+          
+          <CardNoPrimary>
+            <View style={styles.centerContent}>
+              <Text bold style={styles.headerText}>{apartment_name}</Text>
+              <Text style={{color:COLORS.gray, marginBottom:5, marginLeft:-5}}> <MaterialCommunityIcons name="map-marker" size={16} />{address}</Text>
+              <Text style={{fontSize:13, color:COLORS.light_gray, marginBottom:10,}}>{distance || 0} Miles away</Text>
+            </View>
 
-            {/* <Text bold style={styles.title}>{apartment_name}</Text>
-            <Text style={{color:COLORS.gray, marginBottom:10, marginLeft:-5}}> <MaterialCommunityIcons name="map-marker" size={16} />{address}</Text>
-             */}
-              <View>
-                <Text>Current Coordinates:</Text>
-                {errorMsg ? (
-                  <Text>{errorMsg}</Text>
-                ) : coordinates ? (
-                  <Text>Latitude: {coordinates.latitude}, Longitude: {coordinates.longitude}</Text>
-                ) : (
-                  <Text>Fetching coordinates...</Text>
-                )}
-              </View>
-            <View style={{flexDirection:'row', justifyContent:'space-between', alignItems:'center', marginTop:5}}>
+            <View style={{flexDirection:'row', justifyContent:'space-between', alignItems:'center', marginTop:0}}>
                 <CircleIcon 
-                  iconName="bed-empty"
+                    iconName="bed-empty"
+                    buttonSize={26}
+                    radiusSise={13}
+                    iconSize={16}
+                    title= {bedroomCount}
+                    roomSize={bedroomSize}
+                    type="Bedrooms"
+                /> 
+                <CircleIcon 
+                    iconName="shower-head"
+                    buttonSize={26}
+                    radiusSise={13}
+                    iconSize={16}
+                    title= {bathroomCount}
+                    roomSize={bathroomSize}
+                    type="Bathrooms"
+                /> 
+                <CircleIcon 
+                  iconName="silverware-fork-knife"
                   buttonSize={26}
                   radiusSise={13}
                   iconSize={16}
-                  title= {bedroomCount}
-                  type="Bedrooms"
-                /> 
-                <CircleIcon 
-                  iconName="shower-head"
-                  buttonSize={26}
-                  radiusSise={13}
-                  iconSize={16}
-                  title= {bathroomCount}
-                  type="Bathrooms"
-                /> 
+                  title= {kitchen}
+                  roomSize={kitchenSize}
+                  type="Kitchen"
+                />
                 <CircleIcon 
                   iconName="seat-legroom-extra"
                   buttonSize={26}
                   radiusSise={13}
                   iconSize={16}
                   title= {livingroomCount}
+                  roomSize={livingroomSize}
                   type="Livingroom"
                 /> 
               </View>
+              <Text>More Details(modal to show penalties)</Text>
+          </CardNoPrimary>
           
-           
-            
+
+          <Text bold style={{fontSize:16, marginBottom:10, marginHorizontal:5}}>Schedule</Text>
+          <CardNoPrimary>
+              <View style={{flexDirection:'row', justifyContent:'space-around', alignItems:'center'}}>
+                <CircleIconButton1
+                  iconName="calendar"
+                  buttonSize={50}
+                  radiusSise={25}
+                  iconSize={26}
+                  title={moment(cleaning_date).format('ddd MMM D')}
+                  title_color={COLORS.gray}
+                />
+                <CircleIconButton1
+                 iconName="clock-outline"
+                 buttonSize={50}
+                 radiusSise={25}
+                 iconSize={26}
+                 title={`Starts ${moment(cleaning_time, 'h:mm:ss A').format('h:mm A')}`}
+                 title_color={COLORS.gray}
+                />
+                <CircleIconButton1
+                 iconName="timer-outline"
+                 buttonSize={50}
+                 radiusSise={25}
+                 iconSize={26}
+                 title={`Ends ${moment(cleaning_end_time, 'h:mm:ss A').format('h:mm A')}`}
+                 title_color={COLORS.gray}
+                />
+              </View>
+          </CardNoPrimary>
+
+        <View>
+        {regular_cleaning.length > 0 && 
+          <Card>
+            <Text bold style={{fontSize:16, marginBottom:10, marginHorizontal:5}}>Regular Cleaning</Text>
+            <View style={styles.chip_container}>
+              {regular_cleaning.map((item, index) => (
+                <Chip 
+                  key={index} 
+                  mode="outlined" 
+                  style={styles.chip}
+                  textStyle={styles.chipText}
+                  >
+                  <Text style={{fontSize:12}}>{item.label}</Text>
+                </Chip>
+              ))}
+            </View>
           </Card>
+        }
+          {extra.length > 0 && 
 
-        <Card>
-            <View style={{flexDirection:'row', justifyContent:'space-around', alignItems:'center'}}>
-              <CircleIconButton1
-                iconName="calendar"
-                buttonSize={50}
-                radiusSise={25}
-                iconSize={26}
-                title={moment(cleaning_date).format('ddd MMM D')}
-                title_color={COLORS.deepBlue}
-              />
-              <CircleIconButton1
-                iconName="clock-outline"
-                buttonSize={50}
-                radiusSise={25}
-                iconSize={26}
-                title={moment(cleaning_date+ +cleaning_time, 'h:mm:ss A').format('h:mm A')}
-                title_color={COLORS.deepBlue}
-              />
-              <CircleIconButton1
-                iconName="timer-outline"
-                buttonSize={50}
-                radiusSise={25}
-                iconSize={26}
-                title="2hrs Task"
-                title_color={COLORS.deepBlue}
-              />
+          <Card>
+            <Text bold style={{fontSize:16, marginBottom:10, marginHorizontal:5}}>Deep Cleaning</Text>
+            <View style={styles.chip_container}>
+              {extra.map((item, index) => (
+                <Chip 
+                  key={index} 
+                  mode="outlined" 
+                  style={styles.chip}
+                  textStyle={styles.chipText}
+                  >
+                  <Text style={{fontSize:12}}><MaterialCommunityIcons name={item.icon} size={14} /> {item.label} </Text>
+                </Chip>
+              ))}
             </View>
-        </Card>
+          </Card>
+          
+        }
+          <View style={{marginTop:20}} />
+        </View>
+        </View>
 
-       </View> 
-      );
-
-      case 'taskItem':
-        return (
-          <View>
-            <Card>
-              <FlatList
-                  data={regular_cleaning}
-                  renderItem = {taskItem}
-                  ListHeaderComponent={<Text bold style={{fontSize:16}}>Regular Cleaning</Text>}
-                  ListHeaderComponentStyle={styles.list_header}
-                  // ListEmptyComponent= {emptyListing}
-                  // ItemSeparatorComponent={itemSeparator}
-                  keyExtractor={(item, index)=> item.label}
-                  numColumns={numColumns2}
-                  showsVerticalScrollIndicator={false}
-              />
-            </Card>
-
-            <Card>
-              <FlatList
-                data={extra_cleaning}
-                renderItem = {taskItem2}
-                ListHeaderComponent={<Text bold style={{fontSize:16}}>Deep Cleaning</Text>}
-                ListHeaderComponentStyle={styles.list_header}
-                // ListEmptyComponent= {emptyListing}
-                // ItemSeparatorComponent={itemSeparator}
-                keyExtractor={(item, index)=> item.label}
-                numColumns={numColumns2}
-                showsVerticalScrollIndicator={false}
-              />
-            </Card>
-          </View>
-        )
-
-    }
-
-    
-}
-
-const data = [
-  { type: 'googledirection' },
-  { type: 'circleicons' },
-  { type: 'taskItem'},
-  { type: 'camera' },
-  { type: 'coloredCard' },
-];
-
-
-
-
-const getDistance = (a) => {
-  // alert("recall")
-  console.log("coopeeeeeer")
-  console.log(a)
-  console.log("coopeeeeeer")
-  setModeDistance(a)
-}
-
-
-const handleModeChange = (mode) => {
-  // alert("latitude", origin.latitude);
-  alert(mode)
-  setSelectedMode(mode);
-  setDirections(allDirections[mode]);
-  console.log("All directions..........................")
-  console.log(allDirections[mode])
-
-  if (mapRef.current) {
-      mapRef.current.fitToCoordinates(allDirections[mode], {
-          edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
-          animated: true,
-      });
-  }
-  
-
-  setMapRegion({
-      latitude: origin.latitude,
-      longitude: origin.longitude,
-      latitudeDelta: 0.008,
-      longitudeDelta: 0.0041,
-  });
-
-  const eta_and_distance = {
-      _eta: allEta[mode],
-      _distance: allDistances[mode]
-  };
-  setEtaDistance(eta_and_distance);
-
-  console.log(allEta[mode]);
-  console.log(`Distance in ${mode}: ${allDistances[mode]} miles`);
-
-  const mode_distance = {
-      mode: mode,
-      distance: allEta[mode]
-  };
-  // alert("607");
-  // getModeChange(mode_distance);
-};
-
-  return (
-    <SafeAreaView style={{ flex: 1}}>
-  {/* Google Directions Component */}
-  <GoogleDirections 
-    // origin={{ latitude: !coordinates.latitude? currentUser.location.latitude, longitude: !coordinates.longitude?currentUser.location.longitude }}
-    origin={{
-      latitude: coordinates?.latitude || currentUser.location.latitude,
-      longitude: coordinates?.longitude || currentUser.location.longitude
-    }}
-    destination={{ latitude: item.apartment_latitude, longitude: item.apartment_longitude}}
-    triggerMap = {handleModeChange}
-  />
-
-  {/* Draggable Main Content Container */}
-  <Animated.View
-      style={[
-        styles.mainContent,
-        {
-          transform: [
-            {
-              translateY: pan.y.interpolate({
-                inputRange: [0, 300],    // Set the drag range (e.g., 0 to 300)
-                outputRange: [0, 300],   // Control movement in the visible area
-                extrapolate: 'clamp',    // Prevent movement outside the range
-              }),
-            },
-          ],
-        },
-      ]}
-      {...panResponder.panHandlers}
-    >
-      {/* Header Section */}
- 
-
-  {/* Drag Handle */}
-  <View style={styles.dragHandleContainer}>
-    <View style={styles.dragHandle} />
-  </View>
-
-    <ScrollView contentContainerStyle={styles.container}>
-          <Text>{mode_distance?.mode}</Text>
-          <View style={styles.animatedView}>
-                <Text style={styles.distance_text}>{etaDistance?._eta} <Text> ({etaDistance?._distance} miles) </Text></Text>
-                </View>
-          <View style={styles.modeContainer}>
-          {/* <ModeSelector 
-              selectedMode={selectedMode} 
-              handleModeChange={handleModeChange} 
-              allEta={allEta} 
-          /> */}
-                {/* <ChipIcon
-                    onPress={() => getDistance('driving')}
-                    iconName="car-outline"
-                    // label={mode_distance.mode}
-                    label={20}
-                    iconSize={18}
-                    active={selectedMode === 'driving'}
-                />
-                <ChipIcon
-                    onPress={() => getDistance('transit')}
-                    iconName="train"
-                    // label={mode_distance.transit}
-                    label={40}
-                    iconSize={17}
-                    active={selectedMode === 'transit'}
-                />
-                <ChipIcon
-                    onPress={() => getDistance('walking')}
-                    iconName="walk"
-                    // label={mode_distance.walking}
-                    label={60}
-                    iconSize={18}
-                    active={selectedMode === 'walking'}
-                /> */}
-
-             {/* Inside GoogleDirections component */}
-            
-
-                
-            </View>
-
-      {/* Data List */}
-      <FlatList 
-        data={data} 
-        renderItem={renderItem} 
-        keyExtractor={(item, index) => index.toString()}
-      />
-
-      {/* Modal for Confirmation */}
-      <Modal
-        visible={isOpenModal}
-        animationType="slide"
-        transparent={true}
-        statusBarTranslucent={true}
-      >
-        <ClockInConfirmation
-          cleanerId={currentUserId}
-          scheduleId={item._id}
-          cleaning_date={item.cleaning_date}
-          cleaning_time={item.cleaning_time}
-          total_cleaning_time={item.total_cleaning_time}
-          close_modal={handleCloseConfirmClockIn}
-        />
-      </Modal>
-
-      {/* Conditional Buttons */}
-      {item.status === 'in_progress' ? (
+        
+        </ScrollView>
+        </View>
+        
+       <View style={styles.button}>
+        <TouchableOpacity 
+          style={styles.decline_button}
+        >
+          <Text bold style={styles.price}>{geolocationData.currency.symbol}{total_cleaning_fee}</Text>
+        </TouchableOpacity>
+        <View></View>
+        
+        {status === 'in_progress' ? (
         <>
-        <TouchableOpacity style={styles.button} onPress={gotToTaskScreen}>
-          <MaterialCommunityIcons name="timer-outline" size={24} color={COLORS.white} />
+        <TouchableOpacity style={styles.clockInbutton} onPress={gotToTaskScreen}>
+          <MaterialCommunityIcons name="timer-outline" size={24} color={COLORS.gray} />
           <Text style={styles.buttonText}>
-              View progress
+               Go To Work
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={handleOpenDirections}>
-          <MaterialCommunityIcons name="timer-outline" size={24} color={COLORS.white} />
-          <Text style={styles.buttonText}>
-              Direction
-          </Text>
-        </TouchableOpacity>
+        
         </>
-      ) : item.status === 'upcoming' ? (
-        <TouchableOpacity style={styles.button} onPress={handleClockIn}>
+      ) : status === 'upcoming' ? (
+
+        <TouchableOpacity style={styles.clockInbutton} onPress={handleClockIn}>
           <Text style={styles.buttonText}>
-            <MaterialCommunityIcons name="timer-outline" size={28} color={COLORS.white} /> Clock-In
+            <MaterialCommunityIcons name="timer-outline" size={24} color={COLORS.gray} /> Clock-In
           </Text>
         </TouchableOpacity>
       ) : null}
-    </ScrollView>
-  </Animated.View>
-</SafeAreaView>
+        
+        </View>
+   
+    </SafeAreaView>
   )
-
-  
 }
+
 
 const styles = StyleSheet.create({
    container:{
-    flex:1,
     marginHorizontal:10,
-    marginBottom:20
+    alignItems: 'center',  // Horizontally center content
+    justifyContent: 'center', // Vertically center 
    },
-  mainContent: {
+   mainContent: {
     position: 'absolute',
     bottom: 0,
-    height: '65%',
+    height: '75%',
     width: '100%',
     backgroundColor: 'white',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    paddingTop: 8,
-    
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: -2, // Negative height creates a shadow above the component
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    // Android shadow
-    elevation: 5,
+    paddingTop: 20,
   },
-
   dragHandleContainer: {
     alignItems: 'center',
-    paddingVertical: 20,
-    borderBottomColor:COLORS.light_gray_1,
-    borderBottomWidth:1
+    paddingVertical: 10,
   },
   dragHandle: {
     width: 40,
@@ -583,25 +373,42 @@ const styles = StyleSheet.create({
         alignItems:'center'
     },
     title:{
-      fontSize:16,
+      fontSize:20,
       fontWeight:'60'
     },
     button: {
       flexDirection:'row',
-      backgroundColor: COLORS.deepBlue,
-      paddingVertical: 8,
+      backgroundColor: COLORS.white,
+      paddingVertical: 12,
       paddingHorizontal: 20,
-      borderRadius:50,
-     justifyContent:'center',
+      justifyContent:'space-between',
+      borderTopWidth:1,
+      borderColor:COLORS.light_gray_1
+    },
+    accept_button:{
+      backgroundColor: COLORS.primary,
+      paddingVertical: 5,
+      paddingHorizontal: 10,
+      borderRadius:10
+    },
+    decline_button:{
+      // backgroundColor:COLORS.light_gray_1,
+      paddingVertical: 0,
+      paddingHorizontal: 10,
+      borderRadius:10,
+      marginTop:-5
     },
     buttonText: {
-      color: '#ffffff',
-      fontSize: 18,
-      fontWeight:'bold'
+      color: COLORS.primary,
+      fontSize: 14
     },
-    title:{
-      fontSize:20,
-      fontWeight:'60'
+    buttonacceptText: {
+      color: '#fff',
+      fontSize: 18
+    },
+    price:{
+      fontSize:24,
+      fontWeight:'600',
     },
     centerContent: {
       alignItems: 'center',  // Center content horizontally
@@ -617,17 +424,75 @@ const styles = StyleSheet.create({
       justifyContent: 'center',
       padding: 10,
   },
-  distance_text:{
-    color:'#00A86B',
-    textAlign:'center'
+  addre:{
+    flex:0.7,
+    padding:10,
+    marginTop:0
+  },
+address_bar:{
+  // minHeight:40,
+  // width:"30%",
+  // borderBottomStartRadius:10,
+  // backgroundColor:COLORS.light_gray_1,
+  // marginTop:-1,
+
+  // position: 'absolute',  // Make it float over address_direction
+  //   top: 0,                // Adjust positioning as needed
+  //   left: 0,               // Adjust positioning as needed
+  //   width: '100%',         // Optional: Full width
     
-},
-// animatedView: {
-//     // backgroundColor:'#00A86B',
-//     paddingLeft:10,
-//     padding:7,
-//     borderTopRightRadius:5,
-//     borderBottomRightRadius:5,
-//     marginRight:10
-// },
+  },
+
+  address_direction:{
+    // alignItems:'flex-end',
+    // backgroundColor:'rgba(0, 0, 0, 0.0)'
+
+    backgroundColor: 'white', // Optional: Set a background color
+    paddingHorizontal: 10,
+    paddingVertical:15,
+    elevation: 4,          // For Android shadow
+    shadowColor: '#000',   // For iOS shadow
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    flexDirection:'row', 
+    alignItems:"center", 
+    paddingLeft:15
+    
+  },
+  clockInbutton:{
+    flexDirection:'row',
+    marginTop:0,
+    alignItems:'center'
+  },
+  google_direction:{
+    width:16,
+    height:16
+  },
+  chip_container: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'flex-start',
+    alignItems: 'center', // Ensures wrapping works properly
+    padding: 5,
+    gap: 8, // Adjust spacing between chips
+  
+  },
+  chip: {
+    height: 35,   // Reduce the chip height
+    paddingHorizontal: 0,  // Reduce padding inside the chip
+    borderRadius: 17,  // Make it more compact
+    borderWidth:0.5,
+    borderColor:COLORS.light_gray,
+    backgroundColor:'#f9f9f9',
+    flexShrink: 1,
+  },
+  chipText: {
+    fontSize: 12,  // Reduce font size
+    fontWeight: 'normal',  // Normal font weight
+    color:COLORS.gray
+  },
   })
+
+
+  

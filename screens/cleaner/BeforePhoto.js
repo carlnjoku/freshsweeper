@@ -1,747 +1,957 @@
+// import React, { useEffect, useContext, useCallback, useState, useRef } from 'react';
+// import {
+//   View,
+//   Text,
+//   Button,
+//   StyleSheet,
+//   ActivityIndicator,
+//   TouchableOpacity,
+//   Alert,
+//   Image,
+//   FlatList,
+//   ScrollView,
+// } from 'react-native';
+// import { Ionicons } from '@expo/vector-icons';
+// import COLORS from '../../constants/colors'; // Your predefined color constants
+// import userService from '../../services/userService';
+// import { AuthContext } from '../../context/AuthContext';
+// import { useFocusEffect } from '@react-navigation/native'; // Import useFocusEffect from React Navigation
+// import CardNoPrimary from '../../components/CardNoPrimary';
+// import { CameraView, useCameraPermissions } from 'expo-camera';
 
-import React, { useEffect, useContext,useCallback, useState, useRef } from 'react';
-import { View, Text, Button, StyleSheet, ActivityIndicator, TouchableOpacity, Alert, Image, FlatList, ScrollView } from 'react-native';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'; 
-import COLORS from '../../constants/colors'; // Your predefined color constants
+// const BeforePhoto = ({ scheduleId, tasksList }) => {
+//   const cameraRef = useRef(null);
+//   const { currentUserId } = useContext(AuthContext);
+
+//   const [tasks, setTasks] = useState([]);
+//   const [isLoading, setIsLoading] = useState(false);
+//   const [selectedImages, setSelectedImages] = useState({});
+//   const [selectedTaskTitle, setSelectedTaskTitle] = useState('');
+//   const [permission, requestPermission] = useCameraPermissions();
+//   const [photos, setPhotos] = useState([]);
+//   const [cameraVisible, setCameraVisible] = useState(false);
+//   const [images, setImages] = useState([]);
+
+//   const fetchImages = useCallback(async () => {
+//     setIsLoading(true);
+//     try {
+//       const response = await userService.getUpdatedImageUrls(scheduleId);
+//       const res = response.data.data;
+//       setSelectedImages(res.before_photos);
+//       setTasks(res.before_photos);
+//     } catch (error) {
+//       console.error('Error fetching images:', error);
+//     } finally {
+//       setIsLoading(false);
+//     }
+//   }, [scheduleId]);
+
+//   useFocusEffect(fetchImages);
+
+//   useEffect(() => {
+//     if (permission && !permission.granted) {
+//       requestPermission();
+//     }
+//   }, [permission]);
+
+//   if (!permission) return <View />;
+//   if (!permission.granted) return <Text>No access to camera</Text>;
+
+//   const takePicture = async (taskTitle) => {
+//     setSelectedTaskTitle(taskTitle);
+//     setCameraVisible(true);
+
+//     if (cameraRef.current) {
+//       const options = { quality: 1, base64: true };
+//       const newPhoto = await cameraRef.current.takePictureAsync(options);
+//       const imgSrc = `data:image/png;base64,${newPhoto.base64}`;
+//       const photoData = {
+//         filename: newPhoto.uri.split('/').pop(),
+//         file: imgSrc,
+//       };
+
+//       setPhotos((prevPhotos) => [...prevPhotos, photoData]);
+//     }
+//   };
+
+//   const onSubmit = async () => {
+//     setIsLoading(true);
+//     const data = {
+//       photo_type: 'before_photos',
+//       scheduleId,
+//       images: photos,
+//       currentUserId,
+//       task_title: selectedTaskTitle,
+//       updated_tasks: selectedImages,
+//     };
+
+//     try {
+//       await userService.uploadBeforeTaskPhotos(data);
+//       fetchImages();
+//     } catch (err) {
+//       console.error('Error uploading photos:', err);
+//     } finally {
+//       setIsLoading(false);
+//       setCameraVisible(false);
+//       setPhotos([]);
+//     }
+//   };
+
+//   const removePhoto = (index) => {
+//     setPhotos((prevPhotos) => prevPhotos.filter((_, i) => i !== index));
+//   };
+
+//   const submitCompletion = async () => {
+//     const jobCompletionData = {
+//       scheduleId,
+//       completed_tasks: selectedImages,
+//       completionTime: new Date(),
+//     };
+
+//     if (Object.keys(selectedImages).length === 0) {
+//       Alert.alert('Error', 'Please complete all tasks before finishing.');
+//       return;
+//     }
+
+//     setIsLoading(true);
+//     try {
+//       await userService.finishCleaning(jobCompletionData);
+//       fetchImages();
+//     } catch (err) {
+//       console.error('Error submitting completion:', err);
+//     } finally {
+//       setIsLoading(false);
+//     }
+//   };
+
+//   const onCloseCamera = () => {
+//     setCameraVisible(false);
+//   };
+
+//   const renderTask = ({ item }, taskTitle) => (
+//     <TouchableOpacity
+//       style={styles.taskContainer}
+//       onPress={() => console.log(`Task selected: ${item}`)}
+//     >
+//       <Text>{item}</Text>
+//     </TouchableOpacity>
+//   );
+
+//   return (
+//     <View style={styles.container}>
+//       {!cameraVisible && (
+//         <View>
+//           {isLoading && (
+//             <View style={styles.loadingContainer}>
+//               <ActivityIndicator size="large" color={COLORS.primary} />
+//               <Text>Uploading...</Text>
+//             </View>
+//           )}
+//           {!isLoading && (
+//             <ScrollView>
+//               <Text style={styles.headline}>Cleaning Checklist and Photo Upload</Text>
+//               <Text style={styles.subheading}>
+//                 Complete all cleaning tasks and upload at least 3 photos per category to ensure quality assurance.
+//               </Text>
+
+//               {Object.keys(selectedImages).map((taskTitle) => (
+//                 <CardNoPrimary key={taskTitle}>
+//                   <View style={{ marginBottom: 20 }}>
+//                     <Text style={styles.roomTitle}>{taskTitle}</Text>
+//                     <ScrollView horizontal style={styles.previewContainer}>
+//                       {selectedImages[taskTitle]?.photos?.map((photo, index) => (
+//                         <View key={index} style={styles.thumbnailContainer}>
+//                           <Image source={{ uri: photo.img_url }} style={styles.preview} />
+//                         </View>
+//                       ))}
+//                     </ScrollView>
+//                     <FlatList
+//                       data={selectedImages[taskTitle]?.tasks || []}
+//                       renderItem={(item) => renderTask(item, taskTitle)}
+//                       keyExtractor={(item, index) => index.toString()}
+//                       numColumns={2}
+//                       columnWrapperStyle={styles.columnWrapper}
+//                     />
+//                     <View style={{ alignItems: 'center' }}>
+//                       <TouchableOpacity
+//                         style={styles.sendButton}
+//                         onPress={() => takePicture(taskTitle)}
+//                       >
+//                         <View style={styles.sendButtonContent}>
+//                           <Ionicons name="cloud-upload" size={24} color="gray" />
+//                           <Text style={styles.addButtonText}>
+//                             Add photo to {taskTitle}
+//                           </Text>
+//                         </View>
+//                       </TouchableOpacity>
+//                     </View>
+//                   </View>
+//                 </CardNoPrimary>
+//               ))}
+
+//               <Button title="Finish Cleaning" onPress={submitCompletion} color={COLORS.success} />
+//             </ScrollView>
+//           )}
+//         </View>
+//       )}
+
+//       {cameraVisible && (
+//         <CameraView style={styles.camera} ref={cameraRef}>
+//           <TouchableOpacity style={styles.closeButton} onPress={onCloseCamera}>
+//             <Ionicons name="close-circle" size={32} color="white" />
+//           </TouchableOpacity>
+//           <View style={styles.buttonContainer}>
+//             <TouchableOpacity style={styles.captureButton} onPress={() => takePicture(selectedTaskTitle)}>
+//               <Ionicons name="camera" size={70} color="white" />
+//             </TouchableOpacity>
+//             <TouchableOpacity style={styles.sendButton} onPress={onSubmit}>
+//               <View style={styles.sendButtonContent}>
+//                 <Ionicons name="cloud-upload" size={40} color="white" />
+//                 <Text style={styles.sendButtonText}>Upload</Text>
+//               </View>
+//             </TouchableOpacity>
+//           </View>
+//         </CameraView>
+//       )}
+//     </View>
+//   );
+// };
+
+// const styles = StyleSheet.create({
+//   container: { flex: 1 },
+//   headline: { fontSize: 20, fontWeight: 'bold', margin: 10 },
+//   subheading: { marginHorizontal: 10, marginBottom: 20 },
+//   camera: { flex: 1 },
+//   closeButton: { position: 'absolute', top: 10, right: 10 },
+//   sendButton: { alignItems: 'center' },
+//   sendButtonContent: { flexDirection: 'row', alignItems: 'center' },
+//   sendButtonText: { color: 'white', fontSize: 16 },
+//   addButtonText: { fontSize: 14, marginLeft: 5 },
+//   previewContainer: { flexDirection: 'row' },
+//   thumbnailContainer: { margin: 10 },
+//   preview: { width: 100, height: 100 },
+// });
+
+// export default BeforePhoto;
+
+
+import React, { useEffect, useContext, useCallback, useState, useRef } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  TouchableOpacity,
+  Alert,
+  FlatList,
+  ScrollView,
+} from 'react-native';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import ImageViewer from 'react-native-image-zoom-viewer';
+import COLORS from '../../constants/colors';
 import userService from '../../services/userService';
 import { AuthContext } from '../../context/AuthContext';
-import { useFocusEffect } from '@react-navigation/native'; // Import useFocusEffect from React Navigation
+import { useFocusEffect } from '@react-navigation/native';
 import CardNoPrimary from '../../components/CardNoPrimary';
-import { Checkbox } from 'react-native-paper';
-import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
-
-
+import { CameraView, useCameraPermissions } from 'expo-camera';
+import CustomActivityIndicator from '../../components/CuustomActivityIndicator';
+import { Image } from 'expo-image'; 
+import Modal from 'react-native-modal';
 
 const BeforePhoto = ({ scheduleId, tasksList }) => {
-
   const cameraRef = useRef(null);
-  const {currentUserId} = useContext(AuthContext)
+  const { currentUserId } = useContext(AuthContext);
 
-  const[tasks, setTasks] = useState([]);
-  const[isLoading, setIsLoading] = useState(false);
-  const[selected_images, setSelectedImages] = React.useState({})
-  const[selected_task_title, setSelectedTaskTitle] = React.useState("")
+  const MAX_IMAGES_UPLOAD = 5
+  const [tasks, setTasks] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false); // Spinner for uploading state
+  const [selectedImages, setSelectedImages] = useState({});
+  const [selectedTaskTitle, setSelectedTaskTitle] = useState('');
+  const [permission, requestPermission] = useCameraPermissions();
+  const [photos, setPhotos] = useState([]);
+  const [cameraVisible, setCameraVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const [tasksByCategory, setTasksByCategory] = useState();
+  const [isBeforeModalVisible, setBeforeModalVisible] = useState(false);
+  const [currentImages, setCurrentImages] = useState([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
 
-  const[facing, setFacing] = useState('back');
-  const[permission, requestPermission] = useCameraPermissions();
-  const[photos, setPhotos] = useState([]);
-  const[cameraVisible, setCameraVisible] = useState(false); // New state to control camera visibility
-  const[images, setImages] = useState([])
-
-
-  const fetchImages = async () => {
-    // Fetch images from the database
-        setIsLoading(true);
-          setTimeout(async () => {
-        await userService.getUpdatedImageUrls(scheduleId)
-        .then(response => {
-          const res = response.data.data
-
-          console.log("sooooooooooooooooon")
-          console.log(JSON.stringify(res.before_photos, null, 2))
-          console.log("sooooooooooooooooon")
-          
-          setSelectedImages(res.before_photos);
-            
-          
-
-          setTasks(res.before_photos)
-          setIsLoading(false);
-        })
-      }, 2000); // Add a 2-second delay
+  const fetchImages = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const response = await userService.getUpdatedImageUrls(scheduleId);
+      const res = response.data.data;
+      setSelectedImages(res.before_photos);
+      setTasks(res.before_photos);
+    } catch (error) {
+      console.error('Error fetching images:', error);
+    } finally {
+      setIsLoading(false);
     }
+  }, [scheduleId]);
 
-    // Execute fetchImages when the screen comes into focuss
-    useFocusEffect(
-      useCallback(() => {
-        fetchImages();
-      }, [])
-    );
-    
-    useEffect(() => {
-      if (permission && !permission.granted) {
-        requestPermission();
-      }
-    }, [permission]);
+  useFocusEffect(fetchImages);
 
-    
-    if (permission === null) {
-      return <View />;
+  useEffect(() => {
+    if (permission && !permission.granted) {
+      requestPermission();
     }
+  }, [permission]);
 
-    if (!permission.granted) {
-      return <Text>No access to camera</Text>;
-    }
+  if (!permission) return <View />;
+  if (!permission.granted) return <Text>No access to camera</Text>;
 
-    const takePicture = async (text) => {
-      console.log("weeeeoeoeoeoeoeoeooeoeoe")
-      console.log(text)
-      setSelectedTaskTitle("Bedroom")
-      setCameraVisible(true);
-    
-      if (cameraRef.current) {
-        const options = { quality: 1, base64: true };
-        const newPhoto = await cameraRef.current.takePictureAsync(options);
-    
-        // Update the photos state (immutably)
-        setPhotos(prevPhotos => [...prevPhotos, newPhoto]);
-    
-      //   // Avoid mutating existing images array, use a new array
-      //   const images = [];
-    
-        // Add new photos to the updated images array
-        photos.forEach((i) => {
-          let imgSrc = "data:image/png;base64," + i.base64;
-          images.push({
-            filename: i.uri.replace(
-              'file:///data/user/0/host.exp.exponent/cache/ExperienceData/%2540flavoursoft%252Ffresh-sweeper-1/Camera/',
-              ''
-            ),
-            file: imgSrc
-          });
-        });
-    
-        // Avoid logging entire object with circular references
-        try {
-          console.log("Updated Images:", JSON.stringify(images));  // Safely log the updated images
-        } catch (error) {
-          console.error("Error logging updatedImages:", error.message);
-        }
-      }
-    };
-  
-    const onSubmit = async () => {
-        
-        
-      setIsLoading(true);
-      setTimeout(async () => {
-        const data = {
-          photo_type: "before_photos",
-          scheduleId: scheduleId,
-          images: images,
-          currentUserId: currentUserId,
-          task_title: selected_task_title,
-          updated_tasks: selected_images
-        };
+  const takePicture = async (taskTitle) => {
+    setSelectedTaskTitle(taskTitle);
+    setCameraVisible(true);
 
-        try {
-          const response = await userService.uploadBeforeTaskPhotos(data);
-          fetchImages();
-          console.log("Upload Response:", response.data);
-        } catch (err) {
-          console.error(err);
-        } finally {
-          setIsLoading(false);
-          onCloseCamera();
-        }
-      }, 2000); // Add a 2-second delay
-    
-  };
-    
-  
-    const removePhoto = (index) => {
-      setPhotos(prevPhotos => prevPhotos.filter((_, i) => i !== index));
-    };
-
-    // Simulate completion submission
-  const submitCompletion = async() => {
-
-    if (validateTasks()) {
-      setIsLoading(true);
-      setTimeout(async () => {
-
-      const jobCompletionData = {
-        scheduleId: scheduleId,
-        completed_tasks: selected_images,
-        completionTime: new Date(),
+    if (cameraRef.current) {
+      const options = { quality: 1, base64: true };
+      const newPhoto = await cameraRef.current.takePictureAsync(options);
+      const imgSrc = `data:image/png;base64,${newPhoto.base64}`;
+      const photoData = {
+        filename: newPhoto.uri.split('/').pop(),
+        file: imgSrc,
       };
+      setPhotos((prevPhotos) => [...prevPhotos, photoData]);
+    }
+  };
 
-      try {
-        const response = await userService.finishCleaning(jobCompletionData);
-        fetchImages();
-        console.log("Upload Response:", response.data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setIsLoading(false);
-      }
-    
-    }, 2000); // Add a 2-second delay
-   }
-    
+  const onSubmit = async () => {
+    // Check if the number of photos exceeds the limit
+    if (photos.length > MAX_IMAGES_UPLOAD) {
+      Alert.alert(
+        'Upload Limit Exceeded',
+        `You can only upload up to ${MAX_IMAGES_UPLOAD} images at a time. Please remove some images before uploading.`
+      );
+      return;
+    }
+
+    setIsUploading(true); // Start spinner for upload
+    setLoading(true); // Start spinner for upload
+    const data = {
+      photo_type: 'before_photos',
+      scheduleId,
+      images: photos,
+      currentUserId,
+      task_title: selectedTaskTitle,
+      updated_tasks: selectedImages,
+    };
+
+    try {
+      await userService.uploadBeforeTaskPhotos(data);
+      fetchImages();
+    } catch (err) {
+      console.error('Error uploading photos:', err);
+    } finally {
+      setLoading(false)
+      setIsUploading(false); // Stop spinner
+      setCameraVisible(false);
+      setPhotos([]);
+    }
+  };
+
+  const removePhoto = (index) => {
+    setPhotos((prevPhotos) => prevPhotos.filter((_, i) => i !== index));
+  };
+
+  const submitCompletion = async () => {
+    const jobCompletionData = {
+      scheduleId,
+      completed_tasks: selectedImages,
+      completionTime: new Date(),
+    };
+
+    if (Object.keys(selectedImages).length === 0) {
+      Alert.alert('Error', 'Please complete all tasks before finishing.');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await userService.finishCleaning(jobCompletionData);
+      fetchImages();
+    } catch (err) {
+      console.error('Error submitting completion:', err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const onCloseCamera = () => {
-    setCameraVisible(false)
-  }
+    setCameraVisible(false);
+    setPhotos([]); // Empty the photos array
+  };
 
-  return(
+  const renderTask = ({ item }, taskTitle) => (
+    <TouchableOpacity
+      style={styles.taskContainer}
+      onPress={() => console.log(`Task selected: ${item}`)}
+    >
+      <Text>{item}</Text>
+    </TouchableOpacity>
+  );
+
+  // const deleteImage = (taskTitle, imageIndex) => {
+  //   setSelectedImages((prevImages) => {
+  //     const updatedImages = { ...prevImages };
+  //     updatedImages[taskTitle].photos.splice(imageIndex, 1);
+      
+  //     // If no photos left, remove the taskTitle from the list
+  //     if (updatedImages[taskTitle].photos.length === 0) {
+  //       delete updatedImages[taskTitle];
+  //     }
+      
+  //     return { ...updatedImages };
+  //   });
+  // };
+
+  // const deleteImage = async (scheduleId, taskTitle, imageUrl) => {
+  //   try {
+  //     const response = await userService.deleteBeforePhoto(scheduleId, taskTitle, imageUrl);
+  
+  //     if (!response.ok) {
+  //       fetchImages();
+  //       const data = await response.json();
+  //       throw new Error(data.detail || "Failed to delete image");
+  //     }
+  
+  //     const data = await response.json();
+  //     console.log("Image deleted:", data.message);
+  //   } catch (error) {
+  //     console.error("Error deleting image:", error.message);
+  //   }
+  // };
+
+  // const deleteImage = async (scheduleId, taskTitle, imageUrl) => {
+  //   try {
+  //     const response = await userService.deleteBeforePhoto(scheduleId, taskTitle, imageUrl);
+  
+  //     if (!response.ok) {
+  //       // const data = await response.json();
+  //       throw new Error(data.detail || "Failed to delete image");
+  //     }
+  
+  //     const data = await response.json();
+  //     console.log("Image deleted:", data.message);
+  
+  //     // ✅ Update state without refreshing
+  //     setSelectedImages((prevImages) => {
+  //       const updatedPhotos = prevImages[taskTitle]?.photos.filter(photo => photo.img_url !== imageUrl) || [];
+  
+  //       return {
+  //         ...prevImages,
+  //         [taskTitle]: {
+  //           ...prevImages[taskTitle],
+  //           photos: updatedPhotos,
+  //         },
+  //       };
+  //     });
+  
+  //   } catch (error) {
+  //     console.error("Error deleting image:", error.message);
+  //   }
+  // };
+
+  // const deleteImage = async (scheduleId, taskTitle, imageUrl) => {
+  //   try {
+  //     // Add confirmation dialog
+  //     Alert.alert(
+  //       "Delete Image",
+  //       "Are you sure you want to delete this image?",
+  //       [
+  //         {
+  //           text: "Cancel",
+  //           style: "cancel"
+  //         },
+  //         {
+  //           text: "Delete",
+  //           onPress: async () => {
+  //             try {
+  //               const response = await userService.deleteBeforePhoto(
+  //                 scheduleId, 
+  //                 taskTitle, 
+  //                 encodeURIComponent(imageUrl) // Properly encode URL for backend
+  //               );
+  //               console.log(response)
+  //               if (!response.ok) {
+  //                 const errorData = await response.json();
+  //                 throw new Error(errorData.detail || "Failed to delete image");
+  //               }
+  
+  //               const data = await response.json();
+                
+  //               // Update local state
+  //               setSelectedImages(prev => {
+  //                 const updatedPhotos = prev[taskTitle]?.photos?.filter(
+  //                   photo => photo.img_url !== imageUrl
+  //                 ) || [];
+  
+  //                 // Cleanup empty tasks
+  //                 if (updatedPhotos.length === 0) {
+  //                   const newState = {...prev};
+  //                   delete newState[taskTitle];
+  //                   return newState;
+  //                 }
+  
+  //                 return {
+  //                   ...prev,
+  //                   [taskTitle]: {
+  //                     ...prev[taskTitle],
+  //                     photos: updatedPhotos
+  //                   }
+  //                 };
+  //               });
+  
+  //               Alert.alert("Success", data.message || "Image deleted successfully");
+  //             } catch (error) {
+  //               console.error("Delete error:", error);
+  //               Alert.alert(
+  //                 "Deletion Failed", 
+  //                 error.message || "Could not delete image. Please try again."
+  //               );
+  //             }
+  //           }
+  //         }
+  //       ]
+  //     );
+  //   } catch (error) {
+  //     console.error("Unexpected error:", error);
+  //     Alert.alert(
+  //       "Error", 
+  //       "An unexpected error occurred. Please try again later."
+  //     );
+  //   }
+  // };
+
+  const deleteImage = async (scheduleId, taskTitle, imageUrl) => {
+    try {
+      Alert.alert(
+        "Delete Image",
+        "Are you sure you want to delete this image?",
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Delete",
+            onPress: async () => {
+              try {
+                const encodedUrl = encodeURIComponent(imageUrl);
+                const response = await userService.deleteBeforePhoto(
+                  scheduleId, 
+                  taskTitle, 
+                  encodedUrl
+                );
+                console.log(response.data.message)
+                // Handle non-2xx responses
+                if (!response.ok) {
+                  const errorText = await response.data.text();
+                  throw new Error(errorText || "Delete failed");
+                }
+  
+                const data = await response.json();
+  
+                // Update state
+                setSelectedImages(prev => {
+                  const updatedPhotos = prev[taskTitle]?.photos?.filter(
+                    photo => photo.img_url !== imageUrl
+                  ) || [];
+  
+                  if (updatedPhotos.length === 0) {
+                    const newState = {...prev};
+                    delete newState[taskTitle];
+                    return newState;
+                  }
+  
+                  return {
+                    ...prev,
+                    [taskTitle]: {
+                      ...prev[taskTitle],
+                      photos: updatedPhotos
+                    }
+                  };
+                });
+  
+                Alert.alert("Success", data.message);
+              } catch (error) {
+                console.error("Delete error:", error);
+                Alert.alert(
+                  "Error",
+                  error.message || "Failed to delete image. Please try again."
+                );
+              }
+            }
+          }
+        ]
+      );
+    } catch (error) {
+      console.error("Unexpected error:", error);
+      Alert.alert("Error", "An unexpected error occurred");
+    }
+  };
+
+  const handleImagePress = (taskTitle, index) => {
+    setCurrentImages(selectedImages[taskTitle]?.photos || []);
+    setCurrentImageIndex(index);
+    setBeforeModalVisible(true);
+  };
+
+  // Add to your delete button (prevent event bubbling)
+  const handleDelete = (scheduleId, taskTitle, imageUrl, e) => {
+    e.stopPropagation();
+    deleteImage(scheduleId, taskTitle, imageUrl);
+  };
+
+  return (
     <View style={styles.container}>
 
-      {/* Button to trigger camera visibility */}
+      {/* Add Modal component here */}
+      <Modal
+        isVisible={isBeforeModalVisible}
+        style={styles.fullScreenModal}
+        onBackdropPress={() => {
+          if (!isDragging) {
+            setBeforeModalVisible(false);
+          }
+        }}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.imageContainer}>
+            <ImageViewer
+              imageUrls={currentImages}
+              index={currentImageIndex}
+              backgroundColor="black"
+              enableSwipeDown
+              enableImageZoom
+              onSwipeDown={() => setBeforeModalVisible(false)}
+              
+              renderImage={(props) => (
+                <Image
+                  source={props.source}
+                  style={styles.fullSizeImage}
+                  contentFit="contain"
+                  transition={300}
+                  cachePolicy="memory-disk"
+                />
+              )}
+              
+            />
+          </View>
+
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={() => setBeforeModalVisible(false)}
+          >
+            <Ionicons name="close" size={28} color="white" />
+          </TouchableOpacity>
+        </View>
+      </Modal>
+
       {!cameraVisible && (
         <View>
           {isLoading && (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text>Uploading...</Text>
-        </View>
-      )}
+              <View style={styles.loadingContainer}>
+              <CustomActivityIndicator 
+                size={40} 
+                logo={require('../../assets/logo_loading.png')} // Replace with your logo path
+              />
+            </View>
+          )}
           {!isLoading && (
             <ScrollView>
-            <Text style={styles.headline}>Cleaning Checklist and Photo Upload</Text>
-            <Text style={styles.subheading}>Complete all cleaning tasks and upload at least 3 photos per category to ensure quality assurance.</Text>
+              
 
-            {Object.keys(selected_images).map(taskTitle => (
-                <CardNoPrimary>
-                 <View key={taskTitle} style={{marginBottom:20}}>
-                     
-                     <Text style={styles.roomTitle}>
-                        {taskTitle}
-                     </Text>
-                     
-                     <ScrollView horizontal style={styles.previewContainer}>
-                        {selected_images[taskTitle]["photos"].map((photo, index) => (
-                        <View key={index} style={styles.thumbnailContainer}>
-                            <Image source={{ uri: photo.img_url }} style={styles.preview} />
-                            
-                        </View>
-                        ))}
-                    </ScrollView>
+              <Text style={styles.headline}>Document the Starting Point</Text>
+              
+              <View style={styles.message}>
+              <View style={styles.iconContainer}>
+                <MaterialIcons name="warning" size={24} color="#FFA000" />
+              </View>
+              <Text style={styles.subheading}>
+                Before you begin cleaning, please capture and upload at least 3 photos for each area. This helps ensure transparency and maintain quality standards.
+              </Text>
+            </View>
+
+             
+
+              {Object.keys(selectedImages).map((taskTitle) => (
+                <CardNoPrimary key={taskTitle}>
+                  <View style={{ marginBottom: 20 }}>
+                    <Text style={styles.roomTitle}>{taskTitle}</Text>
                     
+                    <ScrollView horizontal style={styles.previewContainer}>
+                      {selectedImages[taskTitle]?.photos?.map((photo, index) => (
+                        <TouchableOpacity 
+                          key={index} 
+                          style={styles.thumbnailContainer}
+                          onPress={() => handleImagePress(taskTitle, index)}
+                        >
+                          <Image source={{ uri: photo.img_url }} style={styles.preview} />
+                          <TouchableOpacity
+                            style={styles.deleteButton}
+                            onPress={(e) => handleDelete(scheduleId, taskTitle, photo.img_url, e)}
+                          >
+                            <Ionicons name="trash" size={18} color="orange" />
+                          </TouchableOpacity>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
 
-                    <Text style={styles.title}>Tasks</Text>
-                        <FlatList
-                            data={selected_images[taskTitle]["tasks"]}
-                            // renderItem={renderTask}
-                            renderItem={(item) => renderTask(item, taskTitle)} // Pass taskTi
-                            keyExtractor={item => item.id.toString()}
-                            numColumns={2} // Make 2 columns
-                            columnWrapperStyle={styles.columnWrapper} // Style the column wrapper
-                        />
-          
-
-
+                    <FlatList
+                      data={selectedImages[taskTitle]?.tasks || []}
+                      renderItem={(item) => renderTask(item, taskTitle)}
+                      keyExtractor={(item, index) => index.toString()}
+                      numColumns={2}
+                      columnWrapperStyle={styles.columnWrapper}
+                    />
                     <View style={styles.horizontalLine} />
 
-                    <View style={{alignItems:'center'}}>
-                        {/* <Text onPress={() => takePicture()} style={{color:COLORS.primary}}>Upload Photos</Text> */}
-                        <TouchableOpacity style={styles.sendButton} onPress={() => takePicture(taskTitle)} >
-                            <View style={styles.sendButtonContent}>
-                                <Ionicons name="cloud-upload" size={24} color="gray" />
-                                <Text style={styles.addButtonText}>Add photo to {taskTitle}</Text>
-                            </View>
-                        </TouchableOpacity>
+                    <View style={{ alignItems: 'center' }}>
+                      <TouchableOpacity
+                        style={styles.sendButton}
+                        onPress={() => takePicture(taskTitle)}
+                      >
+                        <View style={styles.sendButtonContent}>
+                          <Ionicons name="cloud-upload" size={24} color="gray" />
+                          <Text style={styles.addButtonText}>
+                            Add photo to {taskTitle}
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
                     </View>
-                    {/* <Button
-                        // title={item.afterPhoto ? "Change Photo" : "Upload Photo2"}
-                        title="Upload Photo2"
-                        onPress={() => takePicture()}
-                    />
-                    <Button
-                        // title={item.completed ? "Undo" : "Complete"}
-                        title="Complete"
-                        // onPress={() => toggleTaskCompletion(item.id)}
-                        // color={item.completed ? COLORS.success : COLORS.primary}
-                        color={COLORS.primary}
-                    /> */}
-                 </View>
-                 </CardNoPrimary>
-             ))}
-             {/* Finish Cleaning Button */}
-              <Button title="Finish Cleaning" onPress={submitCompletion} color={COLORS.success} />
-             </ScrollView>
-             )}
+                  </View>
+                </CardNoPrimary>
+              ))}
+
+                <TouchableOpacity
+                  style={styles.finishButton}
+                  onPress={submitCompletion}
+                >
+                  <Text style={styles.finishButtonText}>Finish Cleaning</Text>
+                </TouchableOpacity>
+            </ScrollView>
+          )}
         </View>
-        
       )}
-
-      {/* Conditionally render the CameraView */}
-
+      
       {cameraVisible && (
-        <CameraView 
-          style={styles.camera} 
-          facing={facing}
-          ref={cameraRef}
-        >
 
-            {/* Close Button */}
-        <TouchableOpacity style={styles.closeButton} onPress={onCloseCamera} >
-          <Ionicons name="close-circle" size={32} color="white" />
-        </TouchableOpacity>
-
-          <View style={styles.buttonContainer}>
-            {/* <TouchableOpacity style={styles.button} onPress={toggleCameraFacing}>
-              <Ionicons name="camera-reverse" size={40} color="white" />
-            </TouchableOpacity> */}
-            <TouchableOpacity style={styles.captureButton} onPress={takePicture}>
-              <Ionicons name="camera" size={70} color="white" />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.sendButton} onPress={onSubmit}>
-              <View style={styles.sendButtonContent}>
-                <Ionicons name="cloud-upload" size={40} color="white" />
-                <Text style={styles.sendButtonText}>Upload</Text>
-              </View>
-            </TouchableOpacity>
+        <CameraView style={styles.camera} ref={cameraRef}>
+          <TouchableOpacity style={styles.closeButton} onPress={onCloseCamera}>
+            <Ionicons name="close-circle" size={32} color="white" />
+          </TouchableOpacity>
+          <View style={styles.spinnerContainer}>
+            {isUploading ? ( // Show spinner when uploading
+             <ActivityIndicator size="large" color={COLORS.primary} /> 
+            ) : (
+              <>
+                <TouchableOpacity style={styles.captureButton} onPress={() => takePicture(selectedTaskTitle)}>
+                  <Ionicons name="camera" size={70} color="white" />
+                </TouchableOpacity>
+              </>
+            )}
           </View>
         </CameraView>
       )}
 
       {/* Display thumbnails */}
-      <ScrollView horizontal style={styles.previewContainer}>
-        {photos.map((photo, index) => (
-          <View key={index} style={styles.thumbnailContainer}>
-            <Image source={{ uri: photo.uri }} style={styles.preview} />
-            <TouchableOpacity onPress={() => removePhoto(index)} style={styles.removeButton}>
-              <Ionicons name="trash" size={24} color="red" />
-            </TouchableOpacity>
+
+        <View style={{height:200}}>
+          <ScrollView horizontal style={styles.previewContainer}>
+            {photos.map((photo, index) => (
+              <View key={index} style={styles.thumbnailContainer}>
+                <Image source={{ uri: photo.file }} style={styles.preview} />
+                <TouchableOpacity onPress={() => removePhoto(index)} style={styles.removeButton}>
+                  <Ionicons name="trash" size={20} color={COLORS.gray} />
+                </TouchableOpacity>
+              </View>
+            ))}
+          </ScrollView>
+          
+          {photos.length > 0 ? 
+          // <TouchableOpacity onPress={onSubmit} style={styles.buttonContainer1}>
+          //   <View style={styles.buttonContent1}>
+          //     <Ionicons name="arrow-up-circle-outline" size={24} color="white" />
+          //     <Text style={styles.buttonText1}>Save Photos</Text>
+          //   </View>
+          // </TouchableOpacity>
+
+          <TouchableOpacity 
+            onPress={onSubmit} 
+            style={styles.buttonContainer1}
+            disabled={loading} // Disable button when loading
+          >
+            <View style={styles.buttonContent1}>
+              {loading ? (
+                <ActivityIndicator size="small" color="white" />
+              ) : (
+                <>
+                  <Ionicons name="arrow-up-circle-outline" size={24} color="white" />
+                  <Text style={styles.buttonText1}>Save Photos</Text>
+                </>
+              )}
+            </View>
+          </TouchableOpacity>
+          :
+            ""
+          }
           </View>
-        ))}
-      </ScrollView>
-    </View>
-  )
-
-}
-
+        
+        </View>
+  );
+};
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    // backgroundColor: 'black',
-    // backgroundColor: COLORS.backgroundColor,
-    borderRadius:10
-  },
- 
-  openCameraButton: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#007aff',
-    borderRadius: 10,
-    margin: 20,
-  },
-  openCameraText: {
-    color: 'white',
-    fontSize: 18,
-    marginTop: 10,
-  },
-  camera: {
-    flex: 20, // Adjusted to take more than half the screen
-    borderRadius:10,
-    overflow: 'hidden', // Ensure content respects borderRadius
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    zIndex: 1, // Make sure the button is above the camera view
-  },
-  buttonContainer: {
-    position: 'absolute',
-    bottom: 20,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-  },
-  button: {
-    alignItems: 'center',
-  },
-  captureButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
-    borderRadius: 35,
-    padding: 10,
-  },
-  sendButton: {
-    alignItems: 'center',
-  },
-  sendButtonContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  sendButtonText: {
-    color: 'white',
-    fontSize: 16,
-    marginLeft: 5,
-  },
-  addButtonText: {
-    color: 'black',
-    fontSize: 14,
-    marginLeft: 5,
-  },
-  previewContainer: {
-    flexDirection: 'row',
-    marginBottom: 10,
-  },
-  thumbnailContainer: {
-    position: 'relative',
-    marginRight: 10,
-    marginTop:10
-  },
-  preview: {
-    width: 100,
-    height: 100,
-    borderRadius:5
-  },
-  removeButton: {
-    position: 'absolute',
-    top: 5,
-    right: 5,
-    backgroundColor: 'white',
-    borderRadius: 50,
-    padding: 5,
-  },
-  roomContainer: {
-    marginVertical: 20,
-  },
-  roomTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  imageContainer: {
-    marginRight: 10,
-  },
-  image: {
-    width: 100,
-    height: 100,
-  },
-
-  taskContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 0,
-    flex: 1,
-  },
-  taskText: {
-    marginLeft: -5,
-    fontSize: 14,
-  },
-  columnWrapper: {
-    justifyContent: 'space-between', // Create space between columns
-  },
+  container: { flex: 1 },
+  headline: { fontSize: 20, fontWeight: 'bold', margin: 10 },
+  camera: { flex: 1 },
+  closeButton: { position: 'absolute', top: 10, right: 10 },
+  sendButton: { alignItems: 'left' },
+  sendButtonContent: { flexDirection: 'row', alignItems: 'center'},
+  sendButtonText: { color: 'white', fontSize: 16 },
+  addButtonText: { fontSize: 14, marginLeft: 5 },
   horizontalLine: {
     borderBottomColor: COLORS.light_gray_1,
     borderBottomWidth: 1,
     marginVertical: 10,
   },
-  headline: {
-    fontSize: 18,
+  roomTitle: {
+    fontSize: 14,
     fontWeight: 'bold',
-    color: '#333',
     marginBottom: 0,
   },
-  subheading: {
-    fontSize: 14,
-    color: '#666',
-    lineHeight: 22,
+  previewContainer: { 
+    flexDirection: 'row',
+  },
+  thumbnailContainer: { 
+    margin: 5 
+  },
+  preview: { 
+    width: 100, 
+    height: 100,
+    borderRadius:5
   },
   loadingContainer: {
-    flex: 1,
+    flex: 1, 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    position: 'absolute', 
+    top: 100, 
+    left: 0, 
+    right: 0, 
+    bottom: 0, 
+    backgroundColor: 'rgba(255, 255, 255, 0.8)', // Slightly transparent background
+    zIndex: 10, // Ensure it appears above other content
+  },
+  finishButton: {
+    backgroundColor: COLORS.success,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginVertical: 20,
+    marginHorizontal: 10,
+  },
+  finishButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  captureButton:{
+    marginTop:'80%'
+  },
+  buttonContainer1: {
+    backgroundColor: 'green', // Set button container color
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    alignItems: 'center',
     justifyContent: 'center',
+    flexDirection: 'row', // Arrange icon and text horizontally
+    borderRadius:50
+  },
+  buttonContent1: {
+    flexDirection: 'row', // Align icon and text horizontally
     alignItems: 'center',
   },
+  buttonText1: {
+    color: 'white', // Text color
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginLeft: 8, // Add space between icon and text
+  },
+  spinnerContainer:{
+    flex:1,
+    justifyContent:'center',
+    alignItems:'center'
+  },
+  removeButton: {
+    position: 'absolute', // Position the trash button absolutely
+    top: 5, // Distance from the top
+    right: 5, // Distance from the right
+    backgroundColor: 'rgba(255, 255, 255, 0.7)', // Optional: Adds background color to make it more visible
+    borderRadius: 15, // Optional: Makes the background round
+    padding: 5, // Optional: Increases clickable area
+  },
+  message: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    padding: 10,
+    backgroundColor: '#FFF9C4',
+    borderRadius: 10,
+    margin: 5,
+  },
+  iconContainer: {
+    marginRight: 8,
+    marginTop: 2, // Adjust for vertical alignment
+  },
+  subheading: {
+    flex: 1,
+    fontSize: 14,
+    color: '#616161', // Gray text for contrast
+    lineHeight: 18,
+  },
+  deleteButton: {
+    position: 'absolute',
+    top: 5,
+    right: 5,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 5,
+    elevation: 3, // Android shadow
+  },
+  // Modal styles
+  fullScreenModal: {
+    margin: 0,
+    justifyContent: 'center',
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'black',
+  },
+  imageContainer: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  fullSizeImage: {
+    width: '100%',
+    height: '100%',
+  },
+  footerOverlay: {
+    position: 'absolute',
+    bottom: 20,
+    alignSelf: 'center',
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    padding: 5,
+    borderRadius: 5,
+  },
+  imageCounter: {
+    color: 'white',
+    fontSize: 16,
+    marginLeft:100
+  },
+  
 });
 
-
-export default BeforePhoto
-
-// import React, { useContext, useCallback, useEffect,useState } from 'react';
-// import Text from '../../components/Text';
-// import { useFocusEffect } from '@react-navigation/native'; // Import useFocusEffect from React Navigation
-// import { SafeAreaView,StyleSheet, StatusBar, useWindowDimensions, Linking, FlatList, ScrollView, Image, View, TouchableOpacity, ActivityIndicator } from 'react-native';
-// import COLORS from '../../constants/colors';
-// import userService from '../../services/userService';
-// import Card from '../../components/Card';
-// import { AuthContext } from '../../context/AuthContext';
-// import * as ImagePicker from 'expo-image-picker';
-// import { MaterialCommunityIcons } from '@expo/vector-icons';
-// import TaskImages from '../../components/TaskImages';
-// import * as Animatable from 'react-native-animatable';
-// import { HomeSkeleton } from '../../components/skeleton/HomeSkeleton';
-// import ImageViewer from 'react-native-image-zoom-viewer';
-// import Modal from 'react-native-modal';
-
-
-
-
-
-//   const BeforePhoto = ({scheduleId}) => {
-
-    
-
-//     const genericArray = new Array(9).fill(null);
-//     const {currentUserId} = useContext(AuthContext)
-
-//     const[isLoading, setIsLoading] = useState(false);
-//     const[firstname, setFirstname] = useState("")
-//     const[lastname, setLastname] = useState("")
-//     const[username, setUsername] = useState("")
-//     const[avatar, setAvatar] = useState("")
-//     const[isOpenImages, setIsOpenImages] = useState(false);
-//     const[images, setImages] = React.useState([])
-//     const[selected_images, setSelectedImages] = React.useState([])
-
-//     const { width } = useWindowDimensions();
-//     const numColumns = 3;
-//     const columnWidth = width / numColumns - 26; // Adjusted width to accommodate margins
-    
-//     const [isBeforeModalVisible, setBeforeModalVisible] = useState(false);
-//     const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
-//     useEffect(() => {
-//       fetchUser()
-//     },[])
-
-//     // Execute fetchImages when the screen comes into focus
-//     useFocusEffect(
-//       useCallback(() => {
-//         fetchImages();
-//       }, [])
-//     );
-      
-//     const fetchImages = async () => {
-//       // Fetch images from the database
-//       setIsLoading(true);
-//       await userService.getUpdatedImageUrls(scheduleId)
-//       .then(response => {
-//         const res = response.data.data
-//         console.log(res.before_task_photos)
-//         // Update state with the fetched images
-//         setSelectedImages(res.before_task_photos);
-//         setIsLoading(false);
-//       })
-      
-//     };
-    
-//     const onSubmit = async() => {
-//       setIsLoading(true);
-//       const data = {
-//         photo_type:"before_photos",
-//         scheduleId:scheduleId,
-//         images:images,
-//         currentUserId:currentUserId
-//       }
-
-//       await userService.uploadTaskPhotos(data)
-//       .then(response => {
-//         const res = response.data;
-//         console.log(res)
-//         fetchImages();
-//         setIsLoading(true);
-//       }).catch((err) => {
-//         console.log(err)
-//       })
-//     }
-
-//     // Function to open the Before Photos modal
-//     const openBeforeModal = (startIndex) => {
-//       // Convert before photos array to the format required by ImageViewer
-//       const formattedBeforePhotos = selected_images.map(photo => ({ url: photo.img_url }));
-//       setImages(formattedBeforePhotos);
-//       setCurrentImageIndex(startIndex);
-//       setBeforeModalVisible(true);
-//   };
-
-//     const renderThumbnails = ({ item, drag, isActive, index }) => (
-//       <TouchableOpacity
-//         disabled={isActive}
-//         style={[
-//           styles.rowItem,
-//           { backgroundColor: isActive ? COLORS.gray : item.backgroundColor },
-//         ]}
-//         onPress={() => openBeforeModal(index)}
-//       >
-        
-//         <Image 
-//           source={{uri:item.img_url}} 
-//           style={styles.thumbnails} 
-//           resizeMode="cover" 
-//         />
-//       </TouchableOpacity>
-    
-      
-//     )
-//     const renderThumbnails1 = ({ item, drag, isActive }) => (
-//       <TouchableOpacity
-//         disabled={isActive}
-//         style={[
-//           styles.rowItem,
-//           { backgroundColor: isActive ? COLORS.gray : item.backgroundColor },
-//         ]}
-//       >
-        
-//         <HomeSkeleton width={110} height={110} />
-//       </TouchableOpacity>
-    
-      
-//     )
-
-//   const pickImage = async () => {
-//     let result = await ImagePicker.launchImageLibraryAsync({
-//       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-//       allowsMultipleSelection:true,
-//       mediaType: 'photo',
-//       base64: true,
-//       aspect: [4, 3],
-//       quality: 1,
-//     });
-
-//     if (!result.cancelled) {
-    
-//       let new_results = result.assets
-    
-//       // console.log(new_results)
-//       new_results.forEach((i) => {
-
-//         let imgSrc = "data:image/png;base64," + i.base64;
-//         images.push({filename:i.uri.replace('file:///data/user/0/host.exp.exponent/cache/ImagePicker/', ''), file:imgSrc })
-//         console.log(images)
-//       })
-
-//       // setImageErrors("")
-//       setIsOpenImages(true)
-//       onSubmit()
-      
-//     }
-//   };
-    
-//     const fetchUser = async () => {
-//       try {
-        
-//         // setLoading(true)
-        
-//         await userService.getUser(currentUserId)
-//         .then(response=> {
-//           const res = response.data
-//           console.log(res.firstname)
-//           setUsername(res.username)
-//           setFirstname(res.firstname)
-//           setLastname(res.lastname)
-//         })
-    
-//         // setLoading(false)
-  
-//       } catch(e) {
-//         // error reading value
-//         console.log(e)
-//       }
-//     }
-
-    
-    
-//   return (
-//     <SafeAreaView
-//           style={{
-//             flex:1,
-//             backgroundColor:COLORS.white,
-//             // justifyContent:"center",
-//             // alignItems:"center",
-//             marginBottom:0,
-
-//           }}
-//         >
-//           <ScrollView>
-//           <Animatable.View animation="slideInRight" duration={550}>
-//           <View style={styles.container}>
-      
-//             <Text bold style={{fontSize:16, marginBottom:5 }}>Before Photos</Text>
-//             <Text style={{fontSize:14, marginBottom:15, color:COLORS.gray}}>
-//               Remember to upload the before photos before you start cleaning.
-//             </Text>
-            
-//           <TouchableOpacity onPress={pickImage}>
-//               <View style={styles.uploadButton}>
-              
-//                 <MaterialCommunityIcons name="cloud" style={{fontSize:40, color:COLORS.primary}} />
-//                 <Text style={{color:COLORS.secondary}}>Upload photos</Text>
-              
-//               </View>
-//           </TouchableOpacity>
-
-//           {isLoading && (
-//           <View>
-//             <View style={{marginLeft:5}}>
-//               <FlatList 
-//                 data = {selected_images}
-//                 renderItem = {renderThumbnails1}
-//                 keyExtractor={(item, index)=> item.key} 
-//                 numColumns={numColumns}
-//                 key={numColumns}
-//                 showsVerticalScrollIndicator={true}
-//               />
-//             </View>
-//           </View>
-//           )}
-
-
-//           <View style={{marginLeft:5}}>
-    
-//               <FlatList 
-//                 data = {selected_images}
-//                 renderItem = {renderThumbnails}
-//                 keyExtractor={(item, index)=> item.index} 
-//                 numColumns={numColumns}
-//                 key={numColumns}
-//                 showsVerticalScrollIndicator={true}
-//               />
-            
-//           </View>
-//         </View>
-//         </Animatable.View>
-
-        
-//         </ScrollView>
-//         <Modal isVisible={isBeforeModalVisible} style={styles.fullScreenModal} onBackdropPress={() => setBeforeModalVisible(false)}>
-//             <ImageViewer
-//                 imageUrls={images}
-//                 index={currentImageIndex}
-//                 onClick={() => setBeforeModalVisible(false)}
-//                 enableSwipeDown
-//                 onSwipeDown={() => setBeforeModalVisible(false)}
-//                 backgroundColor="black"
-//             />
-//         </Modal>
-//     </SafeAreaView>
-    
-   
-//   )
-// }
-
-// const styles = StyleSheet.create({
-//   container:{
-//     marginHorizontal:10,
-//     marginVertical:20
-//   },
-//   uploadButton:{
-//       width:'100%',
-//       alignSelf:'center',
-//       marginTop:0,
-//       marginBottom:10,
-//       padding:20,
-//       height:80, 
-//       backgroundColor: COLORS.primary_light_1,  
-//       borderStyle:'dashed',
-//       borderWidth:2,
-//       borderColor:COLORS.primary,
-//       borderRadius:8, 
-//       display: 'flex',
-//       alignItems: 'center', 
-//       justifyContent: 'center'
-//     },
-//     thumbnails:{
-//       width: 102,
-//       height:102,
-//       borderRadius:5,
-//       margin:5
-//     },
-    
-// })
-
-// export default BeforePhoto
+export default BeforePhoto;

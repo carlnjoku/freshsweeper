@@ -544,6 +544,9 @@ export const checklist_es = {
       "Kitchen": {
         "photos": []
       },
+      "Extra": {
+        "photos": []
+      },
     }
 
 

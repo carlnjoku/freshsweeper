@@ -80,7 +80,7 @@ const ProgressiveForm = () => {
 
   const handleSubmit = () => {
     // Submit form data
-    console.log(formData);
+    // console.log(formData);
   };
 
   return (

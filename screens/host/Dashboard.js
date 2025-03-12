@@ -18,39 +18,31 @@ import { CardField, useConfirmSetupIntent, StripeProvider } from '@stripe/stripe
 import UpcomingScheduleListItem from '../../components/host/ScheduleListItem';
 
 import { useFocusEffect } from '@react-navigation/native';
-import PendingApprovalListItem from '../../components/host/PendingApprovalListItem';
+// import PendingApprovalListItem from '../../components/host/PendingApprovalListItem';
 import { MaterialCommunityIcons, AntDesign } from '@expo/vector-icons';
 import AvailableSchedules from '../../components/host/AvailableSchedules';
 import PendingPaymentItem from '../../components/host/PendingPaymentItem';
 import CleaningRequestItem from '../../components/host/CleaningRequestItem';
 import CustomCard from '../../components/CustomCard';
-
+import PendingApprovalListItem from '../../components/host/PendingApprovalListItem';
+import CircleIconNoLabel from '../../components/CirecleIconNoLabel';
+import CardNoPrimary from '../../components/CardNoPrimary';
+import UpcomingScheduleItem from '../../components/host/UpcomingScheduleItem';
+import EmptyApartmentPlaceholder from '../../components/host/EmptyApartmentPlaceholder';
+import TimeRequest from '../../components/host/TimeRequest';
+import { RefreshControl } from 'react-native';
+import moment from 'moment';
+import NewlyPublishedSchedule from '../../components/host/NewlyPublishedSchedule';
+import * as Animatable from 'react-native-animatable';
 
 
 
 export default function Dashboard({navigation}) {
 
-  // Example data (replace with API or state data)
-  const properties = [
-    { id: 1, name: 'Downtown Apartment', bedrooms: 2, bathrooms: 1, status: 'Upcoming Cleaning' },
-    { id: 2, name: 'Beachside Villa', bedrooms: 4, bathrooms: 3, status: 'No Cleaning Scheduled' },
-  ];
 
-  const upcomingCleanings = [
-    { id: 1, property: 'Downtown Apartment', date: '2024-11-18', cleaner: 'John Doe' },
-    { id: 2, property: 'Beachside Villa', date: '2024-11-20', cleaner: 'Jane Smith' },
-  ];
+  const {currentUser, currentUserId, geolocationData} = useContext(AuthContext)
 
-  const outstandingPayments = 120;
-
-
-
-
-
-
-
-  const {logout, currentUserId} = useContext(AuthContext)
-
+  const[loading, setLoading] = useState(true); // State for loader
   const[firstname, setFirstname] = useState("")
   const[lastname, setLastname] = useState("")
   const[username, setUsername] = useState("")
@@ -66,35 +58,32 @@ export default function Dashboard({navigation}) {
   const [upcoming, setUpcomingSchedules] = useState([]);
   const [cleaning_request, SetCleaningRequests] = useState([]);
   const [apartments, SetApartments] = useState([]);
+  const [extraTime, setExtraTime] = useState([]);
+  const [pendingCount, setPendingCount] = useState([]);
+
+  // Add refreshing state
+  const [refreshing, setRefreshing] = useState(false);
   
 
 
-
-  const mockSchedules = [
-    {
-      id: 1,
-      propertyName: "Beachside Apartment",
-      cleaningDate: "2024-11-20",
-      cleaningTime: "10:00 AM",
-      location: "Miami, FL",
-      status: "Open",
-    },
-    {
-      id: 2,
-      propertyName: "Urban Loft",
-      cleaningDate: "2024-11-22",
-      cleaningTime: "2:00 PM",
-      location: "New York, NY",
-      status: "Open",
-    },
-  ];
-
+// Function to handle refresh
+const handleRefresh = async () => {
+  setRefreshing(true);
+  try {
+    await Promise.all([fetchSchedules(), fetchRequests(), fetchApartments(), fetchExtraTime(), fetchUser()]);
+  } catch (error) {
+    console.error('Error refreshing data:', error);
+  } finally {
+    setRefreshing(false);
+  }
+};
+  
   const openMenu = () => setVisible(true);
   const closeMenu = () => setVisible(false);
 
     // Function to handle item selection
     const handleSelect = (value) => {
-      alert(value)
+      // alert(value)
       setSelectedValue(value);
       closeMenu();
   };
@@ -119,16 +108,41 @@ export default function Dashboard({navigation}) {
       fetchSchedules()
       fetchRequests()
       fetchApartments()
-      
+      fetchExtraTime()
     }, [])
   );
 
+  // Fetch all required data and set loading to false when done
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        await Promise.all([fetchSchedules(), fetchRequests(), fetchApartments(), fetchExtraTime(), fetchUser()]);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false); // Stop loading once all data is fetched
+      }
+    };
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // fetchSchedules();
+      fetchRequests();
+      // fetchApartments();
+      // fetchExtraTime();
+    // }, 10000); // Polling every 10 seconds
+    }, 10000); // Polling every 10 seconds
+  
+    return () => clearInterval(interval); // Cleanup interval on component unmount
+  }, []);
   
   const fetchClientSecret = async() => {
    
     await userService.getClientSecret()
     .then(response => {
-      console.log(response.data)
+      // console.log(response.data)
       const res = response.data
       setClienSecret(res.client_secret)
       console.log(res.client_secret)
@@ -137,11 +151,17 @@ export default function Dashboard({navigation}) {
   }
 
   const fetchRequests = async () => {
+
+    const currentTime = moment().format('YYYY-MM-DD HH:mm:ss')
     try {
-      await userService.getHostCleaningRequest(currentUserId).then((response) => {
+      await userService.getHostCleaningRequest(currentUserId,currentTime).then((response) => {
         const res = response.data;
-     
-        console.log("requests", JSON.stringify(res, null,2))
+        setPendingCount(res.length)
+        const total_request_sent = res.length
+        // getSchedulesByHostId
+        // getUpcomingSchedulesByHostId
+        // console.log("requests", JSON.stringify(res, null,2))
+        console.log("Where the hell is this request")
         const now = new Date();
 
         // Host Requests
@@ -155,22 +175,14 @@ export default function Dashboard({navigation}) {
           (req) => req.status === "pending_payment"
         );
 
-        // const pendingPayment = res.filter(
-        //   (schedule) => schedule.status === "pending_payment"
-        // );
-        alert(pendingRequests)
-        console.log("requuueeeeeeeeeeeeeeeeeest1234")
-        console.log(JSON.stringify(pendingRequests, null,2));
-        // console.log(pendingRequests)
-        
-        console.log("requuueeeeeeeeeeeeeeeeeest2")
         SetCleaningRequests(pendingRequests)
         setFilteredPendingPayment(pendingPayment);
+        
         
       });
     } catch (e) {
       console.log(e);
-      setLoading(false); // Ensure loading state is set to false in case of error
+      // setLoading(false); // Ensure loading state is set to false in case of error
     }
   };
 
@@ -186,19 +198,12 @@ export default function Dashboard({navigation}) {
   };
 
 
-    // const fetchJobs = () => {
-    //     userService.getJobs()
-    //     .then(response => {
-    //         const res = response.data
-    //         console.log(deta)
-    //     })
-    // }
-
+    
     const fetchApartments = async () => {
         try {
           const response = await userService.getApartment(currentUserId);
           const data = response.data;
-          console.log(data); // Log the fetched data
+          // console.log(data); // Log the fetched data
           SetApartments(data)
           // return data; // Return the fetched data if needed
         } catch (error) {
@@ -207,50 +212,26 @@ export default function Dashboard({navigation}) {
         }
       };
 
-    // const fetchUser = async () => {
-    //   try {
-
-    //     setLoading(true)
-    //     const jsonValue = await AsyncStorage.getItem('@storage_Key')
-    //     console.log("________________6666666666_______________________")
-    //     const userInfo = JSON.parse(jsonValue)
-    //     console.log(userInfo)
-        
-    //     setUserId(userInfo._id)
-    //     // setUserName(userInfo.username)
-    //     // setUserAvatar(userInfo.avatar)
-    //     // setUserCreatedAt(userInfo.created_at)
-       
-        
-    //     // setCurrency("₦")
-    //     console.log(userInfo._id)
-    //     const id = userInfo._id
-        
-    //       userService.getUser(id)
-    //       .then(response => {
-    //           const res = response.data
-    //           setUserPhone(res.phone)
-    //           setAddress(res.address)
-    //           setFullName(res.firstname + " "+ res.lastname)
-
-    //           setLoading(false)
-      
-    //       })
-      
-    //     console.log("________________6666666666_______________________")
-    //     return jsonValue != null ? JSON.parse(jsonValue) : null;
-    //   } catch(e) {
-    //     // error reading value
-    //   }
-    // }
+    const fetchExtraTime = async () => {
+        try {
+          const response = await userService.getExtraTime(currentUserId);
+          const data = response.data;
+          // console.log(data); // Log the fetched data
+          setExtraTime(data)
+          // return data; // Return the fetched data if needed
+        } catch (error) {
+          console.error('Error fetching jobs:', error);
+          throw error; // Rethrow the error to handle it in the calling code
+        }
+      };
 
     const fetchSchedules = async () => {
       await userService.getSchedulesByHostId(currentUserId)
       .then(response => {
         // alert("seentoouy688")
-        console.log(response.status)
+        // console.log(response.status)
         const res = response.data
-        // console.log("my schedules",res)
+        // console.log("my schedules",JSON.stringify(res, null, 2))
         setSchedules(res)
         
         // const pendingPayment = res.filter(
@@ -260,13 +241,13 @@ export default function Dashboard({navigation}) {
           (schedule) => schedule.status === "pending_approval"
         );
         const upcomingSchedules = res.filter(
-          (schedule) => schedule.verificationStatus === "upcoming"
+          (schedule) => schedule.status === "upcoming"
         );
         // console.log("My pending schedules", pendingPayment)
         
         setFilteredPendingCompletionApprovalSchedules(pendingCompletionApproval);
         setUpcomingSchedules(upcomingSchedules)
-        setFilteredPendingPayment(pendingPayment);
+        // setFilteredPendingPayment(pendingPayment);
 
         
 
@@ -294,31 +275,70 @@ export default function Dashboard({navigation}) {
             setUsername(res.username)
             setFirstname(res.firstname)
             setLastname(res.lastname)
-         
-           
           })
       
           
-    
           return jsonValue != null ? JSON.parse(jsonValue) : null;
         } catch(e) {
           // error reading value
         }
       }
 
+      const renderItemPaymentApproval = ({item}) => (
+        <PendingApprovalListItem item={item} />
+      )
 
 
       const renderItem = ({ item }) => {
         switch (item.type) {
     
-          case 'outstanding_payment':
-            if (cleaning_request.length === 0) return null; // Don't render if no request
+          case 'cleaning_extra_time_requests':
+            if(extraTime.length===0) return null
+            return(
+              <View style={styles.section}>
+                <FlatList 
+                  data={extraTime}
+                  renderItem = {renderExtratime}
+                  ListHeaderComponent={<Text style={styles.title}>Extra Time Request</Text>}
+                  ListHeaderComponentStyle={styles.list_header}
+                  ListEmptyComponent={<Text>No pending extra time found</Text>}
+                  ItemSeparatorComponent={() => <View style={styles.line}></View>}
+                  keyExtractor={(item) => item.key}
+                  numColumns={1}
+                  showsVerticalScrollIndicator={false}
+                  horizontal={false}
+                />
+    
+              </View>
+          )
+          case 'pending_payment':
+            if (pending_payment.length === 0) return null; // Don't render if no request
             return(
               <View style={styles.section}>
                 <FlatList 
                   data={pending_payment}
                   renderItem = {renderPendingPayment}
-                  ListHeaderComponent={<Text style={styles.title}>Pending Payment</Text>}
+                  ListHeaderComponent={<Text style={styles.title}>Accepted Requests</Text>}
+                  ListHeaderComponentStyle={styles.list_header}
+                  ListEmptyComponent={<Text>No pending payment found</Text>}
+                  // ItemSeparatorComponent={() => <View style={styles.line}></View>}
+                  keyExtractor={(item) => item.key}
+                  numColumns={1}
+                  showsVerticalScrollIndicator={false}
+                  horizontal={false}
+                />
+    
+              </View>
+          )
+
+          case 'payment_approval':
+            if (pending_completion_approval.length === 0) return null; // Don't render if no request
+            return(
+              <View style={styles.section}>
+                <FlatList 
+                  data={pending_completion_approval}
+                  renderItem = {renderItemPaymentApproval}
+                  ListHeaderComponent={<Text style={styles.title}>Task Completed</Text>}
                   ListHeaderComponentStyle={styles.list_header}
                   ListEmptyComponent={<Text>No upcoming schedules found</Text>}
                   ItemSeparatorComponent={() => <View style={styles.line}></View>}
@@ -335,27 +355,33 @@ export default function Dashboard({navigation}) {
             if (cleaning_request.length === 0) return null; // Don't render if no request
             return(
               <View style={styles.section}>
-                <FlatList 
-                  data={cleaning_request.slice(0, 4)}
-                  renderItem = {renderRequestItem}
-                  ListHeaderComponent={<Text style={styles.title}>New Cleaning Requests</Text>}
-                  ListHeaderComponentStyle={styles.list_header}
-                  ListEmptyComponent={<Text>No cleaning request found</Text>}
-                  ItemSeparatorComponent={() => <View style={styles.line}></View>}
-                  keyExtractor={(item) => item.key}
-                  numColumns={1}
-                  showsVerticalScrollIndicator={false}
-                  horizontal={false}
-                />
+                 <View>
+                   
+                      <FlatList 
+                        data={cleaning_request.slice(0, 4)}
+                        renderItem = {renderRequestItem}
+                        ListHeaderComponent={<Text style={styles.title}>New Cleaning Requests</Text>}
+                        ListHeaderComponentStyle={styles.list_header}
+                        ListEmptyComponent={<Text>No cleaning request found</Text>}
+                        ItemSeparatorComponent={() => <View style={styles.line}></View>}
+                        keyExtractor={(item) => item.key}
+                        numColumns={1}
+                        showsVerticalScrollIndicator={false}
+                        horizontal={false}
+                      />
+                    
+                  </View>
+                
     
               </View>
           )
         
           case 'upcomingSchedule':
-            if (cleaning_request.length === 0) return null; // Don't render if no upcoming schedules
+            if (upcoming.length === 0) return null; // Don't render if no upcoming schedules
             return (
               <View style={{marginHorizontal:0}}>
-                {/* <CardNoPrimary> */}
+                
+                <CardNoPrimary>
               
                 <FlatList 
                   data={upcoming}
@@ -370,216 +396,161 @@ export default function Dashboard({navigation}) {
                   horizontal={false}
                 />
                 
-              {/* </CardNoPrimary> */}
+              </CardNoPrimary>
             </View>
             );
 
 
-          case 'properties':
-            if (cleaning_request.length === 0) return null; // Don't render if no upcoming schedules
-            return (
-              <View style={{marginHorizontal:0}}>
-                {/* <CardNoPrimary> */}
-              
-                <FlatList 
-                  data={upcoming}
-                  renderItem = {singleItem}
-                  ListHeaderComponent={<Text style={styles.title}>Upcoming Schedules</Text>}
-                  ListHeaderComponentStyle={styles.list_header}
-                  ListEmptyComponent={<Text>No upcoming schedules found</Text>}
-                  ItemSeparatorComponent={() => <View style={styles.line}></View>}
-                  keyExtractor={(item) => item.key}
-                  numColumns={1}
-                  showsVerticalScrollIndicator={false}
-                  horizontal={false}
-                />
-                
-              {/* </CardNoPrimary> */}
-            </View>
-            );
+            case 'properties':
+              return (
+                <View style={{ marginHorizontal: 0 }}>
+                  {apartments.length === 0 ? (
+                    // Display the EmptyApartmentPlaceholder when no properties exist
+                    <EmptyApartmentPlaceholder onAddApartment={handleHostPress} />
+                  ) : (
+                    <CardNoPrimary>
+                      <View style={styles.titleContainer}>
+                        <Text bold style={styles.title}>My Properties</Text>
+                        <View style={styles.actions}>
+                          <CircleIconNoLabel
+                            iconName="plus"
+                            buttonSize={30}
+                            radiusSise={15}
+                            iconSize={16}
+                            onPress={handleHostPress}
+                          />
+                        </View>
+                      </View>
+                      <View style={styles.line}></View>
+                      <View style={styles.content}>
+                        {apartments.slice(0, 2).map((property) => (
+                          <List.Item
+                            key={property._id}
+                            title={property?.apt_name}
+                            description={
+                              <Text style={{ color: COLORS.gray, fontSize: 13 }}>{property?.address}</Text>
+                            }
+                            left={(props) => <AntDesign name="home" size={20} color={COLORS.gray} />}
+                            right={(props) => (
+                              <View style={styles.rightContainer}>
+                                <CircleIconNoLabel
+                                  iconName="chevron-right"
+                                  buttonSize={30}
+                                  radiusSise={15}
+                                  iconSize={16}
+                                  onPress={() => navigation.navigate(ROUTES.host_apt_dashboard, { propertyId: property._id, hostId:currentUserId, property:property })}
+                                />
+                                
+                              </View>
+                            )}
+                          />
+                        ))}
+
+                          {apartments.length > 2 && (
+                            <TouchableOpacity 
+                              onPress={() => navigation.navigate(ROUTES.host_my_apartment)}
+                              style={styles.viewAllContainer}
+                            >
+                              <Text style={styles.viewAllText}>View All Properties</Text>
+                            </TouchableOpacity>
+                          )}
+                      </View>
+                    </CardNoPrimary>
+                  )}
+                </View>
+              );
       }}
 
       
-      const renderRequestItem = (item) => (
+      // const renderRequestItem = (item) => (
+
+      //   <View style={{marginVertical:0, marginHorizontal:0}}>
+      //     <CleaningRequestItem item={item} />
+      //   </View>
+      // )
+      const renderExtratime = (item) => (
 
         <View style={{marginVertical:0, marginHorizontal:0}}>
-          <CleaningRequestItem item={item} />
+          <TimeRequest item={item} />
         </View>
       )
 
       const renderPendingPayment = (item) => (
         <View style={{marginVertical:10, marginHorizontal:10}}>
           <PendingPaymentItem item={item} />
+          
         </View>
       )
 
       const singleItem = (item) =>  (
-        <View style={{marginTop:260}}>
-          <PendingApprovalListItem item={item} />
+        <View style={{marginTop:20}}>
+          <UpcomingScheduleListItem item={item.item} currency={geolocationData.currency.symbol} />
         </View>
       )
 
+      
 
-      const handleClaimSchedule = (scheduleId) => {
-        console.log(`Schedule with ID ${scheduleId} has been claimed.`);
-        // Implement logic to update the status in your backend
-      };
-    
+      
       const data = [
-        { type: 'cleaning_requests' },
-        { type: 'outstanding_payment' },
+        // { type: 'intro' },
+        // { type: 'cleaning_requests' },
+        { type: 'cleaning_extra_time_requests' },
+        { type: 'pending_payment' },
+        { type: 'payment_approval'},
         { type: 'upcomingSchedule' },
         { type: 'properties' },
         
       ]; 
+
+      // Loader screen
+  if (loading) {
+    return (
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </View>
+    );
+  }
+
+  const sampleSchedule = {
+    apartmentName: "Apartment 101",
+    cleaning_date: "March 10, 2025",
+    cleaning_time: "10:00 AM",
+  };
+  
+  // const pendingCount = 5; // Number of pending requests
+  // const acceptedCleaners = [
+  //   { name: "Jane Smith", acceptedTime: "2:15 PM" },
+  //   { name: "John Doe", acceptedTime: "3:00 PM" },
+  // ];
   return (
-    // <SafeAreaView
-    //       style={{
-    //         // flex:1,
-    //         backgroundColor:COLORS.white,
-    //         // justifyContent:"center",
-    //         // alignItems:"center",
-    //         marginBottom:0,
-    //         paddingTop:0
-
-    //       }}
-    //     >
-
-<SafeAreaView style={{ flex: 1,  backgroundColor: COLORS.white }}>
-     <StatusBar translucent backgroundColor="transparent" />
+   
+  <SafeAreaView style={{ flex: 1,  backgroundColor: COLORS.white }}>
+    
+    <StatusBar translucent={false} backgroundColor={COLORS.white}  barStyle="dark-content"/>
 
           
-    <View style={styles.blue_board} />
-    
-   
-     
-      
-        <ScrollView>
-
-          {/* Overview Cards */}
-      <View style={styles.overview}>
-        {/* <Card style={styles.card}>
-          <Card.Content style={styles.cardContent}>
-            <Text style={{fontSize:16}}>Active Properties</Text>
-            <Paragraph>2</Paragraph>
-          </Card.Content>
-        </Card> */}
-        {/* <Card style={styles.card}> */}
-          {/* <Card.Content style={styles.cardContent}>
-          <Text style={{fontSize:20, fontWeight:'bold'}}>Upcoming</Text>
-          <Text style={{fontSize:20}}>Cleanings</Text>
-            <Paragraph>{upcomingCleanings.length}</Paragraph>
-          </Card.Content> */}
-          <CustomCard style={styles.card} content="Upcoming Cleaning">
-          <Text style={{fontSize:20, fontWeight:'bold'}}>Upcoming</Text>
-          <Text style={{fontSize:20}}>Cleanings</Text>
-            <Paragraph>{upcomingCleanings.length}</Paragraph>
-          </CustomCard>
-        {/* </Card> */}
-        {/* <Card style={styles.card}>
-          <Card.Content style={styles.cardContent}>
-          <Text style={{fontSize:20, fontWeight:'condensed'}}>Outstanding</Text>
-          <Text style={{fontSize:20, fontFamily: 'RobotoCondensed-Regular',}}>Paymentss</Text>
-            <Paragraph>${outstandingPayments}</Paragraph>
-          </Card.Content>
-        </Card> */}
-
-          <CustomCard style={styles.card} content="Upcoming Cleaning">
-            <Text style={{fontSize:20, fontWeight:'condensed'}}>Outstanding</Text>
-            <Text style={{fontSize:20, fontFamily: 'RobotoCondensed-Regular',}}>Payments</Text>
-            <Paragraph>${outstandingPayments}</Paragraph>
-          </CustomCard>
-
+     {pending_payment.length > 0 ? (
+       <View></View>
+      ) : (
         
-      </View>
-        <FlatList
-          data={data}
-          renderItem={renderItem}
-          keyExtractor={(item, index) => index.toString()}
-        />
-        {pending_payment.length > 0 &&
-          <FlatList 
-            data={pending_payment}
-            renderItem = {renderPendingPayment}
-            ListHeaderComponent={<Text style={styles.title}>Pending Payment</Text>}
-            ListHeaderComponentStyle={styles.list_header}
-            ListEmptyComponent={<Text>No upcoming schedules found</Text>}
-            ItemSeparatorComponent={() => <View style={styles.line}></View>}
-            keyExtractor={(item) => item.key}
-            numColumns={1}
-            showsVerticalScrollIndicator={false}
-            horizontal={false}
-          />
-        }
-
-
-
-                {/* <FlatList 
-                  data={data}
-                  renderItem = {renderItem}
-                  ListHeaderComponent={<Text style={styles.title}>New Cleaning Requests</Text>}
-                  ListHeaderComponentStyle={styles.list_header}
-                  ListEmptyComponent={<Text>No cleaning request found</Text>}
-                  ItemSeparatorComponent={() => <View style={styles.line}></View>}
-                  keyExtractor={(item) => item.key}
-                  numColumns={1}
-                  showsVerticalScrollIndicator={false}
-                  horizontal={false}
-                /> */}
-    
-
-
-
-
-      <CustomCard>
-      {apartments.map((property) => (
-          <List.Item
-            key={property._id}
-            title={property?.apt_name}
-            description={`${property?.bedroom_num} Bedrooms, ${property?.bathroom_num} Bathrooms`}
-            left={(props) => <AntDesign name="home" size={20} color={COLORS.gray}/>} 
-            right={(props) => (
-              <Button mode="outlined" textColor={COLORS.primary} onPress={() => console.log(`Edit ${property.name}`)}>
-                Edit
-              </Button>
-            )}
-          />
-        ))}
-        </CustomCard>
+      <Animatable.View animation="slideInRight" duration={550}>
+        <NewlyPublishedSchedule 
+            schedule={sampleSchedule}
+            pendingCount={pendingCount}
             
-
-      {/* Upcoming Cleanings */}
-      <View style={styles.section}>
-      <Text onPress= {logout}>Logout {pending_payment.length}</Text>
-        
-      </View>
-
+        />
+      </Animatable.View>
+      )}
       
-
-      {/* Quick Actions */}
-      <View style={styles.section}>
-        <Title>Quick Actions</Title>
-        <Button
-          mode="contained"
-          style={styles.button}
-          onPress={() => console.log('Create New Schedule')}
-        >
-          Create New Schedule
-        </Button>
-        <Button
-          mode="contained"
-          style={styles.button}
-          // onPress={() => console.log('Add New Property')}
-          onPress={handleHostPress}
-        >
-          Add New Property
-        </Button>
-    
-        {/* <AvailableSchedules schedules={mockSchedules} onClaim={handleClaimSchedule} /> */}
-      </View>
-
-
-      </ScrollView>
+          <FlatList
+            data={data}
+            renderItem={renderItem}
+            keyExtractor={(item, index) => index.toString()}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+            }
+          />
+  
     </SafeAreaView>
   )
   
@@ -587,83 +558,110 @@ export default function Dashboard({navigation}) {
 
 
 const styles = StyleSheet.create({
-    // container:{
-    //     width:"100%",
-    //     // backgroundColor:"#fff"
-    // },
-   
-      
-      // map: {
-      //   flex: 1,
-      // },
-
-      container: {
-        flex: 1,
-        padding: 16,
-        backgroundColor: '#f9f9f9',
-      },
-      blue_board:{
-        height:80,
-        backgroundColor:COLORS.primary,
-        paddingTop:40
-      },
-      overview: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 16,
-      },
-      card: {
-        flex: 1,
-        marginHorizontal: 8,
-        backgroundColor: '#ffffff', // Card background color
-        borderRadius: 12,           // Rounded corners
-        margin: 8,                  // Space around the card
-        elevation: 4,               // Shadow on Android
-        shadowColor: '#ccc',        // Shadow color for iOS
-        shadowOffset: { width: 0, height: 2 }, // Shadow offset
-        shadowOpacity: 0.2,         // Shadow opacity
-        shadowRadius: 3,     
-      },
-      dashCard: {
-        backgroundColor: '#FFFFFF',
-        padding: 16,
-        borderRadius: 8,
-        marginVertical: 8,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        shadowColor: COLORS.gray,
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-        elevation: 1,
-      },
-      section: {
-        marginVertical: 16,
-        marginHorizontal:10
-      },
-      listCard: {
-        marginBottom: 8,
-        backgroundColor:COLORS.primary_light_1
-      },
-      title:{
-        fontSize:16,
-        fontWeight:'500',
-        marginHorizontal:10
-      },
-      button: {
-        marginTop: 8,
-        backgroundColor:COLORS.deepBlue
-      },
-      cardContent: {
-        justifyContent: 'center', // Center content vertically
-        alignItems: 'center',     // Center content horizontally
-        paddingVertical: 20,      // Add spacing inside the card
-      },
-      cardContent1: {
-        justifyContent: 'center', // Center content vertically
-        paddingVertical: 20,      // Add spacing inside the card
-      },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
+  },
+  container: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: '#f9f9f9',
+  },
+  blue_board:{
+    height:80,
+    backgroundColor:COLORS.primary,
+    paddingTop:40
+  },
+  overview: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  card: {
+    flex: 1,
+    marginHorizontal: 8,
+    backgroundColor: '#ffffff', // Card background color
+    borderRadius: 12,           // Rounded corners
+    margin: 8,                  // Space around the card
+    elevation: 4,               // Shadow on Android
+    shadowColor: '#ccc',        // Shadow color for iOS
+    shadowOffset: { width: 0, height: 2 }, // Shadow offset
+    shadowOpacity: 0.2,         // Shadow opacity
+    shadowRadius: 3,     
+  },
+  dashCard: {
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    borderRadius: 8,
+    marginVertical: 8,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    shadowColor: COLORS.gray,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  section: {
+    marginVertical: 16,
+    marginHorizontal:0
+  },
+  listCard: {
+    marginBottom: 8,
+    backgroundColor:COLORS.primary_light_1
+  },
+  title:{
+    fontSize:16,
+    fontWeight:'bold',
+    marginHorizontal:10
+  },
+  button: {
+    marginTop: 8,
+    backgroundColor:COLORS.deepBlue
+  },
+  cardContent: {
+    justifyContent: 'center', // Center content vertically
+    alignItems: 'center',     // Center content horizontally
+    paddingVertical: 20,      // Add spacing inside the card
+  },
+  cardContent1: {
+    justifyContent: 'center', // Center content vertically
+    paddingVertical: 20,      // Add spacing inside the card
+  },
+  line:{
+    borderBottomWidth:0.8,
+    borderColor:COLORS.light_gray_1,
+    marginVertical:5,
+    height:4
+  },
+  titleContainer:{
+    flexDirection:'row',
+    justifyContent:'space-between',
+    alignItems:'center',
+    marginTop:0
+  },
+  
+  rightContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    paddingLeft: 10,
+    marginRight:-25
+  },
+  viewAllContainer: {
+    marginTop: 10,
+    paddingVertical: 10,
+    alignItems: "flex-end",
+  },
+  viewAllText: {
+    color: COLORS.primary, 
+    fontSize: 13,
+    fontWeight: "600",
+    textDecorationLine: "underline",
+  },
 
 })
 

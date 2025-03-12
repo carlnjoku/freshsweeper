@@ -4,11 +4,13 @@ import { SafeAreaView,StyleSheet, StatusBar, Linking, FlatList, ScrollView, useW
 import CircleIconNoLabel from '../../components/CirecleIconNoLabel';
 import CardNoPrimary from '../../components/CardNoPrimary';
 import COLORS from '../../constants/colors';
+import { EmptyListingNoButton } from '../../components/EmptyListingNoButton';
 
 export default function AboutMeDisplay({aboutme,handleOpenAboutMe, mode }) {
 
 
   return (
+    <View>
     <CardNoPrimary>
         <View style={styles.titleContainer}>
         <Text bold style={styles.title}>About Me</Text> 
@@ -26,10 +28,18 @@ export default function AboutMeDisplay({aboutme,handleOpenAboutMe, mode }) {
         </View>
         <View style={styles.line}></View>
         <View style={styles.content}>
-            <Text style={styles.aboutme}>{aboutme}</Text>
+          {aboutme !="" ? <Text style={styles.aboutme}>{aboutme}</Text>
+          :
+            <EmptyListingNoButton 
+            message="Cleaner has not updated their profile"
+            iconName="account-outline"
+            size={24}
+            />
+          }
         </View>
         
     </CardNoPrimary>
+    </View>
   )
 }
 
@@ -58,7 +68,7 @@ const styles = StyleSheet.create({
       
     },
     content:{
-      flexDirection:'row',
+      // flexDirection:'row',
       justifyContent:'space-between',
       marginVertical:5
     },

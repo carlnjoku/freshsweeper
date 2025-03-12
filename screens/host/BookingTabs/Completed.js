@@ -16,7 +16,7 @@ export default function Completed({schedules}) {
     const filters = ["All", "last 7 days", "last 30 days", "Custom"];
 
     const openImageViewer = (imagesArray, index) => {
-      console.log(imagesArray)
+      // console.log(imagesArray)
       const formattedImages = imagesArray.map((img) => ({ url: img.url }));
       setImages(formattedImages);
       setCurrentImageIndex(index);
@@ -25,7 +25,7 @@ export default function Completed({schedules}) {
   
     return (
       <View style={styles.container}>
-        <Animatable.View animation="fadeIn" duration={550}>
+        {/* <Animatable.View animation="fadeIn" duration={550}> */}
         <View style={styles.filterContainer}>
           {filters.map((filter, index) => (
             <Chip
@@ -67,7 +67,7 @@ export default function Completed({schedules}) {
             backgroundColor="black"
           />
         </Modal>
-        </Animatable.View>
+        {/* </Animatable.View> */}
       </View>
     );
   };

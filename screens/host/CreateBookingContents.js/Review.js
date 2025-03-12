@@ -12,6 +12,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import CircleIconButton1 from '../../../components/CircleButton1';
 import BoxWithIcon3 from '../../../components/BoxWithIcon3';
 import CardNoPrimary from '../../../components/CardNoPrimary';
+import moment from 'moment';
 
 export default function Review({formData, step}) {
 
@@ -49,6 +50,10 @@ export default function Review({formData, step}) {
         "value":"Livingroom"
     },
     {
+      "label":"Dusting",
+      "value":"Dusting"
+    },
+    {
         "label":"Window Cleaning",
         "value":"Window Cleaning"
     },
@@ -64,13 +69,27 @@ export default function Review({formData, step}) {
         "label":"Final Inspection",
         "value":"Final Inspection"
     },
-    {
-        "label":"Dusting",
-        "value":"Dusting"
-    },
-    
     
 ]
+
+const getRoomInfo = (type) => {
+    
+  const res = formData.selected_apt_room_type_and_size.filter(room => room.type === type);
+  console.log("pee......1")
+  console.log(res[0])
+  const room_ = res[0]
+
+  return room_
+  ? { type: room_.type, number: room_.number, size: room_.size, size_range:room_.size_range }
+  : null;
+};
+
+
+const bedroomInfo = getRoomInfo("Bedroom");
+const bathroomInfo = getRoomInfo("Bathroom");
+const kitchenInfo = getRoomInfo("Kitchen");
+const livingroomInfo = getRoomInfo("Livingroom");
+
 
 const { width } = useWindowDimensions();
     const numColumns = 3;
@@ -100,18 +119,15 @@ const singleItem = ( {item,index} ) => (
 const handleEditStep = (sp) => {
   step(sp)
 }
+
+
   return (
     <ScrollView showsVerticalScrollIndicator={false}>
     <View>
       <Text bold style={{fontSize:24, }}>Review Schedule</Text>
       <Text style={{fontSize:14, marginBottom:20, color:COLORS.gray}}>Outline Specific Tasks and Instructions for the Cleaner</Text>
-       {/* <Card style={{backgroundColor:COLORS.primary_light_1, marginVertical:20, padding:10, minHeight:200}}>
-            <Text>{formData.address}</Text>
-       </Card> 
-       <Card style={{backgroundColor:COLORS.primary_light_1, padding:10, minHeight:200}}>
-            <Text>Other content</Text>
-       </Card>  */}
-       <CardNoPrimary style={styles.card}>
+    
+       <View style={styles.card}>
         {/* <Card.Content> */}
           <View style={styles.title_edit}>
             <Text style={styles.title}>Apartment Details</Text>
@@ -119,37 +135,16 @@ const handleEditStep = (sp) => {
           </View>
           <Text bold style={{fontSize:14}}>{formData.apartment_name}</Text>
           <Paragraph style={styles.paragraph}><MaterialCommunityIcons name="map-marker" size={14} color={COLORS.primary} />{formData.address}</Paragraph>
-          <View style={{flexDirection:'row', justifyContent:'flex-start', alignItems:'center', marginTop:5}}>
-          <Text style={{fontSize:14}}><MaterialCommunityIcons name="bed-empty" color={COLORS.gray} size={16} /> {formData.bedroom} Bedrooms</Text>
-          <Text style={{fontSize:14, marginLeft:40}}><MaterialCommunityIcons name="shower-head" color={COLORS.gray} size={16} /> {formData.bathroom} Bathrooms</Text>
+          <View style={{flexDirection:'row', justifyContent:'space-around', alignItems:'center', marginTop:5}}>
+          <Text style={{fontSize:12}}><MaterialCommunityIcons name="bed-empty" color={COLORS.gray} size={14} /> {bedroomInfo?.number} {bedroomInfo?.type}</Text>
+          <Text style={{fontSize:12, marginLeft:20}}><MaterialCommunityIcons name="shower-head" color={COLORS.gray} size={14} /> {bathroomInfo?.number} {bathroomInfo?.type}</Text>
+          <Text style={{fontSize:12, marginLeft:20}}><MaterialCommunityIcons name="silverware-fork-knife" color={COLORS.gray} size={14} /> {kitchenInfo?.number}{kitchenInfo?.type}</Text>
+          <Text style={{fontSize:12, marginLeft:20}}><MaterialCommunityIcons name="seat-legroom-extra" color={COLORS.gray} size={14} /> {livingroomInfo?.number}{livingroomInfo?.type}</Text>
           </View>
-          {/* <View style={styles.bed_bath}>
-            <View style={styles.bedroom}>
-            <View>
-                <CircleIconButton1 iconName="bed" iconSize={24}/>
-              </View>
-              <View>
-                <Text bold style={{marginLeft:10}}>Bedrooms</Text>
-                <Text style={{textAlign:'left', marginLeft:10}}>{formData.bedroom}</Text>
-              </View>
-            </View>
-            <View style={styles.bathroom}>
-              <View>
-                <CircleIconButton1 iconName="bathtub" iconSize={24}/>
-              </View>
-              <View>
-                <Text bold style={{marginLeft:10}}>Bathrooms</Text>
-                <Text style={{textAlign:'left.', marginLeft:10}}>{formData.bathroom}</Text>
-              </View>
-
-              
-            </View>
-          </View> */}
-        {/* </Card.Content> */}
-      </CardNoPrimary>
+      </View>
 
 
-      <CardNoPrimary style={styles.card}>
+      <View style={styles.card}>
         {/* <Card.Content> */}
         <View style={styles.title_edit}>
           <Text style={styles.title}>Schedule Date & time</Text>
@@ -164,7 +159,7 @@ const handleEditStep = (sp) => {
               </View>
               <View>
                 <Text bold style={{marginLeft:10}}>Date</Text>
-                <Text style={{textAlign:'left', marginLeft:10, fontSize:13, color:COLORS.gray}}>{formData.cleaning_date}</Text>
+                <Text style={{textAlign:'left', marginLeft:10, fontSize:13, color:COLORS.gray}}>{moment(formData.cleaning_date).format('ddd MMM D')}</Text>
               </View>
             </View>
             <View style={styles.bathroom}>
@@ -173,16 +168,16 @@ const handleEditStep = (sp) => {
               </View>
               <View>
                 <Text bold style={{marginLeft:10}}>Time</Text>
-                <Text style={{textAlign:'left.', marginLeft:10, fontSize:13, color:COLORS.gray}}>{formData.cleaning_time}</Text>
+                <Text style={{textAlign:'left.', marginLeft:10, fontSize:13, color:COLORS.gray}}>{moment(formData.cleaning_time, 'h:mm:ss A').format('h:mm A')}</Text>
               </View>
             </View>
           </View>
         {/* </Card.Content> */}
-      </CardNoPrimary>
+      </View>
 
+     
 
-
-      <CardNoPrimary style={styles.card}>
+      <View style={styles.card}>
           <View style={styles.title_edit}>
             <Text style={styles.title}>Base Cleaning Services</Text>
             <MaterialCommunityIcons onPress={() => handleEditStep(3)} name='pencil' size={20} color={COLORS.primary} />
@@ -198,12 +193,12 @@ const handleEditStep = (sp) => {
                   showsVerticalScrollIndicator={false}
           />
           </View>
-      </CardNoPrimary>
+      </View>
 
       {formData.extra.length > 0 &&
       
         (
-          <CardNoPrimary style={styles.card}>
+          <View style={styles.card}>
             {/* <Card.Content> */}
               <View style={styles.title_edit}>
                 <Text style={styles.title}>Extra Cleaning Services</Text>
@@ -224,7 +219,7 @@ const handleEditStep = (sp) => {
                 />
               </View>
             {/* </Card.Content> */}
-          </CardNoPrimary>
+          </View>
         )
       }
 
@@ -236,26 +231,16 @@ const handleEditStep = (sp) => {
 
 const styles = StyleSheet.create({
   card: {
-    // width: '80%', // Customize width as needed
-    // elevation: 5, // Customize elevation (shadow)
-    // marginBottom: 10, // Customize margin bottom
-    // // Add more styles as needed
-    // backgroundColor:COLORS.white,
-    // elevation:5,
-    // shadowColor: "#99e5ff",
-    // shadowOpacity: 0.2,
-    // shadowOffset: { width: 0, height: 2},
-
-    // alignSelf:'center',
-    marginTop:15,
-    padding:5,
-    minHeight:90,
-    borderRadius:10,
-    backgroundColor:COLORS.white,
-    elevation:5,
-    shadowColor: "#cccccc",
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 2},
+      padding: 15,
+      marginVertical: 8,
+      marginHorizontal:10,
+      borderRadius: 8,
+      backgroundColor: '#fff',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
   },
   title: {
     fontSize: 16, // Customize title font size

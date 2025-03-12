@@ -22,8 +22,8 @@ const ScheduleListItem = ({item, currentUser }) => {
 
   return (
    
-
     <View>
+ 
         <TouchableOpacity 
           onPress={() => navigation.navigate(ROUTES.cleaner_job_details, {
             'item':item,

@@ -53,24 +53,45 @@ export default function Schedules({navigation}) {
         const res = response.data
         console.log("1111111111113")
         // console.log(JSON.stringify(res, null, 2))
-        console.log("111111111111")
-
+        console.log("1111111111112")
+        
+        
         // Call the filterByStatus function after setting schedules
+        const scheduleDateTime = new Date(`${res.cleaning_date}T${res.cleaning_time}`); // Combine date and time
+        const currentDateTime = new Date(); // Get the current date and time
+
         setUpComingSchedules(res.filter(schedule => schedule.status.toLowerCase() === "upcoming"));
+        // setUpComingSchedules(
+        //   res.filter(schedule => {
+        //     const scheduleDateTime = new Date(`${schedule.schedule.cleaning_date}T${schedule.schedule.cleaning_time}`); // Combine date and time
+        //     const currentDateTime = new Date(); // Get the current date and time
+        
+        //     return (
+        //       schedule.status.toLowerCase() === "upcoming" &&
+        //       scheduleDateTime >= currentDateTime // Include only schedules with date-time now or later
+        //     );
+        //   })
+        // );
         setOnGoingSchedules(res.filter(schedule => schedule.status.toLowerCase() === "in_progress"));
         setCompletedSchedules(res.filter(schedule => schedule.status.toLowerCase() === "completed"));
       
         // Filter for today's and future dates
         const today = new Date();
-        const todayAndFutureSchedules = res.filter(schedule => {
-          const scheduleDate = new Date(schedule.cleaning_date); // Adjust to the date format used in `cleaning_date`
-          return scheduleDate >= today;
-        });
+        today.setHours(0, 0, 0, 0); // Normalize today's date
 
-        setFutureSchedules(todayAndFutureSchedules);
-        console.log(todayAndFutureSchedules)
+        const futureDates = res
+          .filter(schedule => {
+            const scheduleDate = new Date(schedule.schedule.cleaning_date);
+            scheduleDate.setHours(0, 0, 0, 0); // Normalize schedule date
+            return scheduleDate > today && schedule.status === "upcoming"; // Future dates with "upcoming" status
+          })
+          .map(schedule => {
+            const scheduleDate = new Date(schedule.schedule.cleaning_date);
+            return scheduleDate.toDateString(); // Convert to "Wed Feb 07 2025" format
+          });
 
-
+          setFutureSchedules(futureDates)
+          console.log(futureDates);
        
         
         // setSchedules(res)

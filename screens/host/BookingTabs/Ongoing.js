@@ -11,6 +11,7 @@ export default function Ongoing({schedules}) {
         <CardNoPrimary>
             <OngoingWorkListItem
               item={item}
+              
             />
         </CardNoPrimary>
     )
@@ -29,26 +30,29 @@ export default function Ongoing({schedules}) {
       )
   return (
     <View>
-        <Animatable.View animation="fadeIn" duration={550}>
+        {/* <Animatable.View animation="fadeIn" duration={550}> */}
         
         <FlatList 
             data = {schedules}
             renderItem = {singleItem}
             ListHeaderComponentStyle={styles.list_header}
-            ListEmptyComponent= {emptyListing}
+            ListEmptyComponent={<Text style={styles.emptyText}>There is currently no work</Text>}
             ItemSeparatorComponent={itemSeparator}
             keyExtractor={(item, index)=> item.label}
             numColumns={1}
             showsVerticalScrollIndicator={false}
         />
         
-        
-        </Animatable.View>
+        {/* </Animatable.View> */}
     </View>
   )
 }
 
 
 const styles = StyleSheet.create({
-
+  emptyText: {
+    color: '#888',
+    textAlign: 'center',
+    marginTop: 20,
+  },
 })

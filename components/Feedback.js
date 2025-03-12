@@ -85,7 +85,7 @@ const FeedbackModal = ({ onSubmit, onClose, feedbackTo }) => {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Feedback for {feedbackTo}</Text>
+        {/* <Text style={styles.title}>Feedback for {feedbackTo}</Text> */}
 
         
 

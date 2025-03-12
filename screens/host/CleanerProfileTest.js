@@ -95,7 +95,7 @@ const ParentScreen = ({navigation, route}) => {
   };
 
   const callPhone = () => {
-    alert("hey")
+    // alert("hey")
     makeCall(item.contact.phone)
   }
 
@@ -209,7 +209,7 @@ const ParentScreen = ({navigation, route}) => {
 
         // If friend exists, no need to add them again, just return
         // You make start another chat session with the user 
-        alert("start messaging")
+        // alert("start messaging")
         const modified_seleted_user = {
           "avatar": item.avatar,
           "chatroomId": newChatroomId,
@@ -334,7 +334,7 @@ const ParentScreen = ({navigation, route}) => {
   
   // Add Cleaner to my friend list
   const onAddFriend = async uid => {
-    alert(uid)
+    // alert(uid)
     try {
  
       //find user and add it to my friends and also add me to his friends
@@ -415,7 +415,7 @@ const ParentScreen = ({navigation, route}) => {
           return;
         }
 
-        alert("Is it there")
+        // alert("Is it there")
         
         // create a chatroom and store the chatroom id
         // Create a new chatroom document in the database

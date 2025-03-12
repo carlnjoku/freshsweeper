@@ -1,6 +1,6 @@
 import React, { useContext, useRef, useEffect,useState } from 'react';
 import Text from '../../components/Text';
-import { SafeAreaView,StyleSheet, StatusBar, Linking,Dimensions,  FlatList, ScrollView, Image, View, useWindowDimensions, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { SafeAreaView,StyleSheet, StatusBar, RefreshControl, Linking,Dimensions,  FlatList, ScrollView, Image, View, useWindowDimensions, TouchableOpacity, ActivityIndicator } from 'react-native';
 import Button from '../../components/Button';
 import {
   get,
@@ -32,6 +32,7 @@ import CircularIcon from '../../components/CircularIcon';
 import { haversineDistance } from '../../utils/distanceBtwLocation';
 import Reviews from '../../components/Reviews';
 import Modal from 'react-native-modal';
+import moment from 'moment';
 import Icon from 'react-native-vector-icons/Entypo'; 
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { calculateOverallRating } from '../../utils/calculate_overall_rating';
@@ -46,32 +47,22 @@ const { width, height } = Dimensions.get('window');
 const CleanerProfileHost = ({navigation, route}) => {
 const{item, selected_schedule, selected_scheduleId} = route.params
 
+console.log("Iteeeeeeeems", item)
+console.log("selected schedule", selected_schedule)
 const [visible, setVisible] = React.useState(false);
 
 const {currentUserId, friendsWithLastMessagesUnread, fbaseUser, currentUser, currency} = useContext(AuthContext)
   // const{friendsWithLastMessagesUnread} = useContext(AuthContext)
   // Get distance between host and cleaner location
 
-  const cleanerLocation = { latitude: item.location.latitude, longitude: item.location.longitude }; // Cleaner location 
-  const scheduleLocation = { latitude: selected_schedule.schedule.apartment_latitude, longitude: selected_schedule.schedule.apartment_longitude }; // schedule location 
-  console.log(cleanerLocation)
-  console.log(scheduleLocation)
+  const cleanerLocation = { latitude: item?.location.latitude, longitude: item?.location.longitude }; // Cleaner location 
+  const scheduleLocation = { latitude: selected_schedule.schedule?.apartment_latitude || selected_schedule?.apartment_latitude, longitude: selected_schedule.schedule?.apartment_longitude || selected_schedule.apartment_longitude }; // schedule location 
+
   const distanceKm = haversineDistance(cleanerLocation, scheduleLocation);
-  console.log(distanceKm)
-
-  console.log("_________eeeeeeeeeeeeeeeeee__________117")
-  console.log(JSON.stringify(item, null, 2))
-  console.log("_________eeeeeeeeeeeeeeeeee__________")
-
-  console.log("_________eeeeeeeeeeeeeeeeee__________111")
-  console.log(friendsWithLastMessagesUnread)
-  console.log("_________eeeeeeeeeeeeeeeeee__________")
 
 
-  console.log("_________eeeeeeeeeeeeeeeeeeItem1__________")
-  console.log(JSON.stringify(selected_schedule.schedule, null, 2))
-  console.log("_________eeeeeeeeeeeeeeeeeeItem__________")
 
+  const [refreshing, setRefreshing] = useState(false);
   const[selectedUser, setSelectedUser]=useState("")
   const[rating, setRating]=useState("")
 
@@ -97,7 +88,7 @@ const {currentUserId, friendsWithLastMessagesUnread, fbaseUser, currentUser, cur
   };
 
   const callPhone = () => {
-    alert("hey")
+    // alert("hey")
     makeCall(item.contact.phone)
   }
 
@@ -105,6 +96,17 @@ const {currentUserId, friendsWithLastMessagesUnread, fbaseUser, currentUser, cur
     onAddFriendNoBooking(item.cleanerId)
   }
 
+  // Function to handle refresh
+const handleRefresh = async () => {
+  setRefreshing(true);
+  try {
+    await Promise.all([checkChatroonId(), fetchSelectedUserJobs(), fetchCleanerChatRef(), fetchCleanerFeedbacks(), fetchCleanerPushTokens()]);
+  } catch (error) {
+    console.error('Error refreshing data:', error);
+  } finally {
+    setRefreshing(false);
+  }
+};
   
   useEffect(()=> {
     checkChatroonId()
@@ -116,7 +118,7 @@ const {currentUserId, friendsWithLastMessagesUnread, fbaseUser, currentUser, cur
 
     // Log or use filteredData as needed
     console.log("L................................l")
-    console.log(filteredData[0]);
+    // console.log(filteredData[0]);
     setCleanerChatReference(filteredData[0])
     console.log("L................................l")
     
@@ -127,7 +129,7 @@ const {currentUserId, friendsWithLastMessagesUnread, fbaseUser, currentUser, cur
     .then(response => {
         const res = response.data.tokens
         setCleanerPushTokens(res)
-        console.log("User tokens", res)
+        // console.log("User tokens", res)
     })
   }
 
@@ -152,18 +154,8 @@ const {currentUserId, friendsWithLastMessagesUnread, fbaseUser, currentUser, cur
 
       
       const mySnapshot = await get(ref(db, `users/${currentUserId}/friends`))
-    
-      console.log("chatrooooooooooooooooooooo0")
-      // console.log(JSON.stringify(mySnapshot.val(), null, 2))
-      console.log("chatrooooooooooooooooooooo0")
+  
 
-      // const res = mySnapshot.val()
-
-      // const filteredArray = res.filter(item => item.userId === chrmId && item.schedule.schedule._id === selected_scheduleId);
-      // alert(selected_scheduleId)
-      // console.log("filter................")
-      // console.log(JSON.stringify(filteredArray, null, 2))
-      // console.log("filter................")
       return mySnapshot.val()
   }
 
@@ -172,7 +164,7 @@ const {currentUserId, friendsWithLastMessagesUnread, fbaseUser, currentUser, cur
   const onAddFriendNoBooking = async uid => {
     try {
       console.log("feeeeee....................")
-      console.log(fbaseUser)
+      // console.log(fbaseUser)
       console.log("feeeeee....................")
   
       // Find the user
@@ -191,7 +183,7 @@ const {currentUserId, friendsWithLastMessagesUnread, fbaseUser, currentUser, cur
   
       // Check if the friend already exists
       const friendExists = fbaseUser.friends && fbaseUser.friends.find(f => f.userId === user.userId);
-      alert("This user exists in my friends list")
+      // alert("This user exists in my friends list")
 
       
       
@@ -218,7 +210,7 @@ const {currentUserId, friendsWithLastMessagesUnread, fbaseUser, currentUser, cur
 
         // If friend exists, no need to add them again, just return
         // You make start another chat session with the user 
-        alert("start messaging")
+    
         const modified_seleted_user = {
           "avatar": item.avatar,
           "chatroomId": newChatroomId,
@@ -236,7 +228,7 @@ const {currentUserId, friendsWithLastMessagesUnread, fbaseUser, currentUser, cur
         }
 
         console.log("newwwwwwwwwwww")
-        console.log(modified_seleted_user)
+        // console.log(modified_seleted_user)
         console.log("newwwwwwwwwwww")
         // Create the unreadMessages node
         const unreadMessagesRef = ref(db, `unreadMessages/${newChatroomId}/${user.userId}/${fbaseUser.userId}`);
@@ -244,43 +236,6 @@ const {currentUserId, friendsWithLastMessagesUnread, fbaseUser, currentUser, cur
           .then(() => console.log("Unread messages node created successfully!"))
           .catch((error) => console.error("Error creating unread messages node:", error));
   
-
-          // // Send push notification to friend
-          // const expo_pn = {
-          //   // to:currentUser.expo_push_token, // for testing
-          //   to:item.expo_push_token, // cleaner expo_push_token
-          //   title:"Cleaning Resquest",
-          //   body:`${item.firstname} ${item.lastname} just sent you a cleaning request`,
-          //   data: {
-          //     'screen': ROUTES.cleaner_schedule_details,
-          //     'params': {
-          //         'senderId': currentUserId,  
-          //         'receiverId': item.cleanerId, 
-          //         'selected_scheduleId': selected_scheduleId, 
-          //         'senderFirstName':currentUser.firstname,
-          //         'senderLastName':currentUser.lastname,
-          //         'cleaning_date':selected_schedule.schedule.cleaning_date,
-          //         'cleaning_time':selected_schedule.schedule.cleaning_time,
-          //         'chatroomId':newChatroomId,
-          //         'sender_expo_push_token':currentUser.expo_push_token, // sender/host expo_push_token
-          //     }
-          //   }
-          // }
-
-          // userService.sendCleaningRequestPushNotification(expo_pn)
-          // .then(response => {
-
-          //   const res = response.data
-          //   print(res)
-          //   //
-          //   console.log("Message sent")
-          // })
-
-          
-
-          // console.log('Automated message sent successfully.');
-
-          
           navigation.navigate(ROUTES.chat_conversation, { 
             chatroomId: newChatroomId,
             selectedUser:modified_seleted_user,
@@ -327,14 +282,7 @@ const {currentUserId, friendsWithLastMessagesUnread, fbaseUser, currentUser, cur
         ],
       });
 
-      // Navigate to the conversation screen after adding the friend and creating the chatroom
-      // navigation.navigate(ROUTES.chat_conversation, { 
-      //   chatroomId: newChatroomId,
-      //   selectedUser:item,
-      //   fbaseUser: fbaseUser,
-      //   schedule: selected_schedule, 
-      // });
-      
+     
   
     } catch (error) {
       console.error(error);
@@ -343,7 +291,7 @@ const {currentUserId, friendsWithLastMessagesUnread, fbaseUser, currentUser, cur
   
   // Add Cleaner to my friend list
   const onAddFriend = async uid => {
-    alert(uid)
+    // alert(uid)
     try {
  
       //find user and add it to my friends and also add me to his friends
@@ -358,62 +306,7 @@ const {currentUserId, friendsWithLastMessagesUnread, fbaseUser, currentUser, cur
           // don't let user add himself
           return;
         }
-        // alert("sue")
-        // else{
-        //   alert(item.expo_push_token)
-
-        //   // Create a new chatroom document in the database
-        //   const newChatroomRef = push(ref(db, 'chatrooms'), {
-        //     firstUser: fbaseUser.userId,
-        //     secondUser: user.userId,
-        //     thirdUser: 'automatedUserId', // Add automated third member here
-        //     messages: [],
-        //   });
-
-        //   // Get the generated chatroom ID
-        //   const newChatroomId = newChatroomRef.key;
-
-        //   // Function to create the unreadMessages node with an empty object
-        //   const unreadMessagesRef = ref(db, `unreadMessages/${newChatroomId}/${user.userId}/${fbaseUser.userId}`);
-          
-        //   // Set an initial value for the unread count
-        //   set(unreadMessagesRef, 1)
-        //   .then(() => {
-        //     console.log("Unread messages node created successfully!");
-        //   })
-        //   .catch((error) => {
-        //     console.error("Error creating unread messages node:", error);
-        //   });
         
-        //   alert(newChatroomId)
-        //   // Just send notification if user already exists
-        //   // Send push notification to friend
-        //     const expo_pn = {
-        //       // to:currentUser.expo_push_token, // for testing
-        //       to:item.expo_push_token, // cleaner expo_push_token
-        //       title:"Cleaning Resquest",
-        //       body:`${item.firstname} ${item.lastname} just sent you a cleaning request`,
-        //       data: {
-        //         'screen': ROUTES.cleaner_schedule_details,
-        //         'params': {
-        //             'senderId': currentUserId,  
-        //             'receiverId': item.userId, 
-        //             'selected_scheduleId': selected_scheduleId, 
-        //             'senderFirstName':currentUser.firstname,
-        //             'senderLastName':currentUser.lastname,
-        //             'chatroomId':newChatroomId,
-        //             'sender_expo_push_token':currentUser.expo_push_token, // sender/host expo_push_token
-        //         }
-        //       }
-        //     }
-  
-        //     userService.sendCleaningRequestPushNotification(expo_pn)
-        //     .then(response => {
-        //       console.log("Message sent")
-        //     })
-          
-
-        // }
 
         if (
           fbaseUser.friends &&
@@ -424,7 +317,7 @@ const {currentUserId, friendsWithLastMessagesUnread, fbaseUser, currentUser, cur
           return;
         }
 
-        alert("Is it there")
+       
         
         // create a chatroom and store the chatroom id
         // Create a new chatroom document in the database
@@ -471,27 +364,8 @@ const {currentUserId, friendsWithLastMessagesUnread, fbaseUser, currentUser, cur
             },
           ],
         });
-        // alert(fbaseUser.userId)
-        // Add the new chatroom ID to the current user's friend list
-        // const currentUserFriends = fbaseUser.friends || [];
-        // update(ref(db, `users/${fbaseUser.userId}`), {
-        //   friends: [
-        //     ...currentUserFriends,
-        //     {
-        //       userId: user.userId,
-        //       firstname: user.firstname,
-        //       lastname: user.lastname,
-        //       email: user.email,
-        //       avatar: user.avatar,
-        //       schedule: selected_schedule.schedule,
-        //       schedule: selected_scheduleId,
-        //       chatroomId: newChatroomId,
-        //     },
-        //   ],
-        // });
-
-
         
+
 
         // Step 1: Retrieve the current friends list
         const currentUserFriendsRef = ref(db, `users/${fbaseUser.userId}/friends`);
@@ -570,13 +444,13 @@ const {currentUserId, friendsWithLastMessagesUnread, fbaseUser, currentUser, cur
           }
         }
         console.log("expoinfo...........")
-        console.log(JSON.stringify(expo_pn, null, 2))
+        // console.log(JSON.stringify(expo_pn, null, 2))
 
         userService.sendCleaningRequestPushNotification(expo_pn)
         .then(response => {
 
           const res = response.data
-          console.log(res)
+          // console.log(res)
           //
           console.log("Message sent")
         })
@@ -585,18 +459,7 @@ const {currentUserId, friendsWithLastMessagesUnread, fbaseUser, currentUser, cur
 
         console.log('Automated message sent successfully.');
 
-        // // Update schedule with chatroom Info
-        // const chatroom = {
-        //   chatroomId:newChatroomId,
-        //   scheduleId:selected_scheduleId,
-        //   schedule_apartment:selected_schedule.schedule.apartment_name,
-        //   sender_expo_push_token:currentUser.expo_push_token,
-        // }
-
-        // userService.updateSheduleWithChatroom(chatroom)
-        // .then(response => {
-        //   console.log("Schedule Updated")
-        // })
+        
       
     }
       } catch (error) {
@@ -618,7 +481,7 @@ const {currentUserId, friendsWithLastMessagesUnread, fbaseUser, currentUser, cur
     .then(response => {
       const res = response.data
       console.log("syyyyyyy")
-      console.log(res)
+      // console.log(res)
       setCompletedSchedules(res)
       console.log("syyyyyyy")
     })
@@ -631,7 +494,7 @@ const {currentUserId, friendsWithLastMessagesUnread, fbaseUser, currentUser, cur
     .then(response => {
       const res = response.data.data
       console.log("syyyyyyy1064")
-      console.log(res["params"])
+    //   console.log(res["params"])
       setCleanerChatReference(res["params"])
       console.log("syyyyyyy208")
     })
@@ -640,11 +503,11 @@ const {currentUserId, friendsWithLastMessagesUnread, fbaseUser, currentUser, cur
   const fetchCleanerFeedbacks = async() => {
     const response = await userService.getCleanerFeedbacks(item.cleanerId)
     setReviews(response.data.data)
-    console.log(JSON.stringify(response.data.data, null, 2))
+    // console.log(JSON.stringify(response.data.data, null, 2))
   }
 
   console.log("P..........................son")
-  console.log(cleaner_chat_reference)
+  // console.log(cleaner_chat_reference)
 
   const openExisitingConversation = () => {
     
@@ -675,7 +538,7 @@ const {currentUserId, friendsWithLastMessagesUnread, fbaseUser, currentUser, cur
 const handleAddFriend = async () => {
     try {
       await onAddFriend(uid, db, fbaseUser, selectedSchedule, selectedScheduleId);
-      Alert.alert('Success', 'Friend added successfully!');
+      Alert.alert('Success', 'Friend added successfully');
     } catch (error) {
       console.error('Error adding friend:', error);
       Alert.alert('Error', 'Failed to add friend.');
@@ -683,7 +546,6 @@ const handleAddFriend = async () => {
   };
 
 const handleBooking = async() => {
-alert(item.cleanerId)
     data = {
         scheduleId:selected_scheduleId,
         hostId:currentUserId,
@@ -692,37 +554,53 @@ alert(item.cleanerId)
         cleanerId: item.cleanerId,
         cleaning_date:selected_schedule.schedule.cleaning_date,
         cleaning_time:selected_schedule.schedule.cleaning_time,
-        sender_expo_push_token:currentUser.expo_push_token
+        sender_expo_push_token:currentUser.expo_push_token,
+        created_at: moment().format('YYYY-MM-DD HH:mm:ss')
     }
-    console.log(data)
+
+    
+   
 
     await userService.sendCleaningRequest(data)
       .then(response => {
-        // alert("seentoouy688")
+        // Return requestId
+        const res = response.data
+        // console.log("This is the requestId", res)
+        const requestId = res.data
         console.log(response.status)
-
+        // console.log(response.data.data)
+    
     const notificationMsg =`${currentUser.firstname} ${currentUser.lastname} sent you a cleaning request`
     // Example usage:
     // sendCleaningRequestPushNotification(
         sendPushNotifications(
-        cleaner_tokens, // Replace with a valid Expo Push Token
-        currentUser.firstname+" "+currentUser.lastname,
-        notificationMsg,
-            {
-            screen: ROUTES.cleaner_schedule_review,
-            params: {
-                scheduleId:selected_scheduleId,
-                hostId:currentUserId,
-                hostFirstname:currentUser.firstname,
-                hostLastname:currentUser.lastname,
-                cleanerId: item.cleanerId,
-                cleaning_date:selected_schedule.schedule.cleaning_date,
-                cleaning_time:selected_schedule.schedule.cleaning_time,
-                sender_expo_push_token:currentUser.expo_push_token
-            },
-            }
+            cleaner_tokens, // Replace with a valid Expo Push Token
+            currentUser.firstname+" "+currentUser.lastname,
+            notificationMsg,
+                {
+                screen: ROUTES.cleaner_schedule_review,
+                params: {
+                    scheduleId:selected_scheduleId,
+                    hostId:currentUserId,
+                    requestId:requestId,
+                    hostFirstname:currentUser.firstname,
+                    hostLastname:currentUser.lastname,
+                    cleanerId: item.cleanerId,
+                    cleaning_date:selected_schedule.schedule.cleaning_date,
+                    cleaning_time:selected_schedule.schedule.cleaning_time,
+                },
+                }
 
-    );
+        );
+     
+        // Clear navigation stack and redirect to dashboard
+        navigation.reset({
+          index: 0,
+          routes: [{ 
+              name: ROUTES.host_dashboard,
+              params: { refresh: true } // Optional: trigger data refresh
+          }]
+      });
         
       }).catch((err)=> {
         console.log(err)
@@ -732,6 +610,7 @@ alert(item.cleanerId)
   
   return (
     <SafeAreaView style={styles.safeContainer}>
+      <StatusBar translucent backgroundColor={COLORS.primary} />
         <Animatable.View animation="fadeIn" duration={600}>
           <View style={styles.avatar_background}>
             {item.avatar !=="" ? 
@@ -751,34 +630,13 @@ alert(item.cleanerId)
             <Text style={styles.location}>{item.location.city}, {item.location.region}</Text>
 
             <View style={styles.distance}>
-            <View style={styles.communicate}>
-            <TouchableOpacity 
-                  style={{
-                    backgroundColor:COLORS.deepBlue,
-                    width:120,
-                    borderRadius:50,
-                    height:40
-                  }}
-                  title="Book Now"
-                  onPress={handleBooking}
-                >
-                  <Text style={styles.button}>Book Now</Text>
-                </TouchableOpacity>
-            {/* <Button title="Add Friend" onPress={handleBooking} />; */}
-              <CircularIcon iconName="phone" onPress = {callPhone} />
-              {
-                cleaner_chat_reference?.chatroomId ? 
-                <CircularIcon iconName="chat-processing-outline" onPress={openExisitingConversation} />
-                :
-                <CircularIcon iconName="chat-processing-outline" onPress={addCleanerToFriendList} />
-              }
-            </View>
+            
           </View>
           </View>
         </Animatable.View>
         <View style={styles.address_bar}>
             <View style={styles.addre}>
-              <Text style={{color:COLORS.light_gray_1}}>{item.contact.address}</Text>
+              <Text style={{color:COLORS.light_gray_1}}>{item?.address || item.contact?.address}</Text>
               {item.distance ? 
                 <Text style={{fontSize:13, color:COLORS.light_gray}}>{item.distance.toFixed(1)} Miles away</Text>
                 :
@@ -789,7 +647,11 @@ alert(item.cleanerId)
       <View style={styles.container}>
         {/* Main content of the parent screen */}
         
-        <ScrollView style={styles.content}>
+        <ScrollView style={styles.content}
+          refreshControl={ // Step 3: Add RefreshControl
+            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+          }
+        >
 
         
         <View style={styles.rating_review}>
@@ -836,7 +698,7 @@ alert(item.cleanerId)
             
             <View style={{padding:0}}>
               {currentStep === 1 && 
-              <Animatable.View animation="fadeIn" duration={600}>
+              <Animatable.View animation="slideInLeft" duration={600}>
                 <ScrollView
                   showsVerticalScrollIndicator={false}
                   bounces={false}
@@ -849,7 +711,7 @@ alert(item.cleanerId)
                 </Animatable.View>
               }
               {currentStep === 2 && 
-                <Animatable.View animation="fadeIn" duration={600}>
+                <Animatable.View animation="slideInLeft" duration={600}>
                   <AvailabilityDisplay
                     mode="display"
                     availability={item.availability}
@@ -858,7 +720,7 @@ alert(item.cleanerId)
               }
 
               {currentStep === 3 && 
-              <Animatable.View animation="fadeIn" duration={600}>
+              <Animatable.View animation="slideInLeft" duration={600}>
                 <CertificationDisplay
                   mode="display"
                   certification={item.certification}
@@ -868,7 +730,7 @@ alert(item.cleanerId)
 
 
               {currentStep === 4 &&
-              <Animatable.View animation="fadeIn" duration={600}>
+              <Animatable.View animation="slideInLeft" duration={600}>
                 <ScrollView
                   contentContainerStyle={{ flexGrow: 1 }}
                   showsVerticalScrollIndicator={false}
@@ -883,28 +745,7 @@ alert(item.cleanerId)
               }
 
             </View>
-
-        
-
-
-          {/* <Text style={styles.heading}>Main Content of Parent Screen</Text>
-          <Text style={styles.paragraph}>
-            This is some sample content in the parent screen. You can scroll through this text,
-            and the draggable overlay will stay fixed at the bottom.
-          </Text>
-          <Text style={styles.paragraph}>
-            Add more content here. The draggable overlay at the bottom will not interfere with
-            the main screen's content, and users can adjust its size to view more or less of
-            the content.
-          </Text> */}
-          
-          {/* Add more content as needed */}
         </ScrollView>
-
-        {/* Draggable overlay that stays at the bottom of the parent screen */}
-        {/* <DraggableOverlay /> */}
-      
-       
 
         <Modal 
             isVisible={visible} 
@@ -953,7 +794,7 @@ alert(item.cleanerId)
         {/* <Text style={{color:COLORS.primary}}>Total Cleaning Fee </Text> */}
         <SchedulePrice 
           currency={currency}
-          price={selected_schedule.schedule.total_cleaning_fee}
+          price={selected_schedule.schedule?.total_cleaning_fee || selected_schedule?.total_cleaning_fee}
         />
         </View>
         
@@ -969,7 +810,7 @@ alert(item.cleanerId)
                     height:40
                   }}
                   title="Book Now"
-                  onPress={() => onAddFriend(item.cleanerId)} 
+                  onPress={handleBooking}
                 >
                   <Text style={styles.button}>Book Now</Text>
                 </TouchableOpacity>
@@ -1141,3 +982,4 @@ const styles = StyleSheet.create({
 });
 
 export default CleanerProfileHost;
+

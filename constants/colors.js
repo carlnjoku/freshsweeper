@@ -17,6 +17,7 @@ const COLORS = {
     // primary:"#87CEEB",
     primary_light: "#99e5ff",
     primary_light_1: "#e6f9ff",
+    primary_light_2: "#e6f9ff",
     backgroundColor:"#f9fdff",
     red: 'red',
     twitter_blue:"#1DA1F2",

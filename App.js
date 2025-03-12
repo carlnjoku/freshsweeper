@@ -10,14 +10,16 @@ import COLORS from './constants/colors';
 import * as Font from 'expo-font';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
-import { STRIPE_PUPLIC_SECRET_KEY } from './secret';
+import { STRIPE_PUBLIC_SECRET_KEY } from './secret';
 import { useNotification } from './hooks/useNotification';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { GestureHandlerRootView } from 'react-native-gesture-handler'; 
 
 
 // import { navigationRef } from './hooks/navigationService';
 
 import * as RNLogs from 'react-native-logs'; // Import as a namespace
+import { CleaningTimerProvider } from './context/CleaningTimerContext';
 
 
 const logger = RNLogs.logger.createLogger({ // Correctly access createLogger
@@ -51,44 +53,52 @@ export default function App() {
 
 
   const { registerForPushNotificationsAsync, handleNotificationResponse } = useNotification();
+  const [fontsLoaded, setFontsLoaded] = useState(false);
+  // useEffect(() => {
+  //   // fetchData();
+  //   // logger.info("App component mounted"); // Test logging
 
-  useEffect(() => {
-    // fetchData();
-    logger.info("App component mounted"); // Test logging
-
-    const jsonValue = AsyncStorage.getItem('@storage_Key');
-    console.log(jsonValue)
-    // if (jsonValue) {
-    //     const object = JSON.parse(jsonValue);
-    //     const userid = object.resp._id
-    //     registerForPushNotificationsAsync(userid);
-    // }
-
-    // Load the Open Sans font asynchronously
-    const loadFont = async () => {
-      await Font.loadAsync({
-        'Roboto-Regular': require('./Roboto-Regular.ttf'),
-        'Roboto-Medium': require('./Roboto-Medium.ttf'),
-        'Roboto-Bold': require('./Roboto-Bold.ttf'),
-        'OpenSans-Bold': require('./OpenSans-Bold.ttf'),
-        'OpenSans-Regular': require('./OpenSans-Regular.ttf'),
-        // You can load other font weights/styles if needed
-      });
-      setFontLoaded(true);
-    };
-
-    loadFont();
-
-
-
-    // return () => {
-    //     Notifications.removeNotificationSubscription(responseListener);
-    // };
+  //   // const jsonValue = AsyncStorage.getItem('@storage_Key');
+  //   // console.log("storage", jsonValue)
+  //   // if (jsonValue) {
+  //   //     const object = JSON.parse(jsonValue);
+  //   //     const userid = object.resp._id
+  //   //     registerForPushNotificationsAsync(userid);
+  //   // }
 
     
 
 
-  }, []);
+    useEffect(() => {
+      // Load the fonts asynchronously
+      const loadFonts = async () => {
+        try {
+          await Font.loadAsync({
+            'Roboto-Regular': require('./Roboto-Regular.ttf'),
+            'Roboto-Medium': require('./Roboto-Medium.ttf'),
+            'Roboto-Bold': require('./Roboto-Bold.ttf'),
+            'OpenSans-Bold': require('./OpenSans-Bold.ttf'),
+            'OpenSans-Regular': require('./OpenSans-Regular.ttf'),
+          });
+          setFontsLoaded(true);
+        } catch (error) {
+          console.error('Error loading fonts:', error);
+        }
+      };
+  
+      loadFonts();
+    }, []);
+
+
+
+  //   // return () => {
+  //   //     Notifications.removeNotificationSubscription(responseListener);
+  //   // };
+
+    
+
+
+  // }, []);
 
 
   useEffect(() => {
@@ -113,15 +123,19 @@ export default function App() {
   };
 
 
-  
+
   return (
-    <AuthProvider>
-      <PaperProvider>
-      <StripeProvider publishableKey={STRIPE_PUPLIC_SECRET_KEY}>
-        <AppNav />
-      </StripeProvider>
-      </PaperProvider>
-    </AuthProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>  
+      <AuthProvider>
+          <PaperProvider>
+            <StripeProvider publishableKey={STRIPE_PUBLIC_SECRET_KEY}>
+            <CleaningTimerProvider>
+              <AppNav />
+            </CleaningTimerProvider>
+            </StripeProvider>
+          </PaperProvider>
+      </AuthProvider>
+    </GestureHandlerRootView>
   
     
   );

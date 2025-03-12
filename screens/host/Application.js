@@ -24,7 +24,7 @@ export default function Application({navigation}) {
     setApplications(res)
 
     console.log("application................")
-    console.log(JSON.stringify(res, null, 2))
+    // console.log(JSON.stringify(res, null, 2))
     console.log("application................1")
   }
 

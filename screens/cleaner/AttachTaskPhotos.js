@@ -8,12 +8,16 @@ import { AuthContext } from '../../context/AuthContext';
 import * as ImagePicker from 'expo-image-picker';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import BeforePhoto from './BeforePhoto';
-import AfterPhoto from './AfterPhoto';
 import TaskChecklist from './TaskChecklist';
 import TaskChecklistTest from './TaskChecklistTest';
+import ReportIncident from './ReportIncident';
+import AfterPhoto from './AfterPhoto';
+import { useCleaningTimer } from '../../context/CleaningTimerContext';
 
 
 const AttachTaskPhotos = ({route}) => {
+
+  
 
   const cleaningTasks = [
     { id: 1, name: 'Clean Bedroom', task_title: 'Bedroom', completed: false },
@@ -21,10 +25,15 @@ const AttachTaskPhotos = ({route}) => {
     { id: 3, name: 'Clean Livingroom', task_title: 'Livingroom', completed: false },
   ];
 
-  const{scheduleId} = route.params
-  console.log("peeeeeeeeeeeeee")
-  console.log(scheduleId)
-  console.log("peeeeeeeeeeeeee")
+  const{scheduleId, schedule, hostId} = route.params
+
+  const { startTimer } = useCleaningTimer();
+  startTimer(1800, schedule); // Start a 30-minute timer
+
+  
+  
+
+ 
   const [currentStep, setCurrentStep] = useState(1);
 
   const handleNextStep = () => {
@@ -41,18 +50,21 @@ const AttachTaskPhotos = ({route}) => {
 
   return (
     <View style={{ flex: 1, backgroundColor:COLORS.white }}>
+  
       <View style={styles.tabsContainer}>
         <TouchableOpacity style={[styles.tab, { borderBottomColor: currentStep == 1 ? COLORS.primary : "#f0f0f0"}]} onPress={() => setCurrentStep(1)}>
           <MaterialCommunityIcons name="camera" size={24} color={currentStep === 1 ? COLORS.primary : COLORS.gray} />
           <Text style={styles.tab_text}>Before Photos </Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.tab, { borderBottomColor: currentStep == 3 ? COLORS.primary :"#f0f0f0"}]} onPress={() => setCurrentStep(3)}>
-          <MaterialCommunityIcons name="format-list-checks" size={24} color={currentStep === 3 ? COLORS.primary : COLORS.gray} />
-          <Text style={styles.tab_text}>Clock-Out</Text>
-        </TouchableOpacity>
+        
         <TouchableOpacity style={[styles.tab, { borderBottomColor: currentStep == 2 ? COLORS.primary : "#f0f0f0"}]} onPress={() => setCurrentStep(2)}>
           <MaterialCommunityIcons name="camera-flip" size={24} color={currentStep === 2 ? COLORS.primary : COLORS.gray} />
           <Text style={styles.tab_text}>After Photos</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={[styles.tab, { borderBottomColor: currentStep == 3 ? COLORS.primary :"#f0f0f0"}]} onPress={() => setCurrentStep(3)}>
+          <MaterialCommunityIcons name="format-list-checks" size={24} color={currentStep === 3 ? COLORS.primary : COLORS.gray} />
+          <Text style={styles.tab_text}>Incident Report</Text>
         </TouchableOpacity>
         
       </View>
@@ -61,9 +73,9 @@ const AttachTaskPhotos = ({route}) => {
       {/* Content for each step */}
       <View style={styles.container}>
         {currentStep === 1 && <BeforePhoto scheduleId={scheduleId}/>}
-        {/* {currentStep === 2 && <TaskChecklist scheduleId={scheduleId}/>} */}
-        {currentStep === 2 && <TaskChecklistTest scheduleId={scheduleId} tasksList={cleaningTasks}/>}
-        {currentStep === 3 && <AfterPhoto scheduleId={scheduleId}/>}
+        {currentStep === 2 && <TaskChecklistTest scheduleId={scheduleId} hostId={hostId}  tasksList={cleaningTasks} />}
+        {/* {currentStep === 2 && <AfterPhoto scheduleId={scheduleId} hostId={hostId}  tasksList={cleaningTasks}/>} */}
+        {currentStep === 3 && <ReportIncident scheduleId={scheduleId}/>}
         
       </View>
       

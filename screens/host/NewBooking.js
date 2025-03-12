@@ -19,18 +19,23 @@ import { task_checklist } from '../../data';
 import TimeConversion from '../../utils/TimeConversion';
 import StepsIndicator from '../../components/StepsIndicator';
 import { before_photos, checklist } from '../../utils/tasks_photo';
+import HeaderWithStatusBar from '../../components/HeaderWithStatusBar';
+import HeaderWithStatusBarAndClose from '../../components/HeaderWithStatusBarAndClose';
+import { addExtraCleaningTasks } from '../../utils/addExtraCleaningTasks';
+import moment from 'moment';
 
 
 
 
-const NewBooking = ({close_modal}) => {
+const NewBooking = ({schedule,close_modal, mode}) => {
 
   const {currency, currentUser, currentUserId} = useContext(AuthContext)
+  const {formData, setFormData, setModalVisible, modalVisible,resetFormData } = useBookingContext();
   const navigation = useNavigation()
 
   const [currentStep, setCurrentStep] = React.useState(2); // Example: Step 2 is active
   
-  const {formData, setFormData } = useBookingContext();
+ 
   const [step, setStep] = useState(1);
   const [extras, setExtras] = useState([]);
   const [checkList, setChecklist] = useState([]);
@@ -38,25 +43,22 @@ const NewBooking = ({close_modal}) => {
   const [isValid, setIsValid] = useState(false);
 
   
-  
-  
-  
 
   const taskTimes =  
-        {
-            "Window Washing":20,
-            "Inside Cabinets":15,
-            "Carpet Cleaning":30,
-            "Upholstery Cleaning":20,
-            "Tile & Grout Cleaning":50,
-            "Hardwood Floor Refinishing":50,
-            "Inside Fridge":5,
-            "Inside Oven":30,
-            "Pet Cleanup":20,
-            "Dishwasher":30,
-            "Laundry":30,
-            "Exterior":120,    
-        }
+  {
+      "Window Washing":20,
+      "Inside Cabinets":15,
+      "Carpet Cleaning":30,
+      "Upholstery Cleaning":20,
+      "Tile & Grout Cleaning":50,
+      "Hardwood Floor Refinishing":50,
+      "Inside Fridge":5,
+      "Inside Oven":30,
+      "Pet Cleanup":20,
+      "Dishwasher":30,
+      "Laundry":30,
+      "Exterior":120,    
+  }
 
   // const ProgressBar = () => {
   //   return (
@@ -66,7 +68,25 @@ const NewBooking = ({close_modal}) => {
   //   );
   // };
 
+  // useEffect(() => {
+  //   console.log("Selected schedule:", schedule); // Check if schedule contains data
+  //   if (schedule) {
+  //     setFormData(schedule.schedule);
+  //   }
+  // }, [schedule]);
+
+  useEffect(() => {
+    if (schedule && !formData.cleaning_date) {  // Only set it if formData is empty
+      setFormData(schedule.schedule);
+    }
+
+    if (!modalVisible) {
+      resetFormData(); // Ensure data resets when modal closes
+    }
   
+  }, [schedule, modalVisible, mode]);
+
+
 
 
   // Your validation logic here
@@ -80,16 +100,24 @@ const NewBooking = ({close_modal}) => {
 
   
   
-  const handleOnCleaningTime = (text, input) => {
-    setFormData(prevState => ({...prevState, [input]: text}))
-  }
+  // const handleOnCleaningTime = (text, input) => {
+  //   setFormData(prevState => ({...prevState, [input]: text}))
+  // }
 
-  const handleOnCleaningDate = (text, input) => {
-    setFormData(prevState => ({...prevState, [input]: text}))
-  }
+  // const handleOnCleaningDate = (text, input) => {
+  //   setFormData(prevState => ({...prevState, [input]: text}))
+  // }
+
+  const handleOnCleaningTime = (value) => {
+    setFormData(prevState => ({ ...prevState, cleaning_time: value }));
+  };
+  
+  const handleOnCleaningDate = (value) => {
+    setFormData(prevState => ({ ...prevState, cleaning_date: value }));
+  };
   const handleSelectedProperty = (text, input) => {
     setFormData(prevState => ({...prevState, [input]: text}))
-    console.log(formData)
+    // console.log(formData)
   }
 
   // const handleCleanignExtraSelection = (text) => {
@@ -99,13 +127,13 @@ const NewBooking = ({close_modal}) => {
 
   const handleCleanignExtraSelection = (selectedExtras) => {
     setExtras(selectedExtras);
-    console.log(selectedExtras);
+    // console.log(selectedExtras);
   };
 
   const handleExtraTaskTime = (extra_task, input) => {
     const extraCleaningTime = calculateCleaningTimeByTasks(extra_task, taskTimes)
     console.log("showwwwwwwing")
-    console.log(extraCleaningTime)
+    // console.log(extraCleaningTime)
     setFormData(prevState => ({...prevState, [input]: extraCleaningTime}))
   }
 
@@ -115,7 +143,7 @@ const NewBooking = ({close_modal}) => {
 
   const handleBedroomBathroom = (text, input) => {
     setFormData(prevState => ({...prevState, [input]: text}))
-    console.log(formData)
+    // console.log(formData)
   }
   
   const handleNextStep = () => {
@@ -126,13 +154,13 @@ const NewBooking = ({close_modal}) => {
     setStep(step + 1);
   };
   
+  
 
   const handlePrevStep = () => {
     setStep(step - 1);
   };
 
   const handleEditStep = (stp) => {
-    alert(stp)
     setStep(stp)
   }
   const handleInputChange = (name, value) => {
@@ -142,8 +170,9 @@ const NewBooking = ({close_modal}) => {
     });
   };
 
-  const onClose = () => {
-    close_modal(false)
+  const handleClose = () => {
+    setModalVisible(false)
+    setFormData("")
   }
 
   const createTaskChecklist = () => {
@@ -170,7 +199,7 @@ const NewBooking = ({close_modal}) => {
         };
       });
       
-      console.log(cleanedArray);
+      // console.log(cleanedArray);
 
       const formattedRegular = formData.regular_cleaning.map((item, index) => ({
         id: index + 1,
@@ -181,28 +210,32 @@ const NewBooking = ({close_modal}) => {
       const updatedChecklist = [...cleanedArray, ...formattedRegular];
 
       console.log("checklist..................")
-      console.log(JSON.stringify(updatedChecklist, null, 2))
+      // console.log(JSON.stringify(updatedChecklist, null, 2))
       console.log("checklist..................")
       setUpdatedTaskChecklist(updatedChecklist)
     }else{
-      console.log(formattedRegular)
+      // console.log(formattedRegular)
       setUpdatedTaskChecklist(formattedRegular)
     }
   }
 
   const handleSubmit = async () => {
-    // Submit form data
-        console.log("looooo.............................")
-        // console.log(JSON.stringify(updated_task_checklist, null, 2))
-        console.log("looooo.............................")
-        // createTaskChecklist()
+
+        // Strip seconds from cleaning_time and cleaning_end_time
+        // const formattedCleaningTime = moment(formData.cleaning_time, "HH:mm:ss").format("HH:mm");
+        // const formattedCleaningEndTime = moment(formData.cleaning_end_time, "HH:mm:ss").format("HH:mm");
+
+        const updatedChecklist = addExtraCleaningTasks(checklist, formData.extra);
         const data = {
           hostInfo:currentUser,
           schedule: formData,
-          // check_list: updated_task_checklist,
-          checklist: checklist,
+          checklist: updatedChecklist,
           before_photos: before_photos
-        }        
+        }      
+        
+        console.log("formData1.....................")
+        // console.log(JSON.stringify(checklist, null, 2))
+        console.log("formData2.....................")
         
         await userService.createSchedule(data)
         .then(response => {
@@ -210,14 +243,13 @@ const NewBooking = ({close_modal}) => {
           if(response.status === 200){
             const res = response.data.data
             console.log(res)
-            // navigation.navigate(ROUTES.host_recommended_cleaners, {
-            //   'scheduleId':res._id,
-            //   // 'schedule' : formData,
-            //   'schedule' : res,
-            //   'hostId': currentUserId,
-            //   'hostFname': currentUser.firstname,
-            //   'hostLname': currentUser.lastname
-            // })
+            navigation.navigate(ROUTES.host_recommended_cleaners, {
+              'scheduleId':res._id,
+              'schedule' : res,
+              'hostId': currentUserId,
+              'hostFname': currentUser.firstname,
+              'hostLname': currentUser.lastname
+            })
             // Redirect to list
           }else {
             console.log("could not verify")
@@ -226,27 +258,24 @@ const NewBooking = ({close_modal}) => {
         }).catch((err)=> {
           console.log(err)
             setErrMsg(true)
-            console.log("Either username or password incorrect")
+            console.log('Error', "Something went wrong, please try again")
             Alert.alert('Error', "Something went wrong, please try again");
         })
   };
 
-  console.log("formData.....................")
-  console.log(JSON.stringify(formData, null, 2))
-  console.log("formData.....................")
+  const handleUpdate = () => {
+
+  }
+
+  
 
   return (
     
  
     <View style={styles.container}>
-      <StatusBar translucent backgroundColor="transparent" />
-      <View style={styles.close_button}><MaterialCommunityIcons name="close" color={COLORS.gray} size={24} onPress={onClose} /></View>
-      
-      {/* <ProgressBar /> */}
-
+      <StatusBar translucent backgroundColor="white" />
+      <HeaderWithStatusBarAndClose title="Create Schedule" onClose={handleClose} />
       <StepsIndicator step={step} />
-      
-    
       <View style={styles.form}>
         {step === 1 && 
           <Animatable.View animation="slideInRight" duration={550}>
@@ -300,9 +329,14 @@ const NewBooking = ({close_modal}) => {
       </View>
 
 
-
-      
+          
+        <View style={{flexDirection:'row', justifyContent:'center'}}>
+            <View>
+              <Text style={styles.priceText}>Estimated Fee {currency}{parseFloat(formData.total_cleaning_fee).toFixed(2) || 0}</Text>
+            </View>
+        </View>
       <View style={styles.buttonContainer}>
+        
         
         {step > 1 && (
           <TouchableOpacity style={styles.previous_button}  onPress={handlePrevStep}>
@@ -316,34 +350,25 @@ const NewBooking = ({close_modal}) => {
         {/* <View><Text style={{fontSize:20}}>$40</Text></View> */}
         <View style={{ flex: 1, alignItems: 'center' }}>
 
-          <View style={{flexDirection:'row', width:100}}>
-            <Text style={styles.priceText}>Est. Fee {currency}{formData.total_cleaning_fee}</Text>
-          </View>
           
-          <View style={{flexDirection:'row', width:100}}>
-            <Text style={styles.priceText}><TimeConversion minutes={formData.total_cleaning_time} /></Text>
-          </View>
-
         </View>
         <View style={{ flex: 1 }} /> 
         
         
         {step < 4 ? (
-          
-         
           <TouchableOpacity 
-            // style={styles.button} onPress={handleNextStep}
-            style={ [styles.nextButton, isValid ? styles.validButton : styles.invalidButton]}
+            style={[styles.nextButton, isValid ? styles.validButton : styles.invalidButton]}
             onPress={handleNextStep}
             disabled={!isValid} // Disable the button if the form is not valid
-            >
-              
+          >
             <Text style={styles.buttonText}>Next</Text>
           </TouchableOpacity>
         ) : (
-          <TouchableOpacity style={styles.button}>
-            <Text onPress={handleSubmit} style={styles.buttonText}>Submit</Text>
-          </TouchableOpacity>
+          
+            <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+              <Text style={styles.buttonText}>Publish</Text>
+            </TouchableOpacity>
+          
         )}
   
       </View>
@@ -356,7 +381,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'space-between',
-    backgroundColor:COLORS.backgroundColor,
+    backgroundColor: '#fff',
   },
   form: {
     flex: 1,
@@ -366,17 +391,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
+    paddingHorizontal:20,
+    paddingVertical:5,
+    borderTopWidth:1,
+    borderColor:COLORS.light_gray_1,
+    marginTop:2
   },
   button: {
     backgroundColor: COLORS.primary,
-    paddingVertical: 10,
+    paddingVertical: 5,
     paddingHorizontal: 20,
-    borderRadius: 5,
+    borderRadius: 50,
   },
   previous_button: {
     backgroundColor: 'transparent',
-    paddingVertical: 10,
+    paddingVertical: 5,
     paddingHorizontal: 20,
     borderRadius: 5,
   },
@@ -412,21 +441,39 @@ const styles = StyleSheet.create({
     marginLeft:10
   },
   priceText: {
-    fontSize: 11,
-    marginLeft:20
+    fontSize: 16,
+    marginLeft:20,
+    color:COLORS.deepBlue,
+    fontWeight:'600'
   },
 
   nextButton: {
     backgroundColor: 'gray',
-    paddingVertical: 10,
+    paddingVertical: 5,
     paddingHorizontal: 20,
-    borderRadius: 5,
+    borderRadius: 50,
   },
   validButton: {
     backgroundColor: 'green', // Example: change color if form is valid
   },
   invalidButton: {
     backgroundColor: 'gray', // Keep it gray if form is invalid
+  },
+  headerContainer: {
+    flexDirection:'row',
+    height: 60, // Height of the header below the status bar
+    backgroundColor: '#ffffff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative', // Ensures layout elements are positioned relative to the parent
+    // Remove shadow from the top
+    shadowColor: '#000', 
+    // shadowOffset: { width: 0, height: 2 }, // Shadow is directed towards the bottom
+    // shadowOpacity: 0.2, // Light opacity for subtle shadow
+    // shadowRadius: 3, // Softens the shadow's edges
+    // elevation: 5, // Shadow for Android (bottom)
+    // borderBottomWidth: 1,
+    // borderBottomColor: '#e0e0e0', // Light line separating the header from content
   },
 
   

@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useContext, useRef } from 'react';
-import { SafeAreaView,StyleSheet, StatusBar, Linking, FlatList, ScrollView, Modal, Image, View, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { SafeAreaView,StyleSheet, RefreshControl, StatusBar, Linking, FlatList, ScrollView, Modal, Image, View, TouchableOpacity, ActivityIndicator } from 'react-native';
 import Text from '../../components/Text';
 
 import {
@@ -30,22 +30,20 @@ const Messages = ({navigation}) => {
   } = useContext(AuthContext)
 
   const[friendsWithLastMessagesUnread, setFriendsWithLastMessagesUnreadCount] = useState([]);
-  
+  const [loading, setLoading] = useState(true); // Add loading state
+  const [refreshing, setRefreshing] = useState(false); // State for swipe-to-refresh
 
   console.log("Greatness..........")
   // console.log(JSON.stringify(friendsWithLastMessagesUnread, null, 2))
   console.log("Greatness2..........")
-
- 
   
   
-  
-
   useEffect(() => {
     const friendsRef = ref(db, `users/${currentUserId}/friends`);
   
     // Function to handle real-time updates
     const handleFriendsUpdate = async (snapshot) => {
+      setLoading(true); // Start loading
       if (snapshot.exists()) {
         const friendsData = snapshot.val();
         const friendsArray = Object.values(friendsData) || [];
@@ -94,6 +92,7 @@ const Messages = ({navigation}) => {
   
         setTotalUnreadCount(totalUnreadCount);
       }
+      setLoading(false); // Stop loading
     };
   
     // Set up the listener
@@ -106,6 +105,79 @@ const Messages = ({navigation}) => {
     };
   }, [currentUserId, setFriendsWithLastMessagesUnreadCount, setTotalUnreadCount]);
   
+const fetchData = () => {
+  setRefreshing(true); // Start refresh
+  const friendsRef = ref(db, `users/${currentUserId}/friends`);
+    
+    // Function to handle real-time updates
+    const handleFriendsUpdate = async (snapshot) => {
+      setLoading(true); // Start loading
+      if (snapshot.exists()) {
+        const friendsData = snapshot.val();
+        const friendsArray = Object.values(friendsData) || [];
+        const updatedFriendsWithMessages = [];
+  
+        for (const friend of friendsArray) {
+          const chatroomId = friend.chatroomId;
+          const chatroomRef = ref(db, `chatrooms/${chatroomId}`);
+          const chatroomSnapshot = await get(chatroomRef);
+          const chatroomData = chatroomSnapshot.val();
+  
+          if (chatroomData && chatroomData.messages) {
+            const lastMsg = chatroomData.messages[chatroomData.messages.length - 1];
+            const lastmessage = {
+              text: lastMsg ? lastMsg.text : null,
+              sender: lastMsg ? lastMsg.sender : null,
+              createdAt: lastMsg ? lastMsg.createdAt : null,
+            };
+  
+            const updatedFriend = { ...friend, lastmessage };
+  
+            // Fetch unread message count
+            const unreadRef = ref(db, `unreadMessages/${chatroomId}/${currentUserId}/${friend.userId}`);
+            const unreadSnapshot = await get(unreadRef);
+            const unreadCount = unreadSnapshot.val() || 0;
+            updatedFriend.unreadCount = unreadCount;
+  
+            updatedFriendsWithMessages.push(updatedFriend);
+          }
+        }
+  
+        // Sort the friends based on the createdAt timestamp of the last message
+        updatedFriendsWithMessages.sort((a, b) => {
+          if (!a.lastmessage || !a.lastmessage.createdAt) return 1; // Put friend without last message at the bottom
+          if (!b.lastmessage || !b.lastmessage.createdAt) return -1; // Put friend without last message at the bottom
+          return new Date(b.lastmessage.createdAt) - new Date(a.lastmessage.createdAt);
+        });
+  
+        // Update state with sorted and processed datas
+        setFriendsWithLastMessagesUnreadCount(updatedFriendsWithMessages);
+  
+        // Calculate the total sum of unread message counts from all friends
+        const totalUnreadCount = updatedFriendsWithMessages.reduce((total, friend) => {
+          return total + friend.unreadCount;
+        }, 0);
+  
+        setTotalUnreadCount(totalUnreadCount);
+      }
+      setLoading(false); // Stop loading
+      setRefreshing(false); // Start refresh
+    };
+  
+    // Set up the listener
+    const unsubscribe = onValue(friendsRef, handleFriendsUpdate);
+  
+    // Cleanup the listener
+    return () => {
+      off(friendsRef);
+      unsubscribe(); // Ensure listener is removed
+    };
+}
+  
+useEffect(() => {
+  fetchData();
+}, [currentUserId, setTotalUnreadCount,setFriendsWithLastMessagesUnreadCount]);
+
 
 
   const truncateString = (str) => {
@@ -121,6 +193,8 @@ const Messages = ({navigation}) => {
     // If the string length is within the maximum length, return the string as is
     return str;
 };
+
+
 
 
   const singleItem = (item, index) => (
@@ -193,26 +267,65 @@ const Messages = ({navigation}) => {
     <View style={styles.item_separator}></View>
   )
   const emptyListing = () => (
-    <View style={styles.empty_listing}><Text>No sub category found</Text></View>
+    <View style={styles.container}>
+      {/* Empty Envelope Icon */}
+      <MaterialCommunityIcons 
+        name="email-outline" // MaterialCommunityIcon for an empty envelope
+        size={54}
+        color="#ccc"
+        style={styles.icon}
+      />
+      
+      {/* Placeholder Message */}
+      <Text style={styles.message}>
+      You have no messages yet. Please check back later or refresh to load the latest messages.
+      </Text>
+    </View>
+    // <View style={styles.empty_listing}><Text>You have not messages yet</Text></View>
   )
 
   return (
     
-    <SafeAreaView>
-      <StatusBar translucent backgroundColor="transparent" />
+    <SafeAreaView style={{ flex: 1 }}>
+
+      <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
     
-    <FlatList 
-        data = {friendsWithLastMessagesUnread}
-        // renderItem={({ item, index }) => singleItem(item, index)}
-        renderItem={({ item, index }) => singleItem(item, index)} 
-        // renderItem={singleItem}
-        ListEmptyComponent= {emptyListing}
+      {loading ? (
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </View>
+    ) : (
+      <FlatList
+        data={friendsWithLastMessagesUnread}
+        renderItem={({ item, index }) => singleItem(item, index)}
+        ListEmptyComponent={emptyListing}
         ItemSeparatorComponent={itemSeparator}
-        keyExtractor={recommended_cleaners=> recommended_cleaners._id}
+        keyExtractor={(item) => item._id}
         numColumns={1}
         showsVerticalScrollIndicator={false}
-    /> 
-    </SafeAreaView>
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={fetchData} // Trigger the data refresh
+          />
+        }
+      />
+    )}
+
+      {/* <FlatList 
+          data = {friendsWithLastMessagesUnread}
+          // renderItem={({ item, index }) => singleItem(item, index)}
+          renderItem={({ item, index }) => singleItem(item, index)} 
+          // renderItem={singleItem}
+          ListEmptyComponent= {emptyListing}
+          ItemSeparatorComponent={itemSeparator}
+          keyExtractor={recommended_cleaners=> recommended_cleaners._id}
+          numColumns={1}
+          showsVerticalScrollIndicator={false}
+      />  */}
+
+
+      </SafeAreaView>
   );
 };
 
@@ -222,6 +335,11 @@ export default Messages;
 const styles = StyleSheet.create({
   container:{
       margin:15
+  },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   item_separator : {
       marginTop:5,
@@ -234,7 +352,7 @@ const styles = StyleSheet.create({
       display:'flex',
       justifyContent:'center',
       alignItems:'center',
-      marginTop:'50%'
+      marginTop:'70%'
     },
     circle: {
       minWidth: 20,
@@ -248,6 +366,25 @@ const styles = StyleSheet.create({
       fontSize: 11,
       color: 'white',
     },
+
+    container: {
+      display:'flex',
+      justifyContent:'center',
+      alignItems:'center',
+      marginTop:'65%',
+      marginHorizontal:20
+  
+    },
+    icon: {
+      marginBottom: 12,
+    },
+    message: {
+      fontSize: 16,
+      color: '#555',
+      textAlign: 'center',
+      lineHeight: 24,
+    },
+  
 })
 
 

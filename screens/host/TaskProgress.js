@@ -23,6 +23,7 @@ import CleanerProfile from './CleanerProfile';
 import ViewCleanerProfile from './ViewCleanerProfile';
 import { useNavigation } from '@react-navigation/native'
 import TimeConversion1 from '../../utils/TimeConversion1';
+import Incident from './TaskTaps/Incident';
 
 const { width, height } = Dimensions.get('window');
 
@@ -80,7 +81,7 @@ const TaskProgress = ({route}) => {
         // Assuming userService.getPendingPayments fetches the pending payments from the API
         const response = await userService.getScheduleById(scheduleId);
         setSchedule(response.data);
-        console.log("Fresh schedule", JSON.stringify(response.data, null, 2))
+        // console.log("Fresh schedule", JSON.stringify(response.data, null, 2))
     } catch (error) {
         console.log(error);
         alert('Error fetching schedule');
@@ -135,7 +136,7 @@ const TaskProgress = ({route}) => {
                     style={{marginLeft: 10 }}
                 />
                 {/* <Text style={styles.initials}>{cleaner.firstname.charAt(0)} {cleaner.lastname.charAt(0)}</Text> */}
-                <Text style={styles.infoText} >View Profile</Text>
+                <Text style={styles.viewProfileText} >View Profile</Text>
                 </TouchableOpacity>
                 {/* ))} */}
 
@@ -184,7 +185,7 @@ const TaskProgress = ({route}) => {
         </TouchableOpacity>
         <TouchableOpacity style={[styles.tab, { borderBottomColor: currentStep == 3 ? COLORS.primary :"#f0f0f0"}]} onPress={() => setCurrentStep(3)}>
           <MaterialCommunityIcons name="format-list-checks" size={24} color={currentStep === 3 ? COLORS.primary : COLORS.gray} />
-          <Text style={styles.tab_text}>Checklist</Text>
+          <Text style={styles.tab_text}>Incidents</Text>
         </TouchableOpacity>
       </View>
 
@@ -194,7 +195,7 @@ const TaskProgress = ({route}) => {
       <View style={styles.container}>
         {currentStep === 1 && <BeforePhoto scheduleId={scheduleId} schedule={schedule} />}
         {currentStep === 2 && <AfterPhoto scheduleId={scheduleId} schedule={schedule} />}
-        {currentStep === 3 && <TaskChecklist scheduleId={scheduleId} schedule={schedule} />}
+        {currentStep === 3 && <Incident scheduleId={scheduleId} schedule={schedule} />}
       </View>
 
       {/* <Modal>
@@ -278,6 +279,7 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   container0: {
+    marginTop:30,
     backgroundColor: COLORS.white,
     borderRadius: 10,
     padding: 15,
@@ -359,6 +361,10 @@ const styles = StyleSheet.create({
   infoText: {
     fontSize: 12,
     color: COLORS.gray,
+  },
+  viewProfileText: {
+    fontSize: 12,
+    color: COLORS.primary,
   },
   progressContainer:{
     flexDirection:'column',

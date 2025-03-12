@@ -27,7 +27,7 @@ export default function Ongoing({schedules}) {
       )
       const emptyListing = () => (
         <View style={styles.empty_listing}>
-          <Text>No new schedule found </Text>
+          <Text style={styles.emptyText}>No new schedule found</Text>
           {/* {apartments.length < 1 && 
             <TouchableOpacity style={styles.button} onPress= {() => navigation.navigate(ROUTES.host_add_apt)}><Text style={styles.add_apartment_text}>Add Apartment</Text></TouchableOpacity>
           } */}
@@ -41,7 +41,7 @@ export default function Ongoing({schedules}) {
             data = {schedules}
             renderItem = {singleItem}
             ListHeaderComponentStyle={styles.list_header}
-            ListEmptyComponent= {emptyListing}
+            ListEmptyComponent= {<Text style={styles.emptyText}>No ongoing schedule</Text>}
             // ItemSeparatorComponent={itemSeparator}
             ItemSeparatorComponent={() => <View style={styles.line}></View>}
             keyExtractor={(item, index)=> item.label}
@@ -61,5 +61,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0.7,
     borderBottomColor: COLORS.light_gray_1,
     marginBottom: 5,
+  },
+  emptyText: {
+    color: '#888',
+    textAlign: 'center',
+    marginTop: 20,
   },
 })

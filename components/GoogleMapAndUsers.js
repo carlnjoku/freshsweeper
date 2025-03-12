@@ -9,7 +9,7 @@ const GoogleMapAndUsers = ({users,  apartment_name, apartment_address, apartment
 
   
   console.log("__________________________________")
-  console.log(apartment_name)
+  // console.log(apartment_name)
   console.log("__________________________________")
   return (
     <View>
@@ -47,7 +47,7 @@ const GoogleMapAndUsers = ({users,  apartment_name, apartment_address, apartment
               coordinate={{ latitude: apartment_latitude, longitude: apartment_longitude }}
           >
               {/* Custom icon for the marker */}
-              <View style={{justifyContent:'center', alignItems:'center', backgroundColor:'white', borderRadius:35, width:70, height:70, opacity:0.9}}><FontAwesome5 name="house-user" size={40} color={COLORS.primary} /></View>
+              <View style={{justifyContent:'center', alignItems:'center', backgroundColor:COLORS.primary_light, borderRadius:35, width:70, height:70, opacity:0.9}}><FontAwesome5 name="house-user" size={40} color={COLORS.deepBlue} /></View>
                 <Callout>
                   <View>
                     <Text>{apartment_name}</Text>
@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
   },
   map: {
     width: Dimensions.get('window').width,
-    height: Dimensions.get('window').height/3,
+    height: Dimensions.get('window').height/4,
   },
 });
 

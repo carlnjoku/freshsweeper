@@ -238,6 +238,7 @@ export default function Profile() {
               />
 
               <AvailabilityDisplay
+                cleanerId = {currentUserId}
                 mode="edit"
                 availability= {availability}
                 handleOpenAvailability={handleOpenAvailability}
@@ -249,19 +250,17 @@ export default function Profile() {
                 handleOpenCertification={handleOpenCertification}
               />
 
-              <PaymentTypeDisplay
+              {/* <PaymentTypeDisplay
                 mode="edit"
                 handleOpenPaymentType={handleOpenPaymentType}
-              />
+              /> */}
 
               
               </View>
             {/* <Text>Bio Data {firstname} (First name {firstname}, Lastname, email, avatar, phone)</Text> */}
             
 
-            <Selfie />
-            <Text>Camera</Text>
-            <View style={{marginBottom:80}} />
+            
             
         </View>
 

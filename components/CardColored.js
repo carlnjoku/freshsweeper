@@ -13,7 +13,7 @@ export default function CardColored({color,children}) {
 
 const styles = StyleSheet.create({
     card: {
-        width:'100%',
+        width:'95%',
         alignSelf:'center',
         marginTop:10,
         padding:10,

@@ -17,7 +17,7 @@
 
 
 
-  // Function to calculate total cleaning price
+// Function to calculate total cleaning price
 export const calculateCleaningPrice = (rooms) => {
   // Prices for cleaning based on room size
 const cleaningPrices = {

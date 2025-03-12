@@ -19,8 +19,8 @@ export default function Approve({selectedUser,selected_scheduleId,hostId, curren
     const navigation = useNavigation()
 
     console.log("scheduleeeeeeeeeee&usssssssser")
-    console.log(selectedUser.firstname)
-    console.log(JSON.stringify(selectedSchedule, null , 2))
+    // console.log(selectedUser.firstname)
+    // console.log(JSON.stringify(selectedSchedule, null , 2))
     console.log("scheduleeeeeeeeeee&usssssssser")
 
     useEffect(()=> {
@@ -83,12 +83,12 @@ export default function Approve({selectedUser,selected_scheduleId,hostId, curren
                 total_cleaning_fee: price
             }
 
-            console.log(data)
+            // console.log(data)
             
             await userService.approveSchedule(data)
             .then(response => {
                 const res = response.data
-                console.log(res)
+                // console.log(res)
             })
             // Navigate to the chat screen to negotiate or discuss further
             navigation.navigate(ROUTES.host_messages, { chatroomId });

@@ -1,15 +1,73 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import { SafeAreaView,Text, StyleSheet, StatusBar, Linking, FlatList, ScrollView, Modal, Image, View, TouchableOpacity, ActivityIndicator } from 'react-native';
 import CardNoPrimary from '../../components/CardNoPrimary';
 import CircleIconNoLabel from '../../components/CirecleIconNoLabel';
 import COLORS from '../../constants/colors';
+import CustomCalendar from '../../components/CustomCalendar';
+import userService from '../../services/userService';
 
-const AvailabilityDisplay = ({availability, handleOpenAvailability, mode }) => {
-    console.log("availability_________")
-    console.log(availability)
-    console.log("availability_________1")
-    return (
+const AvailabilityDisplay = ({handleOpenAvailability, cleanerId, mode }) => {
+    
+    const [availability, setAvailability] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    
+    
+    // console.log("availability_________")
+    // console.log(availability)
+    // console.log("availability_________1")
+
+    // const data = {
+    //   cleaner_id: "cleaner_123",
+    //   availability: [
+    //     { day: "Monday", slots: [{ start: "08:00", end: "12:00" }] },
+    //     { day: "Tuesday", slots: [{ start: "14:00", end: "18:00" }] },
+    //     { day: "Wednesday", slots: [{ start: "14:00", end: "18:00" }] },
+    //     { day: "Thursday", slots: [{ start: "14:00", end: "18:00" }] },
+    //     { day: "Friday", slots: [{ start: "14:00", end: "18:00" }] },
+    //     { day: "Saturday", slots: [{ start: "14:00", end: "18:00" }] },
+    //     { day: "Sunday", slots: [{ start: "14:00", end: "18:00" }] }
+    //   ],
+    //   booked_schedules: [
+    //     { schedule_id: "schedule_456", date: "2025-02-19", start: "10:00", end: "12:00" },
+    //     { schedule_id: "schedule_456", date: "2025-02-19", start: "12:00", end: "14:00" }
+    //   ]
+    // };
+
+    
+
+    useEffect(() => {
       
+      const fetchAvailability = async () => {
+          try {
+              const response = await userService.getCleanerAvailability(cleanerId);
+              const res = response.data.data;
+            
+              // const response = await userService.getCleanerAvailability(cleanerId);
+              // if (!response.ok) throw new Error('Failed to fetch availability');
+              console.log(res)
+              // const data = await res;
+              setAvailability(res);
+          } catch (err) {
+              setError(err.message);
+          } finally {
+              setLoading(false);
+          }
+      };
+
+      fetchAvailability();
+  }, [cleanerId]);
+
+  if (loading) {
+      return <ActivityIndicator size="large" color={COLORS.primary} />;
+  }
+
+  if (error) {
+      return <Text style={{ color: 'red', textAlign: 'center' }}>{error}</Text>;
+  }
+
+    return (
+      <View>
         <CardNoPrimary>
             <View style={styles.titleContainer}>
               <Text bold style={styles.title}>Availability</Text> 
@@ -33,45 +91,25 @@ const AvailabilityDisplay = ({availability, handleOpenAvailability, mode }) => {
               <View style={styles.container}>
 
               <ScrollView>
-                { availability.length > 0 ? 
-                    <View>
-                    {availability?.map((item, index) => (
-                        <View key={index} style={styles.availabilityItem}>
-                            <View>
-                            <Text style={styles.day}>{item.day}</Text>
-                            </View>
-                            <View>
-                            {item.timeRange ? (
-                                <Text style={styles.timeRange}>{item.timeRange}</Text>
-                            ) : (
-                                <Text style={styles.unavailable}>Not Available</Text>
-                            )}
-                            </View>
-                        </View>
-                    ))}
-                    </View>
-                    : 
-                    
-                    <View style={styles.empty}>
-                        <Text>Set availability</Text>
-                    </View>
-                }
+                
+  
+                <CustomCalendar
+                  availability={availability?.availability || []}
+                  bookedSchedules={availability?.booked_schedules || []}
+                />
 
-</ScrollView>
+                </ScrollView>
               </View>
 
               </View>
               
             </CardNoPrimary>
-            
+        </View>    
     );
 };
 
 const styles = StyleSheet.create({
     container: {
-        // padding: 16,
-        // backgroundColor: '#f9f9f9',
-        
         borderRadius: 8,
         width:'100%'
     },

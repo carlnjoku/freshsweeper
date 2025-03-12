@@ -24,3 +24,34 @@ export const db = getDatabase(firebaseApp);
 // Initialize Storage
 export const storage = getStorage(firebaseApp);
 
+
+
+
+
+
+
+
+
+
+
+// // Import the functions you need from the SDKs you need
+// import { initializeApp } from "firebase/app";
+// import { getAnalytics } from "firebase/analytics";
+// // TODO: Add SDKs for Firebase products that you want to use
+// // https://firebase.google.com/docs/web/setup#available-libraries
+
+// // Your web app's Firebase configuration
+// // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// const firebaseConfig = {
+//   apiKey: "AIzaSyA7BGN9UVL-OUm3MxedoS4k4W4WEEl2GJc",
+//   authDomain: "freshsweeper-256ba.firebaseapp.com",
+//   projectId: "freshsweeper-256ba",
+//   storageBucket: "freshsweeper-256ba.firebasestorage.app",
+//   messagingSenderId: "352563621238",
+//   appId: "1:352563621238:web:e2f7b25aa72d6fbe8b5e57",
+//   measurementId: "G-GPVV3MFCMP"
+// };
+
+// // Initialize Firebase
+// const app = initializeApp(firebaseConfig);
+// const analytics = getAnalytics(app);

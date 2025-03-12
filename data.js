@@ -1,3 +1,117 @@
+
+export const propertyList = [
+    { 
+      label: 'Select Apartment type', 
+      value: '#' },
+    {
+      label: "House",
+      value: "house",
+    },
+    {
+      label: "Apartment",
+      value: "apartment",
+    },
+    {
+      label: "Studio Apartment",
+      value: "studio",
+    },
+    {
+      label: "Cabin",
+      value: "cabin",
+    },
+    {
+      label: "Lighthouse",
+      value: "lighthouse",
+    },
+    {
+      label: "Bungalow",
+      value: "Bungalow",
+    },
+    {
+      label: "Basement Apartment",
+      value: "basement",
+    },
+    {
+      label: "Loft",
+      value: "loft",
+    },
+    {
+      label: "Condo",
+      value: "condo",
+    },
+    {
+      label: "Cottage",
+      value: "cottage",
+    },
+    {
+      label: "TownHouse",
+      value: "townHouse",
+    },
+    {
+      label: "Mansion",
+      value: "mansion",
+    },
+    
+    
+  ];
+// Regular cleaning tasks
+export const regular_cleaning = [
+    {
+        "label":"Sweeping and Mopping",
+        "value":"Sweeping and Mopping",
+    },
+    {
+        "label":"Vacuuming",
+        "value":"Vacuuming"
+    },
+    {
+        "label":"Kitchen Cleaning",
+        "value":"Kitchen"
+    },
+    {
+        "label":"Bathroom Cleaning",
+        "value":"Bathroom "
+    },
+    {
+        "label":"Dishwashing",
+        "value":"Dishwashing"
+    },
+    {
+        "label":"Trash Removal",
+        "value":"Trash Removal"
+    },
+    {
+        "label":"Room Cleaning",
+        "value":"Room Cleaning"
+    },
+    {
+        "label":"Livingroom",
+        "value":"Livingroom"
+    },
+    {
+        "label":"Window Cleaning",
+        "value":"Window Cleaning"
+    },
+    {
+        "label":"Air Freshening",
+        "value":"Air Freshening"
+    },
+    {
+        "label":"Appliance Cleaning",
+        "value":"Appliance Cleaning"
+    },
+    {
+        "label":"Final Inspection",
+        "value":"Final Inspection"
+    },
+    {
+        "label":"Dusting",
+        "value":"Dusting"
+    },
+    
+    
+]
+
 export const  task_checklist = [
     {
         id:1,
@@ -124,14 +238,7 @@ export const  task_checklist = [
 
 
 
-export const deep_cleaning = [
-    {
-        id:1,
-        label:"ppioio",
-        value:"giuhiu",
-        price:""
-    },
-]
+
 
 
 

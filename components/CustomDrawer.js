@@ -73,7 +73,7 @@ const CustomDrawer = (props) => {
         userService.logOut(data)
             .then(response => {
                 const res = response.data.data
-                console.log(res)
+                // console.log(res)
         
             })
     }
@@ -84,7 +84,7 @@ const CustomDrawer = (props) => {
                 contentContainerStyle={{backgroundColor:COLORS.secondary}}
             >
                 <ImageBackground style={{padding:20, marginTop:-5, backgroundColor:COLORS.primary}}>
-                    {currentUser.avatar ? 
+                    {/* {currentUser.avatar ? 
                         <Image 
                             source={{uri:avatar}}
                             style={{height:100, width:100, borderRadius:50, borderWidth:2, borderColor:COLORS.light_gray_1, marginBottom:10}} 
@@ -96,7 +96,18 @@ const CustomDrawer = (props) => {
                             source={require('../assets/default_avatar.png')}
                             style={{ backgroundColor: COLORS.gray }}
                         />
-                    }
+                    } */}
+
+                    <Image
+                        source={
+                            avatar
+                            ? { uri: avatar }
+                            : require('../assets/default_avatar.png') // Fallback image
+                        }
+                        style={{height:100, width:100, borderRadius:50, borderWidth:2, borderColor:COLORS.light_gray_1, marginBottom:10}} 
+                    />
+
+                    
                     <Text style={{color:"#f3f3f3",  fontSize:18, fontWeight:"600"}}>{firstname} {lastname}</Text>
                     {city ? 
                     <View style={{flexDirection:"row"}}>
@@ -115,12 +126,12 @@ const CustomDrawer = (props) => {
                 </View>
             </DrawerContentScrollView>
             <View style={{padding:20, borderTopWidth:1, borderTopColor:"#eee"}}>
-                {/* <TouchableOpacity style={{paddingVertical:15}} onPress = {(e)=>{logUserOut(currentUser._id)}} > */}
+                <TouchableOpacity style={{paddingVertical:15}} onPress = {logout} >
                     <View style={{ flexDirection:"row", alignItems:'center'}}>
                         <Ionicons name='log-out-outline' size={22} />
                         <Text style={{fontSize:15, marginLeft:10, color:"#333"}}>Logout</Text>
                     </View>
-                {/* </TouchableOpacity> */}
+                </TouchableOpacity>
             </View>
         </View>
     )

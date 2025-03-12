@@ -12,21 +12,24 @@ const CompletedJobsList = ({ schedules }) => {
   return (
     <View style={styles.container}>
       {schedules.length > 0 ?
-      <View style={styles.filterContainer}>
-        {filters.map((filter, index) => (
-          <Chip
-            key={index}
-            mode="outlined"
-            style={selectedFilter === filter ? styles.activeChip : styles.chip}
-            onPress={() => setSelectedFilter(filter)}
-          >
-            {filter}
-          </Chip>
-        ))}
-      </View>
+        <View style={styles.filterContainer}>
+          {filters.map((filter, index) => (
+            <Chip
+              key={index}
+              mode="flat"
+              style={selectedFilter === filter ? styles.activeChip : styles.chip}
+              textStyle={selectedFilter === filter ? styles.activeText : styles.text}
+              onPress={() => setSelectedFilter(filter)}
+            >
+              {filter}
+            </Chip>
+          ))}
+        </View>
       :
       ""
       }
+
+      
       
       <FlatList
         data={schedules}
@@ -42,8 +45,12 @@ const CompletedJobsList = ({ schedules }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9f9f9',
+    // backgroundColor: '#f9f9f9',
     padding: 10,
+  },
+  text: {
+    fontSize: 12,
+    color: '#000',
   },
   filterContainer: {
     flexDirection: 'row',
@@ -51,13 +58,14 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   chip: {
-    backgroundColor: '#e0e0e0',
-    borderColor:COLORS.light_gray
+    backgroundColor: COLORS.light_gray_1,
+    // borderColor:COLORS.primary
+    borderRadius:50
   },
   activeChip: {
-    backgroundColor: COLORS.black,
-    borderColor:COLORS.black,
-    color: '#ffffff',
+    backgroundColor: COLORS.primary_light_1,
+    borderRadius:50
+    // borderColor:COLORS.black,
   },
   list: {
     paddingBottom: 20,

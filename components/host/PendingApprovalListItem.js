@@ -14,15 +14,13 @@ import userService from '../../services/userService';
 
 const PendingApprovalListItem = ({item }) => {
 
-
-  
   const [isFeedbackVisible, setFeedbackVisible] = useState(false);
   const [currentFeedbackTo, setCurrentFeedbackTo] = useState("");
   const [currentFeedbackToEmail, setCurrentFeedbackToEmail] = useState("");
   const [currentScheduleId, setCurrentScheduleId] = useState(null);
   const [isInputFocused, setInputFocused] = useState(false); // Focus state for TextInput
 
-  console.log("item...........................item")
+  console.log("item...........................item1")
   // console.log(JSON.stringify(item,null, 2))
   console.log("item...........................item")
   // const scheduleId = item.item._id
@@ -38,7 +36,7 @@ const PendingApprovalListItem = ({item }) => {
   const handleApproval = (scheduleId) => {
     Alert.alert(
       "Confirm Approval",
-      "Are you sure you want to approve this schedule?",
+      "Are you sure you want to approve this schedule and payment?",
       [
         {
           text: "Cancel",
@@ -47,7 +45,7 @@ const PendingApprovalListItem = ({item }) => {
         {
           text: "Approve",
           onPress: () => {
-            setCurrentFeedbackTo(item.item.assigned_to[0].cleanerId);
+            setCurrentFeedbackTo(item.assignedTo.cleanerId);
             // setCurrentFeedbackToEmail(item.item.email);
             setCurrentScheduleId(scheduleId);
             setFeedbackVisible(true);
@@ -112,18 +110,19 @@ const PendingApprovalListItem = ({item }) => {
     <View style={styles.jobCard}>
       <View style={styles.container}>
         <View style={styles.date_time}>
-          <Text style={styles.date}>
-            {moment(item.item.schedule.cleaning_date, "ddd MMM DD YYYY").format("ddd MMM DD")}
+          {/* <Text style={styles.date}>
+            
+            {moment(item.schedule.cleaning_date, "ddd MMM DD YYYY").format("ddd MMM DD")}
           </Text>
-          <Text style={styles.time}>{item.item.schedule.cleaning_time}</Text>
+          <Text style={styles.time}>{item.schedule.cleaning_time}</Text> */}
         </View>
 
         <View style={styles.task_details}>
-          <Text style={styles.task}>{item.item.schedule.apartment_name}</Text>
-          <Text style={styles.apartment}>{item.item.schedule.address}</Text>
-          <Text style={styles.status}>{item.item.schedule.status}</Text>
+          <Text style={styles.task}>{item.schedule.apartment_name}</Text>
+          <Text style={styles.apartment}>{item.schedule.address}</Text>
+          <Text style={styles.status}>{item.schedule.status}</Text>
           <View style={styles.actions}>
-            <Button title="Approve" onPress={() => handleApproval(item.item._id)} color="#4caf50" />
+            <Button title="Approve" onPress={() => handleApproval(item._id)} color="#4caf50" />
             <Button title="Reject" onPress={() => console.log("Rejected")} color="#f44336" />
           </View>
         </View>

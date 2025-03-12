@@ -1,18 +1,21 @@
-import React, {useState, useEffect, useRef, useContext} from  'react';
+import React, {useState, useEffect, useLayoutEffect,useCallback, useRef, useContext} from  'react';
+import { useFocusEffect } from '@react-navigation/native';
 import Text from '../../components/Text';
 import Button from '../../components/Button';
 import { TextInput, Checkbox, RadioButton } from 'react-native-paper';
 import COLORS from '../../constants/colors';
-import { SafeAreaView,StyleSheet, Alert, KeyboardAvoidingView, Keyboard, Platform, StatusBar, Linking,  FlatList, ScrollView, Modal, Image, View, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { SafeAreaView, RefreshControl, StyleSheet, Alert, KeyboardAvoidingView, Keyboard, Platform, StatusBar, Linking,  FlatList, ScrollView, Modal, Image, View, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Switch, Card,Avatar,Badge, Divider, Title, Paragraph, IconButton } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import ROUTES from '../../constants/routes';
 import CircleIcon from '../../components/CirecleIcon';
 import CardColored from '../../components/Card';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons, AntDesign } from '@expo/vector-icons';
 import NewBooking from './NewBooking';
 import { StripeProvider } from '@stripe/stripe-react-native';
 import PaymentScreen from '../../components/PaymentForm';
+import AddICalModal from './AddICalModal';
+import userService from '../../services/userService';
 
 
 
@@ -21,17 +24,124 @@ export default function ApartmentDashboard({route}) {
   const{property} = route.params
   const navigation = useNavigation();
 
-  const [openModal, setOpenModal] = useState(false)
-  const [isAutomated, setIsAutomated] = useState(property?.isAutomated); // Assuming 'isAutomated' comes from property details
-  const [automatedSchedules, setAutomatedSchedules] = useState([]);
-  const [manualSchedules, setManualSchedules] = useState([]);
+  const[refreshing, setRefreshing] = useState(false); // Step 1: Refresh state
+  const[openModal, setOpenModal] = useState(false)
+  const[isAutomated, setIsAutomated] = useState(property?.isAutomated); // Assuming 'isAutomated' comes from property details
+  const[automatedSchedules, setAutomatedSchedules] = useState([]);
+  const[manualSchedules, setManualSchedules] = useState([]);
   const[upcoming_schedules, setUpComingSchedules] = useState([])
   const[ongoing_schedules, setOnGoingSchedules] = useState([])
   const[completed_schedules, setCompletedSchedules] = useState([])
+
+
+  const [modalVisible, setModalVisible] = useState(false);
+  const [icalData, setIcalData] = useState(null);
+  const [cleaners, setCleaners] = useState([]);
+
+  // Retrieve the count for each room type
+  const bedroomCount = property?.roomDetails.find(room => room.type === "Bedroom")?.number || 0;
+  const bathroomCount = property?.roomDetails.find(room => room.type === "Bathroom")?.number || 0;
+  const kitchen = property?.roomDetails.find(room => room.type === "Kitchen")?.number || 0;
+  const livingroomCount = property?.roomDetails.find(room => room.type === "Livingroom")?.number || 0;
+
+  const bedroomSize = property?.roomDetails.find(room => room.type === "Bedroom")?.size || 0;
+  const bathroomSize = property?.roomDetails.find(room => room.type === "Bathroom")?.size || 0;
+  const kitchenSize = property?.roomDetails.find(room => room.type === "Kitchen")?.size || 0;
+  const livingroomSize = property?.roomDetails.find(room => room.type === "Livingroom")?.size || 0;
+
+  
+  const [syncedCalendars, setSyncedCalendars] = useState([]);
+
+  useEffect(()=> {
+    fetchCleaners()
+    fetchSyncedCals()
+  },[])
+
+  const fetchCleaners = async() => {
+    await userService.getClanersAssignedByApartmentIds(property._id)
+    .then(response => {
+      const res = response.data
+      console.log(res)
+      setCleaners(res.assignedTo)
+    })
+  }
+
+  const fetchSyncedCals = async() => {
+    await userService.getSyncedCalsByApartmentIds(property._id)
+    .then(response => {
+      const res = response.data
+      console.log("syncalendar", res)
+      console.log(res)
+      setSyncedCalendars(res)
+    })
+  }
+  const toggleSync = (id) => {
+      setSyncedCalendars((prevCalendars) =>
+          prevCalendars.map((calendar) =>
+              calendar.id === id ? { ...calendar, enabled: !calendar.enabled } : calendar
+          )
+      );
+  };
+
+
+
+const handleSaveSync = async (newSync) => {
+  setSyncedCalendars((prevCalendars) => {
+      const existingIndex = prevCalendars.findIndex((item) => item._id === newSync._id);
+      
+      if (existingIndex !== -1) {
+          // Update the existing entry
+          return prevCalendars.map((item, index) =>
+              index === existingIndex ? { ...item, ...newSync } : item
+          );
+      } else {
+          // Append as a new entry
+          return [...prevCalendars, { id: newSync._id || Date.now(), ...newSync, enabled: true }];
+          // Ensure fetchSyncedCals runs AFTER the state update
+          
+      }
+      
+  });
+  await fetchSyncedCals();
+};
+
+const handleSyncCalendar = async (data) => {
+  try {
+      console.log("Sending data to API:", data);
+      const response = await userService.createSyncCalendar(data);
+      console.log("Received API Response:", response.data.data);
+   
+      if (response?.status === 200) {
+          console.log("Synced Calendar Data:", response.data.data);
+          handleSaveSync(response.data.data);
+
+          Alert.alert(
+              "Sync Successful",
+              response.message || "Your calendar has been synced successfully!",
+              [{ text: "OK" }]
+          );
+      } else {
+          throw new Error(response?.detail || "Failed to sync calendar.");
+      }
+  } catch (error) {
+      console.error("Error syncing calendar:", error);
+      Alert.alert(
+          "Sync Failed",
+          error.message || "There was an issue syncing your calendar. Please try again.",
+          [{ text: "OK" }]
+      );
+  }
+};
+
+// Debugging: Log when syncedCalendars updates
+useEffect(() => {
+  console.log("Updated Synced Calendars:", syncedCalendars);
+}, [syncedCalendars]);
   
   console.log("prop.............")
   console.log(property)
   console.log("prop.............")
+  
   const fetchSchedules = async () => {
     try {
       // Fetch schedules here - simulated as mock data for now
@@ -84,55 +194,6 @@ export default function ApartmentDashboard({route}) {
   const navigateToViewSchedules = () => {
     navigation.navigate(ROUTES.host_bookings, { propertyId: property.id });
   };
-
-
-// const renderScheduleCard = (schedule, automated = false) => (
-//     <Card key={schedule.id} style={styles.card}>
-//       <Card.Content>
-//         <Text style={styles.taskTitle}>{`Task: ${schedule.task}`}</Text>
-//         <Text style={styles.taskDate}>{`Date: ${schedule.date}`}</Text>
-//       </Card.Content>
-//       {automated && (
-//         <Card.Actions>
-//           <Button mode="text" color="#6200EE">
-//             Auto-Generated
-//           </Button>
-//         </Card.Actions>
-//       )}
-//     </Card>
-//   );
-
-//   const renderScheduleCard = (schedule, automated = false) => (
-//     <Card key={schedule.id} style={styles.card}>
-//     <Card.Content style={styles.cardContent}>
-//       {/* Cleaner Avatar */}
-//       {schedule.cleaner && schedule.cleaner.avatarUrl && (
-//         <Avatar.Image
-//           size={40}
-//           source={{ uri: schedule.cleaner.avatarUrl }}
-//           style={styles.avatar}
-//         />
-//       )}
-
-//       <View style={styles.textContainer}>
-//         <Text style={styles.taskTitle}>{`Task: ${schedule.task ?? 'Unknown task'}`}</Text>
-//         <Text style={styles.taskDate}>{`Date: ${schedule.date ?? 'Unknown date'}`}</Text>
-//         {schedule.cleaner && (
-//           <Text style={styles.cleanerName}>{`Assigned to: ${schedule.cleaner.firstname} ${schedule.cleaner.lastname}`}</Text>
-//         )}
-//       </View>
-//     </Card.Content>
-
-//     {isAutomated && (
-//       <Card.Actions>
-//         <Button mode="text" color="#6200EE">
-//           Auto-Generated
-//         </Button>
-//       </Card.Actions>
-//     )}
-//   </Card>
-//   );
-
 
 const renderScheduleCard = (schedule, animated = false) => (
     <Card key={schedule.id} style={styles.card}>
@@ -188,27 +249,61 @@ const renderScheduleCard = (schedule, animated = false) => (
     setOpenModal(false)
   }
 
- 
+  // Step 2: Handle refresh action
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await Promise.all([fetchCleaners(), fetchSyncedCals(), fetchSchedules()]);
+    setRefreshing(false);
+  };
+
   
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <IconButton
+          icon="pencil" // Edit icon
+          size={20}
+          color={COLORS.primary}
+          onPress={() => navigation.navigate(ROUTES.host_edit_apt, { propertyId:property._id })}
+        />
+      ),
+    });
+  }, [navigation, property]);
+
+  
+  // Use `useFocusEffect` to refresh the screen when it's focused
+  useFocusEffect(
+    useCallback(() => {
+      handleRefresh();
+    }, [property._id]) // Dependency ensures refresh when property changes
+  );
+
   
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView 
+      contentContainerStyle={styles.container}
+      refreshControl={ // Step 3: Add RefreshControl
+        <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+      }
+    >
       
 
       <CardColored>
       <View> 
           <View style={styles.centerContent}>
+            <AntDesign name="home" size={60} color={COLORS.gray}/> 
             <Text bold style={styles.headerText}>{property?.apt_name}</Text>
-            <Text style={{color:COLORS.gray, marginBottom:10, marginLeft:-5}}> <MaterialCommunityIcons name="map-marker" size={16} />{property.address}</Text>
-            </View> 
+            <Text style={{color:COLORS.gray, marginBottom:5, marginLeft:-5}}> <MaterialCommunityIcons name="map-marker" size={16} />{property.address}</Text>
+          </View> 
 
-            <View style={{flexDirection:'row', justifyContent:'space-between', alignItems:'center', marginTop:5}}>
+            <View style={{flexDirection:'row', justifyContent:'space-between', alignItems:'center', marginTop:0, marginBottom:10}}>
                 <CircleIcon 
                     iconName="bed-empty"
                     buttonSize={26}
                     radiusSise={13}
                     iconSize={16}
-                    title= {3}
+                    title= {bedroomCount}
+                    roomSize= {bedroomSize}
                     type="Bedrooms"
                 /> 
                 <CircleIcon 
@@ -216,23 +311,36 @@ const renderScheduleCard = (schedule, animated = false) => (
                     buttonSize={26}
                     radiusSise={13}
                     iconSize={16}
-                    title= {1}
+                    title= {bathroomCount}
+                    roomSize= {bathroomSize}
                     type="Bathrooms"
+                /> 
+           
+                <CircleIcon 
+                    iconName="silverware-fork-knife"
+                    buttonSize={26}
+                    radiusSise={13}
+                    iconSize={16}
+                    title= {kitchen}
+                    roomSize= {kitchenSize}
+                    type="Kitchen"
                 /> 
                 <CircleIcon 
                     iconName="seat-legroom-extra"
                     buttonSize={26}
                     radiusSise={13}
                     iconSize={16}
-                    title= {1}
+                    title= {livingroomCount}
+                    roomSize= {livingroomSize}
                     type="Livingroom"
                 /> 
+                
             </View> 
           </View>
         </CardColored>
 
       <Card style={styles.automationCard}>
-        <Card.Title
+        {/* <Card.Title
           title="Automated Scheduling"
           right={() => (
             <Switch
@@ -241,16 +349,31 @@ const renderScheduleCard = (schedule, animated = false) => (
               color={COLORS.primary}
             />
           )}
-        />
+        /> */}
         <Card.Content>
-          <Text>
+          {/* <Text>
             {isAutomated
               ? 'Automated scheduling is enabled for this property.'
               : 'Automated scheduling is disabled. You can manually create schedules.'}
+          </Text> */}
+          <Text style={styles.infoText}>
+              Sync your Airbnb, Booking.com, or Vrbo calendar to automatically create cleaning schedules 
+              whenever a new guest checks out. Select a default cleaner to be assigned to each cleaning.
           </Text>
         </Card.Content>
       </Card>
-
+      <View style={styles.manualContainer}>
+          <TouchableOpacity
+           onPress={() => setModalVisible(true)}
+            style={styles.createButton}
+          >
+            <View style={{flexDirection:'row', alignItems:'center'}}>
+              
+              <MaterialCommunityIcons name="calendar-sync" size={20} color="white" /> 
+              <Text style={styles.buttonText}> Sync Calendar</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
       {isAutomated ? (
         <View>
           <Text style={styles.sectionHeader}>Upcoming Automated Schedules</Text>
@@ -265,33 +388,54 @@ const renderScheduleCard = (schedule, animated = false) => (
           )}
         </View>
       ) : (
-        <View style={styles.manualContainer}>
-          <Button
-            mode="contained"
-            onPress={handleOpenCreateBooking}
-            style={styles.createButton}
-            labelStyle={styles.buttonLabel}
-            title="Create Schedule Manually"
-          />
-            
-          
-        </View>
+        <>
+
+        {/* List of Synced Calendars */}
+        {syncedCalendars.length > 0 && (
+          <View>
+            <CardColored>
+              <Text style={styles.sectionTitle}>Synced Calendars</Text>
+              {syncedCalendars.map((calendar) => (
+                  <View key={calendar._id} style={styles.syncItem}>
+                    <View>
+                      <Text style={styles.syncLabel}>{calendar.platform}</Text>
+                      <Switch style={styles.switch} color={COLORS.primary} value={calendar.enabled} onValueChange={() => toggleSync(calendar.id)} />
+                    </View>
+                  </View>
+              ))}
+            </CardColored>
+          </View>
       )}
 
-      <Text style={styles.sectionHeader}>Manual Schedules</Text>
+        
+        <View>
+          {/* Show Synced Calendar Data */}
+          {icalData && (
+                    <View>
+                        <Text>Platform: {icalData.selectedType}</Text>
+                        <Text>iCal URL: {icalData.icalUrl}</Text>
+                        <Text>Assigned Cleaner: {icalData.selectedCleaner}</Text>
+                    </View>
+                )}
+        </View>
+
+        </>
+      )}
+
+      {/* <Text style={styles.sectionHeader}>Manual Schedules</Text>
       {manualSchedules.length > 0 ? (
         manualSchedules.map(renderScheduleCard)
       ) : (
         <Text style={styles.emptyText}>No manual schedules yet.</Text>
-      )}
+      )} */}
 
-      <Button
+      {/* <Button
         mode="contained"
         onPress={navigateToViewSchedules}
         style={styles.viewButton}
         // labelStyle={styles.buttonLabel}
         title= "View All Schedules"
-      />
+      /> */}
         
         <Modal 
             visible={openModal}
@@ -305,6 +449,14 @@ const renderScheduleCard = (schedule, animated = false) => (
           </Modal>
 
           
+                {/* iCal Modal */}
+                <AddICalModal
+                    visible={modalVisible}
+                    onClose={() => setModalVisible(false)}
+                    onSave={handleSyncCalendar}
+                    cleaners={cleaners}
+                    aptId={property._id}
+                />
 
     </ScrollView>
   )
@@ -360,14 +512,19 @@ const styles = StyleSheet.create({
       fontStyle: 'italic',
     },
     manualContainer: {
-      alignItems: 'center',
-      marginVertical: 15,
-      marginHorizontal:20
+      alignItems: 'flex-end',
+      marginVertical: 0,
     },
     createButton: {
-      backgroundColor: '#6200EE',
-      borderRadius: 10,
-      paddingVertical: 8,
+      backgroundColor: COLORS.primary,
+      borderRadius: 50,
+      paddingVertical: 10,
+      paddingHorizontal:20
+    },
+    buttonText:{
+      color:COLORS.white,
+      fontSize:16,
+      fontWeight:'600'
     },
     viewButton: {
       marginTop: 20,
@@ -412,6 +569,28 @@ const styles = StyleSheet.create({
       },
       centerContent: {
         alignItems: 'center',  // Center content horizontally
-        marginVertical:20
+        marginVertical:10
       },
+      infoText: {
+        fontSize: 14,
+        color: '#333',
+      },
+    sectionTitle:{
+      fontSize:16,
+      marginVertical:10,
+      fontWeight:'600'
+    },
+    syncLabel:{
+      marginTop:5
+    },
+    switch: {
+      marginTop:-30,
+    },
+    switch_component :{
+      // flexDirection:'row',
+      // // alignItems:'center',
+      // justifyContent:'space-around',
+      // width:'100%'
+
+    }
   });

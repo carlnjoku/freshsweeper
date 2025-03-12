@@ -1,16 +1,19 @@
 // GoogleAutocomplete.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TextInput, IconButton, Checkbox, RadioButton, Avatar } from 'react-native-paper';
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import axios from 'axios';
 import COLORS from '../constants/colors';
 
-const GoogleAutocomplete = ({label, apiKey, selected_address, handleError }) => {
-  const [query, setQuery] = useState('');
+const GoogleAutocomplete = ({label, apiKey, selected_address, handleError,initialValue }) => {
+  const [query, setQuery] = useState("");
   const [predictions, setPredictions] = useState([]);
   const [isFocused, setIsFocused] = useState(false);
+ 
+  useEffect(() => {
+    setQuery(initialValue || ""); // Update query when initialValue changes
+  }, [initialValue]);
 
-  console.log(handleError)
 
   const handlePlaceSelected = async (input) => {
     setQuery(input);
@@ -73,16 +76,16 @@ const GoogleAutocomplete = ({label, apiKey, selected_address, handleError }) => 
         multiline
         activeOutlineColor={COLORS.primary}
         textColor={COLORS.secondary}
-        style={{marginBottom:15, marginTop:10, color:COLORS.gray, fontSize:14, backgroundColor:"#fff"}}
+        style={{marginBottom:0, marginTop:10, color:COLORS.gray, fontSize:14, backgroundColor:"#fff"}}
         value={query}
         onChangeText={handlePlaceSelected}
         // onFocus={handleFocus}
         onFocus={() => handleError(null, 'location')}
         // onBlur={handleBlur}
         right={isFocused ? <TextInput.Icon icon="close" onPress={handleClear} style={{opacity:0.4}} fontSize="small" /> : null }
-
         
       />
+      
       <FlatList
         data={predictions}
         renderItem={renderPrediction}

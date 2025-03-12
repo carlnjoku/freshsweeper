@@ -360,9 +360,16 @@ console.log("cleaners..........")
           latitude={item.apartment_latitude}
           longitude={item.apartment_longitude}
         />
+        <View style={{flexDirection:'row', alignItems:"center", paddingVertical:10, paddingLeft:15, backgroundColor:"#f1f1f1"}}>
+          <Image source={require('../../assets/google_direction.png')} style={styles.google_direction} />
+          <TouchableOpacity 
+            onPress={openGoogleMaps}
+          >
+            <Text style={{color:COLORS.gray}}> Direction</Text>
+          </TouchableOpacity>
+        </View>
     
       <View style={styles.container}> 
-      <Button title="Open Google Directions" onPress={openGoogleMaps} />
       {loading ? (
         // Display the loading spinner while loading is true
         <ActivityIndicator size="large" color={COLORS.primary} />
@@ -378,7 +385,7 @@ console.log("cleaners..........")
           renderItem={renderItem}
           keyExtractor={(item, index) => index.toString()}
         />
-        <Text>Direction</Text>
+        
       </View>
 
         <Modal 
@@ -576,6 +583,10 @@ const styles = StyleSheet.create({
       fontWeight: 'bold',
       color: '#333',
     },
+    google_direction:{
+      width:16,
+      height:16
+    }
     
   })
 

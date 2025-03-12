@@ -6,6 +6,8 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import availabilityRange from '../../utils/availabilityRange';
 import userService from '../../services/userService';
 
+
+
 const AvailabilityComponent = ({userId, close_avail_modal, get_availability}) => {
     // State to manage availability data
     const [availability, setAvailability] = useState([
@@ -15,6 +17,7 @@ const AvailabilityComponent = ({userId, close_avail_modal, get_availability}) =>
         { day: 'Thursday', isAvailable: true, startTime: new Date(), endTime: new Date() },
         { day: 'Friday', isAvailable: true, startTime: new Date(), endTime: new Date() },
         { day: 'Saturday', isAvailable: true, startTime: new Date(), endTime: new Date() },
+        { day: 'Sunday', isAvailable: true, startTime: new Date(), endTime: new Date() },
     ]);
 
     // State variables to control the visibility of DateTimePickers
@@ -229,3 +232,6 @@ const styles = StyleSheet.create({
 });
 
 export default AvailabilityComponent;
+
+
+

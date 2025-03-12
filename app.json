@@ -12,6 +12,7 @@
       "backgroundColor": "#ffffff"
     },
     "scheme": "freshsweeper1",
+    "deeplinks": ["freshsweeper1://"],
     "platforms": ["ios", "android"],
     "ios": {
       "supportsTablet": true,
@@ -19,7 +20,10 @@
       "buildNumber": "1.0.0",
       "config": {
         "googleMapsApiKey": "AIzaSyDEcmSEw9ZtSb709NRO487hLTr1KiyGir8"
-      }
+      },
+      "associatedDomains": [
+        "applinks:freshsweeper.com"
+      ]
     },
     "android": {
       "useCleartextTraffic": true,
@@ -30,13 +34,26 @@
       ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#00BFFF"
       },
       "package": "com.flavoursoft.freshsweeper1",
       "versionCode": 1,
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "data": [
+            {
+              "scheme": "https",
+              "host": "www.freshsweeper.com",
+              "pathPrefix": "/res/et_password"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ],
       "config": {
         "googleMaps": {
-          "apiKey": "AIzaSyDEcmSEw9ZtSb709NRO487hLTr1KiyGir8"
+          "apiKey": "AIzaSyAMgD0ViZwm7zxSzKxTCV25EkjqfVONdUQ"
         }
       }
     },

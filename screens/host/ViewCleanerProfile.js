@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react';
 import Text from '../../components/Text';
-import { SafeAreaView,StyleSheet, StatusBar, Linking, FlatList, ScrollView, Modal, Image, View, useWindowDimensions, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { SafeAreaView,StyleSheet, StatusBar, Linking, Alert, FlatList, ScrollView, Modal, Image, View, useWindowDimensions, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import userService from '../../services/userService';
 import CircularIcon from '../../components/CircularIcon';
@@ -60,7 +60,7 @@ export default function ViewCleanerProfile({cleanerId, schedule, close_modal}) {
         .then(response => {
           const res = response.data.data
           console.log("syyyyyyy1064")
-          console.log(res["params"])
+          // console.log(res["params"])
           setCleanerChatReference(res["params"])
           console.log("syyyyyyy208")
         })
@@ -75,7 +75,7 @@ export default function ViewCleanerProfile({cleanerId, schedule, close_modal}) {
           .then(response=> {
             const res = response.data
             console.log("sulee...........")
-            console.log(response.data)
+            // console.log(response.data.contact)
             console.log("sulee...........")
     
             setFirstname(res.firstname)
@@ -110,7 +110,7 @@ export default function ViewCleanerProfile({cleanerId, schedule, close_modal}) {
       }
     
       console.log("P..........................son")
-      console.log(cleaner_chat_reference)
+      // console.log(cleaner_chat_reference)
       
       const openExisitingConversation = () => {
         
@@ -122,7 +122,6 @@ export default function ViewCleanerProfile({cleanerId, schedule, close_modal}) {
       }
 
       const callPhone = () => {
-        alert("hey")
         makeCall(contact?.phone)
       }
 

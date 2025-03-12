@@ -21,7 +21,7 @@ export default function RecommendedCleaners({navigation, route}) {
     const genericArray = new Array(5).fill(null);
 
     console.log("scheeeeeeeeeeeeeeeeeeeeedule")
-    console.log(schedule)
+    // console.log(schedule)
     console.log("scheeeeeeeeeeeeeeeeeeeeedule")
 
     const fechRecommendedCleaners = () => {
@@ -33,7 +33,7 @@ export default function RecommendedCleaners({navigation, route}) {
                 setRecommendedCleaners(res)
                 setLoading(false); // Set loading to false after the delay
                 console.log("recoooomendeeeeeeeeeeeeeeeed")
-                console.log(res)
+                // console.log(res)
                 console.log("recoooomendeeeeeeeeeeeeeeeed")
             }, 20000)
         }).catch((err)=> {
@@ -53,7 +53,8 @@ export default function RecommendedCleaners({navigation, route}) {
           <View style={styles.container}>
             
             <View style={styles.loadingContainer}>
-            <Text>Seaching for cleaners near you...</Text>
+            <Text>Seaching for cleaners near you.</Text>
+            <Text>Please be patient...</Text>
             </View>
                 <View>
                     <View>

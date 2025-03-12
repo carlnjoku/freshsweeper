@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#CCC',
     borderRadius:5,
-    marginVertical: 10,
+    marginTop: 15,
   },
   label: {
     position: 'absolute',
