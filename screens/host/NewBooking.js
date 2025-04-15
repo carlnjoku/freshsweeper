@@ -243,13 +243,14 @@ const NewBooking = ({schedule,close_modal, mode}) => {
           if(response.status === 200){
             const res = response.data.data
             console.log(res)
-            navigation.navigate(ROUTES.host_recommended_cleaners, {
-              'scheduleId':res._id,
-              'schedule' : res,
-              'hostId': currentUserId,
-              'hostFname': currentUser.firstname,
-              'hostLname': currentUser.lastname
-            })
+            navigation.navigate(ROUTES.host_dashboard, { })
+            // navigation.navigate(ROUTES.host_recommended_cleaners, {
+            //   'scheduleId':res._id,
+            //   'schedule' : res,
+            //   'hostId': currentUserId,
+            //   'hostFname': currentUser.firstname,
+            //   'hostLname': currentUser.lastname
+            // })
             // Redirect to list
           }else {
             console.log("could not verify")

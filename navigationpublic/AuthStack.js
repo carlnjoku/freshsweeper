@@ -54,18 +54,19 @@ const AuthStack = () => {
         name={ROUTES.getting_started} 
         component={GetStarted} 
         options={({route}) => ({
-          headerShown:false,
-          headerTintColor: COLORS.white,
+          headerShown:true,
+          headerTintColor: COLORS.gray,
           headerBackTitleVisible: false,
           headerStyle: {
-            backgroundColor: COLORS.primary,
+            backgroundColor: '#fff', // Background color of the header
+            elevation: 5, // Adds elevation for Android
+            shadowColor: '#000', // Shadow color for iOS
+            shadowOpacity: 0.3, // Shadow opacity for iOS
+            shadowOffset: { width: 0, height: 2 }, // Shadow offset for iOS
+            shadowRadius: 3, // Shadow radius for iOS
           },
           title: route.params?.userId,
-          headerTintColor:COLORS.white,
-          headerBackTitleVisible:false,
-          headerStyle:{
-              backgroundColor:COLORS.primary
-          }
+          
         })}
       />
 
@@ -74,18 +75,19 @@ const AuthStack = () => {
         component={Signin} 
         
         options={({route}) => ({
-            headerShown:false,
-            headerTintColor: COLORS.white,
-            headerBackTitleVisible: false,
+            headerShown:true,
             headerStyle: {
-              backgroundColor: COLORS.primary,
+              backgroundColor: '#fff', // Background color of the header
+              elevation: 5, // Adds elevation for Android
+              shadowColor: '#000', // Shadow color for iOS
+              shadowOpacity: 0.3, // Shadow opacity for iOS
+              shadowOffset: { width: 0, height: 2 }, // Shadow offset for iOS
+              shadowRadius: 3, // Shadow radius for iOS
             },
             title: route.params?.userId,
-            headerTintColor:COLORS.white,
+            headerTintColor:COLORS.gray,
             headerBackTitleVisible:false,
-            headerStyle:{
-                backgroundColor:COLORS.primary
-            }
+          
           })}
       />
       
@@ -93,18 +95,18 @@ const AuthStack = () => {
         name={ROUTES.signup} 
         component={Signup} 
         options={({route}) => ({
-            headerShown:false,
-            headerTintColor: COLORS.white,
-            headerBackTitleVisible: false,
-            headerStyle: {
-              backgroundColor: COLORS.primary,
-            },
+            headerShown:true,
             title: route.params?.userId,
-            headerTintColor:COLORS.white,
+            headerTintColor:COLORS.gray,
             headerBackTitleVisible:false,
-            headerStyle:{
-                backgroundColor:COLORS.primary
-            }
+            headerStyle: {
+              backgroundColor: '#fff', // Background color of the header
+              elevation: 5, // Adds elevation for Android
+              shadowColor: '#000', // Shadow color for iOS
+              shadowOpacity: 0.3, // Shadow opacity for iOS
+              shadowOffset: { width: 0, height: 2 }, // Shadow offset for iOS
+              shadowRadius: 3, // Shadow radius for iOS
+            },
           })}
       />
 

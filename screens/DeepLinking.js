@@ -100,6 +100,7 @@ const linking = {
       VerifyEmail: 'verify-email',      // yourapp://verify-email?email=test@example.com&code=6789
       Profile: 'profile',               // yourapp://profile?userId=12345
       Onboarding: 'onboarding',         // yourapp://onboarding
+      Dashboard: 'Dashboard',         // yourapp://dashboard
     },
   },
   async getInitialURL() {

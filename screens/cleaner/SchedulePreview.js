@@ -24,6 +24,7 @@ import { acceptCleaningRequestPushNotification, sendPushNotifications } from '..
 import calculateDistance from '../../utils/calculateDistance';
 import { useNavigation } from '@react-navigation/native';
 import { Avatar, Chip } from 'react-native-paper';
+import { getAddressFromCoords, getCityState } from '../../utils/getAddressFromCoordinates';
 
 export default function SchedulePreview({route}) {
 
@@ -61,15 +62,20 @@ export default function SchedulePreview({route}) {
     const[host_tokens, setHostPushToken] = useState([])
     const[apartment_latitude, setApartmentLatitude] = useState("")
     const[apartment_longitude, setApartmentLongitude] = useState("")
-    const[address, setAddress] = useState("")
+    const[address, setAddress] = useState(null)
+    const[city, setCity] = useState(null)
+    const[state, setState] = useState(null)
+    const[postalcode, setPostalCode] = useState(null)
+    const[country, setCountry] = useState(null)
     const[apartment_name, setApartmentName] = useState("")
     const[total_cleaning_fee, setTotalCleaningFee] = useState("")
     const[regular_cleaning, setRegularCleaning] = useState([])
     const[extra, setExtra] = useState([])
     const[distance, setDistance] = useState([])
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    
 
-    
-    
 
     // Retrieve the count for each room type
     const bedroomCount = room_type_and_size.find(room => room.type === "Bedroom")?.number || 0;
@@ -83,11 +89,38 @@ export default function SchedulePreview({route}) {
     const livingroomSize = room_type_and_size.find(room => room.type === "Livingroom")?.size || 0;
     // console.log("Tasks", item.selected_schedule.schedule.regular_cleaning)
     // alert(requestId)
+
+    
+    
+    
     useEffect(()=> {
       
       fetchHostPushTokens()
       fetchSchedule()
     },[])
+
+    // useEffect(() => {
+    //   const fetchLocation = async () => {
+    //     try {
+    //       const locationData = await getAddressFromCoords(apartment_latitude, apartment_longitude);
+    //       alert(apartment_latitude)
+    //       console.log(locationData)
+    //       if (locationData) {
+    //         setAddress(locationData);
+    //       } else {
+    //         setError('Location information not available');
+    //       }
+    //     } catch (err) {
+    //       setError('Failed to fetch location data');
+    //       console.error(err);
+    //     } finally {
+    //       setLoading(false);
+    //     }
+    //   };
+  
+    //   fetchLocation();
+    // }, [apartment_latitude, apartment_longitude]);
+  
 
     const fetchHostPushTokens = async() => {
       await userService.getUserPushTokens(hostId)
@@ -98,43 +131,117 @@ export default function SchedulePreview({route}) {
       })
     }
 
-    const fetchSchedule = async() => {
+    const fetchSchedule = async () => {
       try {
-          
-        await userService.getScheduleById(scheduleId)
-        .then(response=> {
-          const res = response.data
-          console.log("weeeeeeeekie")
-          console.log(res.schedule.cleaning_date)
-          setSchedule(res)
-          setRoomTypeSize(res.schedule.selected_apt_room_type_and_size)
-          setCleaningDate(res.schedule.cleaning_date)
-          setCleaningTime(res.schedule.cleaning_time)
-          setCleaningEndTime(res.schedule.cleaning_end_time)
-          const lat1 = geolocationData.latitude
-          const lon1 = geolocationData.longitude
-
-          const lat2 = res.schedule.apartment_latitude
-          const lon2 = res.schedule.apartment_longitude
-          const dist = calculateDistance(lat1, lon1, lat2, lon2)
-          setDistance(dist)
-          setApartmentLatitude(res.schedule.apartment_latitude)
-          setApartmentLongitude(res.schedule.apartment_longitude)
-          setAddress(res.schedule.address)
-          setApartmentName(res.schedule.apartment_name)
-          setTotalCleaningFee(res.schedule.total_cleaning_fee)
-          setRegularCleaning(res.schedule.regular_cleaning)
-          setExtra(res.schedule.extra)
-          // console.log(JSON.stringify(res.schedule.selected_apt_room_type_and_size, null, 2))
-          
-        })
+        const response = await userService.getScheduleById(scheduleId)
+        const res = response.data;
+    
+        console.log("weeeeeeeekie")
+        console.log(res.schedule.cleaning_date)
         
-       
-      } catch(e) {
-        // error reading value
+        setSchedule(res)
+        setRoomTypeSize(res.schedule.selected_apt_room_type_and_size)
+        setCleaningDate(res.schedule.cleaning_date)
+        setCleaningTime(res.schedule.cleaning_time)
+        setCleaningEndTime(res.schedule.cleaning_end_time)
+    
+        const lat1 = geolocationData.latitude;
+        const lon1 = geolocationData.longitude;
+        const lat2 = res.schedule.apartment_latitude;
+        const lon2 = res.schedule.apartment_longitude;
+    
+        const dist = calculateDistance(lat1, lon1, lat2, lon2);
+        setDistance(dist)
+        setApartmentLatitude(lat2)
+        setApartmentLongitude(lon2)
+    
+        const coordinate = {
+          latitude: lat2,
+          longitude: lon2
+        };
+    
+        const result = await getCityState(coordinate);
+        
+        setCity(result.city)
+        setState(result.state)
+        setPostalCode(result.postalCode)
+        setCountry(result.country)
+      
+        
+    
+        setApartmentName(res.schedule.apartment_name)
+        setTotalCleaningFee(res.schedule.total_cleaning_fee)
+        setRegularCleaning(res.schedule.regular_cleaning)
+        setExtra(res.schedule.extra)
+    
+      } catch (e) {
         console.log(e)
       }
     }
+
+    // const fetchSchedule = async() => {
+    //   try {
+          
+    //     await userService.getScheduleById(scheduleId)
+    //     .then(response=> {
+    //       const res = response.data
+    //       console.log("weeeeeeeekie")
+    //       console.log(res.schedule.cleaning_date)
+    //       setSchedule(res)
+    //       setRoomTypeSize(res.schedule.selected_apt_room_type_and_size)
+    //       setCleaningDate(res.schedule.cleaning_date)
+    //       setCleaningTime(res.schedule.cleaning_time)
+    //       setCleaningEndTime(res.schedule.cleaning_end_time)
+    //       const lat1 = geolocationData.latitude
+    //       const lon1 = geolocationData.longitude
+
+    //       const lat2 = res.schedule.apartment_latitude
+    //       const lon2 = res.schedule.apartment_longitude
+    //       const dist = calculateDistance(lat1, lon1, lat2, lon2)
+    //       setDistance(dist)
+    //       setApartmentLatitude(res.schedule.apartment_latitude)
+    //       setApartmentLongitude(res.schedule.apartment_longitude)
+
+          
+    //       const coordinate = {
+    //         latitude : res.schedule.apartment_latitude, 
+    //         longitude:res.schedule.apartment_longitude
+    //       }
+          
+          
+          
+    //       console.log("coooooooooooooooordinate2")
+    //       console.log(result); 
+    //       console.log("coooooooooooooooordinate")
+    //       // try {
+    //       //   const locationData = getAddressFromCoords(res.schedule.apartment_latitude, res.schedule.apartment_longitude);
+    //       //   if (locationData) {
+    //       //     setAddress(locationData);
+    //       //   } else {
+    //       //     setError('Location information not available');
+    //       //   }
+    //       // } catch (err) {
+    //       //   setError('Failed to fetch location data');
+    //       //   console.error(err);
+    //       // } finally {
+    //       //   setLoading(false);
+    //       // }
+          
+    //       // setAddress(res.schedule.address)
+    //       setApartmentName(res.schedule.apartment_name)
+    //       setTotalCleaningFee(res.schedule.total_cleaning_fee)
+    //       setRegularCleaning(res.schedule.regular_cleaning)
+    //       setExtra(res.schedule.extra)
+    //       // console.log(JSON.stringify(res.schedule.selected_apt_room_type_and_size, null, 2))
+          
+    //     })
+        
+       
+    //   } catch(e) {
+    //     // error reading value
+    //     console.log(e)
+    //   }
+    // }
 
     const handleOpenDirections = () => {
       const url = `https://www.google.com/maps/dir/?api=1&origin=${currentUser.location.latitude},${currentUser.location.longitude }&destination=${apartment_latitude},${apartment_longitude}&travelmode=driving`;
@@ -210,6 +317,13 @@ export default function SchedulePreview({route}) {
     }
 
     const handleDecline = () => {
+
+
+      userService.declineCleaningRequest(requestId)
+      .then(response => {
+        console.log(response.data)
+      })
+      
       const status = "Decline"
       const cleanerFname = currentUser.firstname
       const cleanerLname = currentUser.lastname
@@ -218,6 +332,11 @@ export default function SchedulePreview({route}) {
       
       // handleOpenConfirmClockIn()
     }
+
+    // Usage in component
+
+
+
 
   return (
     <SafeAreaView
@@ -261,11 +380,11 @@ export default function SchedulePreview({route}) {
         <ScrollView>
         
         <View style={styles.container}>
-          
+        {/* <Text>{address.city}, {address.state}</Text> */}
           <CardNoPrimary>
           <View style={styles.centerContent}>
               <Text bold style={styles.headerText}>{apartment_name}</Text>
-              <Text style={{color:COLORS.gray, marginBottom:10, marginLeft:-5}}> <MaterialCommunityIcons name="map-marker" size={16} />{address}</Text>
+              <Text style={{color:COLORS.gray, marginBottom:10, marginLeft:-5}}> <MaterialCommunityIcons name="map-marker" size={16} /> {city}, {state}</Text>
             </View>
 
             <View style={{flexDirection:'row', justifyContent:'space-between', alignItems:'center', marginTop:0}}>
@@ -336,6 +455,11 @@ export default function SchedulePreview({route}) {
                 />
               </View>
           </CardColored>
+         
+          
+
+
+
 
         <View>
         {/* {regular_cleaning.length > 0 && 

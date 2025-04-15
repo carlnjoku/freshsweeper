@@ -33,7 +33,11 @@ const AddICalModal = ({ visible, onClose, onSave, cleaners, aptId }) => {
 
     return (
         <Portal>
-            <Modal visible={visible} onDismiss={onClose} contentContainerStyle={styles.modalContainer}>
+            <Modal 
+                visible={visible} 
+                onDismiss={onClose} 
+                contentContainerStyle={styles.modalContainer}
+            >
                 <Text style={styles.title}>Sync Calendar</Text>
 
                 {/* iCal URL Input */}
@@ -53,25 +57,25 @@ const AddICalModal = ({ visible, onClose, onSave, cleaners, aptId }) => {
                 <RadioButton.Group onValueChange={setSelectedType} value={selectedType}>
                 <View style={styles.radioGroup}>
                     <RadioButton.Item 
-                    label="Airbnb" 
-                    value="Airbnb" 
-                    color={COLORS.primary}
-                    labelStyle={styles.label}
-                    style={styles.radioItem} 
+                        label="Airbnb" 
+                        value="Airbnb" 
+                        color={COLORS.primary}
+                        labelStyle={styles.label}
+                        style={styles.radioItem} 
                     />
                     <RadioButton.Item 
-                    label="Booking.com" 
-                    value="Booking.com" 
-                    color={COLORS.primary}
-                    labelStyle={styles.label}
-                    style={styles.radioItem}  
+                        label="Booking.com" 
+                        value="Booking.com" 
+                        color={COLORS.primary}
+                        labelStyle={styles.label}
+                        style={styles.radioItem}  
                     />
                     <RadioButton.Item 
-                    label="Vrbo" 
-                    value="Vrbo"
-                    color={COLORS.primary}
-                    labelStyle={styles.label}
-                    style={styles.radioItem}  
+                        label="Vrbo" 
+                        value="Vrbo"
+                        color={COLORS.primary}
+                        labelStyle={styles.label}
+                        style={styles.radioItem}  
                     />
                 </View>
                 </RadioButton.Group>

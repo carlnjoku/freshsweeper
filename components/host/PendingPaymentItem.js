@@ -79,7 +79,7 @@ const {currentUser, currentUserId} = useContext(AuthContext)
           />
           {/* <StarRating /> */}
                 {/* <Text style={{marginLeft:5}}>{calculateOverallRating(reviews, item.cleanerId)}</Text> */}
-          <Text style={styles.miles}>{pending_payment?.cleaner.contact?.address}</Text>
+          <Text style={styles.miles}>{pending_payment?.cleaner.contact?.cityShort}, {pending_payment?.cleaner.contact?.stateLong}</Text>
           <Text style={styles.miles}>0.5 miles away</Text>
           {/*<Text style={styles.apartment}>{pending_payment?.schedule?.address} </Text> */}
         </View>
@@ -87,7 +87,6 @@ const {currentUser, currentUserId} = useContext(AuthContext)
         <View style={{flex: 0.3, alignItems: 'flex-end'}}>
           <Text style={styles.date}>Member Since</Text>
           <Text style={styles.time}>{moment(pending_payment?.cleaner.created_at,"DD-MM-YYYY HH:mm:ss").format("MMM YYYY")}</Text>
-          {/* <Ionicons name="chevron-forward-outline" color={COLORS.secondary} size={16}></Ionicons> */}
         </View>
       </View>
       <Divider style={styles.divider} />

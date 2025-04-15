@@ -50,7 +50,7 @@ const AttachTaskPhotos = ({route}) => {
 
   return (
     <View style={{ flex: 1, backgroundColor:COLORS.white }}>
-  
+      <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
       <View style={styles.tabsContainer}>
         <TouchableOpacity style={[styles.tab, { borderBottomColor: currentStep == 1 ? COLORS.primary : "#f0f0f0"}]} onPress={() => setCurrentStep(1)}>
           <MaterialCommunityIcons name="camera" size={24} color={currentStep === 1 ? COLORS.primary : COLORS.gray} />

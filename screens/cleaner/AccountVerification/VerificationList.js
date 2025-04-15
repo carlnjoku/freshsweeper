@@ -13,6 +13,7 @@ export default function VerificationList({route}) {
 
     const {verifyItem} = route.params
 
+    console.log("verification list")
     console.log(verifyItem)
     const renderItem = ({ item }) => (
         

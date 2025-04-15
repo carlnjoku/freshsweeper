@@ -183,13 +183,17 @@ class UserService {
       return http.delete(`/api/task_photos/delete_before_task_photo/${scheduleId}/${taskTitle}?image_url=${encodedImageUrl}`);
   }
    
+  deleteSpaceAfterPhoto(data){
+    return http.post('/api/task_photos/delete_after_task_photo', data)
+  }
 
 
     // Upload incident photos
     uploadPhotosIncidentPhotos(data){
       return http.post('/api/task_photos/upload-incident-photos', data, {
         headers: {
-          'Content-Type': 'multipart/form-data'
+          'Content-Type': 'multipart/form-data',
+          'Accept': 'application/json'
         }})
     }
 
@@ -248,9 +252,10 @@ class UserService {
     }
 
     // Tax information 
-    updateTaxInfomation(data){
-      return http.post('/api/stripes/update-tax-info', data)
+    updateTaxInfomation(stripe_account_id){
+      return http.get(`/api/stripes/update-tax-info/${stripe_account_id}`)
     }
+    
 
     // Send push notitfication for cleaner request
     sendCleaningRequestPushNotification(data){
@@ -261,6 +266,9 @@ class UserService {
     }
     acceptCleaningRequest(requestId){
       return http.post(`/api/schedules/accept_cleaning_request/${requestId}`)
+    }
+    declineCleaningRequest(requestId){
+      return http.post(`/api/schedules/decline_cleaning_request/${requestId}`)
     }
 
     sendExtraTimeRequest(data){
@@ -301,7 +309,14 @@ class UserService {
     getUpdatedImageUrls(scheduleId){
       return http.get(`/api/task_photos/fetch_uploaded_images/${scheduleId}`)
     }
+    // Get updated images
+    getIncidents(scheduleId){
+      return http.get(`/api/task_photos/fetch_incidents/${scheduleId}`)
+    }
 
+    updateScheduleIncidents(data){
+      return http.put('/api/task_photos/update_incident', data)
+    }
     updateChecklist(data){
       return http.put('/api/task_photos/update_checklist', data)
     }

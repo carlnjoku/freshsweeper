@@ -1,7 +1,7 @@
 import React, { useContext, useCallback, useEffect,useState } from 'react';
 import Text from '../../../components/Text';
 import { useFocusEffect } from '@react-navigation/native'; // Import useFocusEffect from React Navigation
-import { SafeAreaView,StyleSheet, StatusBar, useWindowDimensions, Linking, FlatList, ScrollView, Image, View, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { SafeAreaView,StyleSheet, StatusBar, useWindowDimensions, Linking, FlatList, ScrollView, View, TouchableOpacity, ActivityIndicator } from 'react-native';
 import COLORS from '../../../constants/colors';
 import userService from '../../../services/userService';
 
@@ -15,6 +15,8 @@ import ImageViewer from 'react-native-image-zoom-viewer';
 import Modal from 'react-native-modal';
 import CardNoPrimary from '../../../components/CardNoPrimary';
 import { Avatar} from 'react-native-paper';
+import { Image } from 'expo-image'; 
+
 
 
 
@@ -55,29 +57,34 @@ import { Avatar} from 'react-native-paper';
       }, [])
     );
 
-    console.log("schedule..................")
-    // console.log(schedule)
-    console.log("schedule..................")
-
-      const estimatedTime = '10:54'
-      const startTime = '10:54'
-      const heading  = '10:54'
-      const subheading = '10:54'
-    // const fetchImages = async () => {
-    //   // Fetch images from the database
-    //   setIsLoading(true);
-    //   await userService.getUpdatedImageUrls(scheduleId)
-    //   .then(response => {
-    //     const res = response.data.data
-    //     console.log("Before.................photos")
-    //     console.log(res.before_photos)
-    //     console.log("Before.................photos")
-    //     // Update state with the fetched images
-    //     setSelectedImages(res.before_photos);
-    //     setIsLoading(false);
-    //   })
-    // };
-
+    useFocusEffect(
+      useCallback(() => {
+        let isMounted = true; // Track if component is mounted
+    
+        const fetchData = async () => {
+          try {
+            setIsLoading(true);
+            const response = await userService.getUpdatedImageUrls(scheduleId);
+            if (isMounted) { // Only update state if mounted
+              const res = response.data.data;
+              setSelectedImages(res.before_photos);
+            }
+          } catch (error) {
+            console.log(error);
+          } finally {
+            if (isMounted) { // Only update state if mounted
+              setIsLoading(false);
+            }
+          }
+        };
+    
+        fetchData();
+    
+        return () => { // Cleanup function when component unmounts
+          isMounted = false;
+        };
+      }, [scheduleId]) // Add dependencies if needed
+    );
 
     const fetchImages = async () => {
       setIsLoading(true);
@@ -103,6 +110,8 @@ import { Avatar} from 'react-native-paper';
       setBeforeModalVisible(true);
     };
 
+    
+
     const renderThumbnails = ({ item, drag, isActive, index }) => (
       <TouchableOpacity
         disabled={isActive}
@@ -111,13 +120,14 @@ import { Avatar} from 'react-native-paper';
           { backgroundColor: isActive ? COLORS.gray : item.backgroundColor },
         ]}
         onPress={() => openBeforeModal(index)}
+        
       >
         
-        <Image 
+        {/* <Image 
           source={{uri:item.img_url}} 
           style={styles.thumbnails} 
           resizeMode="cover" 
-        />
+        /> */}
       </TouchableOpacity>
     
       
@@ -159,8 +169,37 @@ import { Avatar} from 'react-native-paper';
     }
 
     // Open modal and set images for the selected task title
+    // const openImageViewer = (images, index) => {
+    //   const formattedImages = images.map(photo => ({
+    //     url: photo.img_url,
+    //     props: {
+    //       source: { uri: photo.img_url }
+    //     }
+    //   }));
+    //   setCurrentImages(formattedImages);
+    //   setCurrentImageIndex(index);
+    //   setBeforeModalVisible(true);
+    // };
+
+    // const openImageViewer = (images, index) => {
+    //   console.log("photos to display", images)
+    //   const formattedImages = images.map(photo => ({
+    //     url: photo.img_url,  // ImageViewer expects direct "url" property
+    //     // Remove the nested props since we're using url directly
+    //   }));
+    //   console.log("photos to display", formattedImages)
+    //   setCurrentImages(formattedImages);
+    //   setCurrentImageIndex(index);
+    //   setBeforeModalVisible(true);
+    // };
+
     const openImageViewer = (images, index) => {
-      const formattedImages = images.map(photo => ({ url: photo.img_url }));
+      console.log("Original photos:", images);
+      const formattedImages = images.map(photo => {
+        console.log("Photo URL validation:", photo.img_url); // Verify URL format
+        return { url: photo.img_url };
+      });
+      console.log("Formatted images:", formattedImages);
       setCurrentImages(formattedImages);
       setCurrentImageIndex(index);
       setBeforeModalVisible(true);
@@ -198,17 +237,22 @@ import { Avatar} from 'react-native-paper';
                      </Text>
                      
                     <ScrollView horizontal style={styles.previewContainer}>
-                        {selected_images[taskTitle]["photos"].map((photo, index) => (
-                        <View key={index} style={styles.thumbnailContainer}>
+                        {selected_images[taskTitle]?.photos?.map((photo, index) => (
                           <TouchableOpacity
-                            key={index}
-                            onPress={() => openImageViewer(selected_images[taskTitle]["photos"], index)}
+                            key={`${taskTitle}-${index}`}
+                            // onPress={() => openImageViewer(selected_images[taskTitle].photos, index)}
+                            onPress={() => {
+                              console.log('Image URLs:', photo.img_url);
+                              openImageViewer(selected_images[taskTitle].photos, index);
+                            }}
                             style={styles.thumbnailContainer}
                           >
-                            <Image source={{ uri: photo.img_url }} style={styles.preview} />
+                            <Image 
+                              source={{ uri: photo.img_url }} 
+                              style={styles.preview} 
+                              transition={300}
+                            />
                           </TouchableOpacity>
-                            
-                        </View>
                         ))}
                     </ScrollView>
                     
@@ -242,24 +286,38 @@ import { Avatar} from 'react-native-paper';
        
         {/* Modal with ImageViewer */}
         <Modal
-          isVisible={isBeforeModalVisible}
-          style={styles.fullScreenModal}
-          onBackdropPress={() => setBeforeModalVisible(false)}
-        >
-          {/* <View style={styles.imageViewerContainer}> */}
-          <ImageViewer
-            imageUrls={currentImages}
-            index={currentImageIndex}
-            onClick={() => setBeforeModalVisible(false)}
-            enableSwipeDown
-            onSwipeDown={() => setBeforeModalVisible(false)}
-            backgroundColor="black"
-          />
-          {/* <Text style={styles.imageDescription}>
-            {images[currentImageIndex]?.description || 'No description available'}
-          </Text> */}
-        {/* </View> */}
-        </Modal>
+            isVisible={isBeforeModalVisible}
+            style={styles.fullScreenModal}
+            onBackdropPress={() => setBeforeModalVisible(false)}
+          >
+            <View style={styles.modalContainer}>
+              <ImageViewer
+                imageUrls={currentImages}
+                index={currentImageIndex}
+                backgroundColor="black"
+                enableSwipeDown
+                enableImageZoom
+                onCancel={() => setBeforeModalVisible(false)}
+                renderHeader={() => (
+                  <TouchableOpacity 
+                    style={styles.closeButton}
+                    onPress={() => setBeforeModalVisible(false)}
+                  >
+                    <MaterialCommunityIcons name="close" size={24} color="white" />
+                  </TouchableOpacity>
+                )}
+                renderImage={(props) => (
+                  <Image
+                    {...props}
+                    source={props.source} // Correctly use the source from ImageViewer
+                    style={styles.fullSizeImage}
+                    contentFit="contain"
+                    transition={300}
+                  />
+                )}
+              />
+            </View>
+          </Modal>
     </SafeAreaView>
     
    
@@ -288,7 +346,8 @@ const styles = StyleSheet.create({
       justifyContent: 'center'
     },
     photosContainer: {
-      marginLeft: 0,
+      marginLeft: 5,
+      marginRight:5
     },
     thumbnails:{
       width: 102,
@@ -325,9 +384,33 @@ const styles = StyleSheet.create({
       flex:1,justifyContent:'center',
       alignItems:'center',
       marginTop:100
-    }
+    },
     
+    fullScreenModal: {
+      margin: 0,
+      justifyContent: 'center',
+    },
+    modalContainer: {
+      flex: 1,
+      backgroundColor: 'black',
+    },
+    fullSizeImage: {
+      width: '100%',
+      height: '100%',
+    },
+
+    closeButton: {
+      position: 'absolute',
+      backgroundColor: 'rgba(255,255,255,0.2)',
+      top: 40,
+      right: 20,
+      borderRadius: 20,
+      zIndex: 1,
+      padding: 10,
+    }
     
 })
 
 export default BeforePhoto
+
+

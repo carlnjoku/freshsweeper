@@ -250,23 +250,16 @@ const Signin = () => {
     
 
   return (
-    // <View style={styles.container}>
-    //   <Text>Signin</Text>
-    //   <Text style={styles.loginBtn}>{route.params.userId}</Text>
-    //   <Text onPress={()=>navigation.navigate(ROUTES.signup)} style={styles.loginBtn}>Register</Text>
-    //   <Text onPress={()=>navigation.navigate(ROUTES.home)} style={styles.loginBtn}>Home</Text>
-    // </View>
-
+    
     <SafeAreaView
         style={{
             flex:1,
             justifyContent:'center',
-            backgroundColor:COLORS.backgroundColor,
+            backgroundColor:COLORS.white,
             alignItems:'center',
         }}
     >
 
-    {/* <Loader visible={loading} /> */}
 
         <ScrollView 
             showsVerticalScrollIndicator={false} 

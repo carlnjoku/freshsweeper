@@ -6,6 +6,8 @@ const COLORS = {
     darkGray:"#858585",
     light_gray:"#B9B9B9",    
     light_gray_1:"#E9E9E9",    
+    light_green_1:"#E0F2E9",    
+    light_pink_1:"#FFE4E1",    
     light:"#F7F7F7",
     deepBlue:"#00416A",
     darkBlue:"#0092CC",
@@ -22,7 +24,12 @@ const COLORS = {
     red: 'red',
     twitter_blue:"#1DA1F2",
     twitter_blue:"#1DA1F2",
-    verified:"#50C878"
+    verified:"#50C878",
+    light_purple_1:"#E0B0FF",
+    light_purple_2:"#CCCCFF",
+    pink:"#FFC0CB",
+    green:"#008000",
+    purple:"#800080",
 }
 
 export default COLORS

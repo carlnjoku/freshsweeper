@@ -539,3 +539,17 @@ export const entities = [
         value:"sole_proprietorship",
     }
 ]
+
+
+export const countryCurrencyMap = {
+    US: { currency: 'USD', symbol: '$' },
+    CA: { currency: 'CAD', symbol: 'CA$' },
+    GB: { currency: 'GBP', symbol: '£' },
+    NG: { currency: 'NGN', symbol: '₦' },
+    FR: { currency: 'EUR', symbol: '€' },
+    DE: { currency: 'EUR', symbol: '€' },
+    IN: { currency: 'INR', symbol: '₹' },
+    JP: { currency: 'JPY', symbol: '¥' },
+    AU: { currency: 'AUD', symbol: 'A$' },
+    // Add more as needed
+  };

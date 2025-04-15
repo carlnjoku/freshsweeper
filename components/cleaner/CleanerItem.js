@@ -98,7 +98,7 @@ const {currentUser, currentUserId} = useContext(AuthContext)
           {/* <StarRating /> */}
           <Text style={{marginLeft:5}}>{calculateOverallRating(reviews, item.cleanerId)}</Text>
           </View>
-          {/* <Text style={styles.miles}>{pending_payment?.location?.city}, {pending_payment?.location?.region}</Text> */}
+          <Text style={styles.miles}>{pending_payment?.location?.city}, {pending_payment?.location?.region}</Text>
           <Text style={styles.miles}>{pending_payment?.distance.toFixed(1) || 0} miles away</Text>
           {/*<Text style={styles.apartment}>{pending_payment?.schedule?.address} </Text> */}
         </View>

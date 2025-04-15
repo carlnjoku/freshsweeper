@@ -19,6 +19,7 @@ import Bookings from '../screens/host/Bookings';
 import FindCleaners from '../screens/host/FindCleaners';
 import { TransitionPresets } from '@react-navigation/stack';
 
+
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
@@ -180,6 +181,7 @@ function BottomTabsHost() {
           title: "Dashboard",
         })}
       />
+      
       <Tab.Screen 
         name={ROUTES.host_bookings} 
         component = {Bookings} 

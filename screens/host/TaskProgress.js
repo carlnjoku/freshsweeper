@@ -6,7 +6,7 @@ import userService from '../../services/userService';
 import Card from '../../components/Card';
 import { AuthContext } from '../../context/AuthContext';
 import { Avatar } from 'react-native-paper';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons, AntDesign } from '@expo/vector-icons';
 import moment from 'moment';
 import Modal from 'react-native-modal';
 
@@ -24,6 +24,7 @@ import ViewCleanerProfile from './ViewCleanerProfile';
 import { useNavigation } from '@react-navigation/native'
 import TimeConversion1 from '../../utils/TimeConversion1';
 import Incident from './TaskTaps/Incident';
+import CircleIconButton1 from '../../components/CircleButton1';
 
 const { width, height } = Dimensions.get('window');
 
@@ -114,14 +115,21 @@ const TaskProgress = ({route}) => {
     {/* Content for each step */}
     <View style={styles.container0}>
       {/* Heading */}
-      <View style={styles.headingContainer}>
-        <Text style={styles.headingText}>Cleaner{schedule?.assignedTo?.length > 1 ? 's': ''} at Work</Text>
+
+      <View style={styles.centerContent}>
+            <AntDesign name="home" size={60} color={COLORS.gray}/> 
+            <Text bold style={styles.headerText}>{schedule.schedule?.apartment_name}</Text>
+            <Text style={{color:COLORS.gray, marginBottom:5, marginLeft:-5}}> <MaterialCommunityIcons name="map-marker" size={16} />{schedule.schedule?.address}</Text>
+          </View>
+
+      {/* <View style={styles.headingContainer}>
+        <Text style={styles.headingText}>Cleaner{schedule?.assignedTo?.length > 1 ? 's': ''} Information</Text>
       </View>
 
-      {/* Subheading */}
+    
       <View style={styles.subheadingContainer}>
         <Text style={styles.subheadingText}>Get to know the professionals who took care of your cleaning needs</Text>
-      </View>
+      </View> */}
 
 
         <View style={styles.cleanerProgress}>
@@ -142,38 +150,43 @@ const TaskProgress = ({route}) => {
 
                 
             </View>
+            <View>
+         
+              <CircleIconButton1
+                iconName="calendar"
+                iconColor={COLORS.purple}
+                buttonSize={50}
+                radiusSise={25}
+                iconSize={26}
+                title={moment(schedule?.schedule?.cleaning_date).format('ddd MMM D')}
+                title_color={COLORS.gray}
+                border_color={COLORS.light_purple_2}
+                background_color={COLORS.light_purple_2}
+              />
+            </View>
 
                 <View style={styles.progressContainer}>
-                    <AnimatedCircularProgress
-                        size={50}
-                        width={3}
-                        fill={progress}           // The percentage of completion
-                        tintColor={COLORS.primary}       // Progress bar color
-                        backgroundColor="#e0e0e0" // Background color
-                        lineCap="round"
-                        rotation={0}
-                    >
-                        {() => (
-                            <>
-                        <View style={styles.textContainer}>
-                            <Text style={styles.progressText}>
-                            {`${Math.round(progress)}%`}    {/* Display the percentage */}
-                            </Text>
-                        </View>
-                        
-                        </>
-                        )}
-                    </AnimatedCircularProgress>
-                    <Text style={styles.infoText}>Progress</Text>
+                  <CircleIconButton1
+                    iconName="clock-outline"
+                    iconColor={COLORS.purple}
+                    buttonSize={50}
+                    radiusSise={25}
+                    iconSize={26}
+                    title={moment(schedule?.schedule?.cleaning_time, 'h:mm:ss A').format('h:mm A')}
+                    title_color={COLORS.gray}
+                    border_color={COLORS.light_pink_1}
+                    background_color={COLORS.light_pink_1}
+                  />
+                    
                     {/* <Text style={styles.infoText}>Progress: {`${Math.round(progress)}%`}</Text> */}
                 </View>
             </View>
-            <View style={styles.infoContainer}>
+            {/* <View style={styles.infoContainer}>
                 <Text style={styles.infoText}>Started: {moment(schedule?.schedule?.cleaning_time, 'h:mm:ss A').format('h:mm A')} </Text>
-                {/* <Text style={styles.infoText}><TimeConversion1 minutes={schedule?.schedule?.total_cleaning_time} /> </Text> */}
+                
                 <Text style={styles.infoText}>End {moment(endTime, 'h:mm:ss A').format('h:mm A')} </Text>
-            </View>
-        </View>
+            </View> */}
+      </View>
       <View style={styles.tabsContainer}>
         <TouchableOpacity style={[styles.tab, { borderBottomColor: currentStep == 1 ? COLORS.primary : "#f0f0f0"}]} onPress={() => setCurrentStep(1)}>
           <MaterialCommunityIcons name="camera" size={24} color={currentStep === 1 ? COLORS.primary : COLORS.gray} />
@@ -279,16 +292,20 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   container0: {
-    marginTop:30,
+    marginTop:0,
     backgroundColor: COLORS.white,
     borderRadius: 10,
     padding: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 3,
-    margin: 10,
+    // shadowColor: '#000',
+    // shadowOffset: { width: 0, height: 1 },
+    // shadowOpacity: 0.3,
+    // shadowRadius: 5,
+    // elevation: 3,
+    // margin: 10,
+  },
+  centerContent: {
+    alignItems: 'center',  // Center content horizontally
+    marginBottom:10
   },
   headingContainer: {
     marginBottom: 5,
@@ -369,7 +386,9 @@ const styles = StyleSheet.create({
   progressContainer:{
     flexDirection:'column',
     alignItems:'center'
-  }, modal: {
+  }, 
+  
+  modal: {
     margin: 0,
     justifyContent: 'flex-end', // Aligns the modal to the bottom
   },
@@ -388,6 +407,11 @@ modal_header:{
     alignItems:'center',
     width:'100%',
     paddingBottom:10
+  },
+  headerText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
   },
 })
 export default TaskProgress;

@@ -1173,20 +1173,41 @@ const FindCleaners = ({ navigation }) => {
 
   const genericArray = new Array(5).fill(null);
 
-  // Fetch initial data
+  // // Fetch initial data
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const [apartmentsRes] = await Promise.all([
+  //         userService.getApartment(currentUserId),
+  //       ]);
+  //       setApartments(apartmentsRes.data);
+  //     } catch (error) {
+  //       console.error('Error fetching data:', error);
+  //     }
+  //   };
+  //   fetchData();
+  // }, [currentUserId]);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [apartmentsRes] = await Promise.all([
           userService.getApartment(currentUserId),
         ]);
+        
+        if (!apartmentsRes.data || apartmentsRes.data.length === 0) {
+          navigation.replace(ROUTES.host_dashboard); // Redirect to dashboard
+          return;
+        }
+  
         setApartments(apartmentsRes.data);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
     };
+    
     fetchData();
-  }, [currentUserId]);
+  }, [currentUserId, navigation]);
 
 
   // Fetch schedules when property is selected

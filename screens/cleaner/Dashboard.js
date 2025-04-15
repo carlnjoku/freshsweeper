@@ -669,7 +669,7 @@ import { EmptyListingNoButton } from '../../components/EmptyListingNoButton';
 const CleanerDashboard = () => {
   const navigation = useNavigation();
   const pan = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
-  const { currentUserId } = useContext(AuthContext);
+  const { currentUserId, currentUser } = useContext(AuthContext);
 
  
 
@@ -748,6 +748,8 @@ const fetchUser = async () => {
       
       const cleanerData = {
         email:res.email,
+        firstname:res.firstname,
+        lastname:res.lastname,
         location:res.location,
         stripe_account_id:res.stripe_account_id,
         stripe_accountStatus:res.stripe_accountStatus,
@@ -773,6 +775,8 @@ const fetchUser = async () => {
           ...item,
           status: updatedStatus,
           email: cleanerData.email, // Add email if needed
+          firstname: cleanerData.firstname, // Add email if needed
+          lastname: cleanerData.lastname, // Add email if needed
           location:cleanerData.location,
           stripe_account_id:cleanerData.stripe_account_id
         };

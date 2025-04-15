@@ -293,7 +293,7 @@ export default function ScheduleDetails({navigation, route}) {
 
                 case 'taskItem':
                     return (
-                    <View style={{marginHorizontal:5}}>
+                    <View style={{marginHorizontal:-0}}>
                         <Card>
                         <Text bold style={{fontSize:16}}>Regular Cleaning</Text>
                         <View style={styles.chip_container}>

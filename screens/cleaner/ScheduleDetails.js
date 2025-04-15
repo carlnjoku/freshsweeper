@@ -206,6 +206,7 @@ const gotToTaskScreen = () => {
 }
 
 
+
 const handleOpenDirections = () => {
   const url = `https://www.google.com/maps/dir/?api=1&origin=${currentUser.location.latitude},${currentUser.location.longitude }&destination=${item.schedule.apartment_latitude},${item.schedule.apartment_longitude}&travelmode=driving`;
 

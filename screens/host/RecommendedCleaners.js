@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Text from '../../components/Text';
-import { SafeAreaView,StyleSheet, StatusBar, Linking, FlatList, ScrollView, Modal, Image, View, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { SafeAreaView,StyleSheet, StatusBar, Linking, Alert, FlatList, ScrollView, Modal, Image, View, TouchableOpacity, ActivityIndicator } from 'react-native';
 import userService from '../../services/userService';
 import COLORS from '../../constants/colors';
 import { Avatar, TextInput } from 'react-native-paper';

@@ -4,7 +4,7 @@ import { TouchableOpacity, StyleSheet, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import COLORS from '../constants/colors';
 
-const CircleIconButton1 = ({ iconName, onPress, buttonSize, radiusSise, iconSize, title, title_color }) => {
+const CircleIconButton1 = ({ iconName, onPress, buttonSize, radiusSise, iconSize, title, title_color, border_color, background_color, iconColor }) => {
 
 
   const styles = StyleSheet.create({
@@ -16,12 +16,12 @@ const CircleIconButton1 = ({ iconName, onPress, buttonSize, radiusSise, iconSize
       height: buttonSize,
       width: buttonSize,
       borderRadius: radiusSise, // Half of the width and height to create a circle
-      borderColor: COLORS.primary_light_1,
+      borderColor: border_color,
       borderWidth:1.5,
-      backgroundColor: COLORS.white, 
+      backgroundColor: background_color, 
       justifyContent: 'center',
       alignItems: 'center',
-      marginTop:20
+      marginTop:0
     },
     title_color:{
     color:title_color,
@@ -31,7 +31,7 @@ const CircleIconButton1 = ({ iconName, onPress, buttonSize, radiusSise, iconSize
   return (
     <View style={styles.container}>
         <TouchableOpacity style={styles.button} onPress={onPress}>
-        <MaterialCommunityIcons name={iconName} size={iconSize} color={COLORS.primary} />
+        <MaterialCommunityIcons name={iconName} size={iconSize} color={iconColor} />
         </TouchableOpacity>
         <Text style={styles.title_color}>{title}</Text>
     </View>

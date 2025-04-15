@@ -42,6 +42,7 @@ const ROUTES = {
     host_schedule_details: "Schedule Details",
     host_application: "My  Application",
     host_dashboard: "Home",
+    host_request_list: "Requests",
     host_bookings: "Bookings",
     host_messages: 'Messages',
     host_conversations: 'Conversations',

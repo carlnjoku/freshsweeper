@@ -56,8 +56,8 @@ export default function Dashboard({navigation}) {
   const [pending_payment, setFilteredPendingPayment] = useState([]);
   const [pending_completion_approval, setFilteredPendingCompletionApprovalSchedules] = useState([]);
   const [upcoming, setUpcomingSchedules] = useState([]);
-  const [cleaning_request, SetCleaningRequests] = useState([]);
-  const [apartments, SetApartments] = useState([]);
+  const [cleaning_request, setCleaningRequests] = useState([]);
+  const [apartments, setApartments] = useState([]);
   const [extraTime, setExtraTime] = useState([]);
   const [pendingCount, setPendingCount] = useState([]);
 
@@ -133,7 +133,7 @@ const handleRefresh = async () => {
       // fetchApartments();
       // fetchExtraTime();
     // }, 10000); // Polling every 10 seconds
-    }, 10000); // Polling every 10 seconds
+    }, 1000000); // Polling every 10 seconds
   
     return () => clearInterval(interval); // Cleanup interval on component unmount
   }, []);
@@ -153,10 +153,12 @@ const handleRefresh = async () => {
   const fetchRequests = async () => {
 
     const currentTime = moment().format('YYYY-MM-DD HH:mm:ss')
+    // alert(currentTime)
     try {
       await userService.getHostCleaningRequest(currentUserId,currentTime).then((response) => {
         const res = response.data;
         setPendingCount(res.length)
+        // alert(res.length)
         const total_request_sent = res.length
         // getSchedulesByHostId
         // getUpcomingSchedulesByHostId
@@ -175,7 +177,7 @@ const handleRefresh = async () => {
           (req) => req.status === "pending_payment"
         );
 
-        SetCleaningRequests(pendingRequests)
+        setCleaningRequests(pendingRequests)
         setFilteredPendingPayment(pendingPayment);
         
         
@@ -204,7 +206,7 @@ const handleRefresh = async () => {
           const response = await userService.getApartment(currentUserId);
           const data = response.data;
           // console.log(data); // Log the fetched data
-          SetApartments(data)
+          setApartments(data)
           // return data; // Return the fetched data if needed
         } catch (error) {
           console.error('Error fetching jobs:', error);
@@ -262,8 +264,8 @@ const handleRefresh = async () => {
           const jsonValue = await AsyncStorage.getItem('@storage_Key')
           
           const userInfo = JSON.parse(jsonValue)
-          console.log("Speeeeeeeeeeeeed")
-            // console.log(userInfo)
+    
+          // console.log(userInfo)
           const uid = userInfo.resp._id
           // setLoading(true)
           
@@ -291,7 +293,22 @@ const handleRefresh = async () => {
 
       const renderItem = ({ item }) => {
         switch (item.type) {
-    
+
+          
+
+          case 'newly_published_schedule':
+            return cleaning_request.length <=  0 || apartments.length <= 0  ? null : (
+              <>
+              <Text style={styles.title}>New Cleaning Requests</Text>
+              
+              <Animatable.View animation="slideInRight" duration={550}>
+                <NewlyPublishedSchedule 
+                  schedule={cleaning_request}
+                  pendingCount={pendingCount}
+                />
+              </Animatable.View>
+              </>
+            );
           case 'cleaning_extra_time_requests':
             if(extraTime.length===0) return null
             return(
@@ -351,35 +368,35 @@ const handleRefresh = async () => {
               </View>
           )
 
-          case 'cleaning_requests':
-            if (cleaning_request.length === 0) return null; // Don't render if no request
-            return(
-              <View style={styles.section}>
-                 <View>
+          // case 'cleaning_requests':
+          //   if (cleaning_request.length === 0) return null; // Don't render if no request
+          //   return(
+          //     <View style={styles.section}>
+          //        <View>
                    
-                      <FlatList 
-                        data={cleaning_request.slice(0, 4)}
-                        renderItem = {renderRequestItem}
-                        ListHeaderComponent={<Text style={styles.title}>New Cleaning Requests</Text>}
-                        ListHeaderComponentStyle={styles.list_header}
-                        ListEmptyComponent={<Text>No cleaning request found</Text>}
-                        ItemSeparatorComponent={() => <View style={styles.line}></View>}
-                        keyExtractor={(item) => item.key}
-                        numColumns={1}
-                        showsVerticalScrollIndicator={false}
-                        horizontal={false}
-                      />
+          //             <FlatList 
+          //               data={cleaning_request.slice(0, 4)}
+          //               renderItem = {renderRequestItem}
+          //               ListHeaderComponent={<Text style={styles.title}>New Cleaning Requests</Text>}
+          //               ListHeaderComponentStyle={styles.list_header}
+          //               ListEmptyComponent={<Text>No cleaning request found</Text>}
+          //               ItemSeparatorComponent={() => <View style={styles.line}></View>}
+          //               keyExtractor={(item) => item.key}
+          //               numColumns={1}
+          //               showsVerticalScrollIndicator={false}
+          //               horizontal={false}
+          //             />
                     
-                  </View>
+          //         </View>
                 
     
-              </View>
-          )
+          //     </View>
+          // )
         
           case 'upcomingSchedule':
             if (upcoming.length === 0) return null; // Don't render if no upcoming schedules
             return (
-              <View style={{marginHorizontal:0}}>
+              <View style={{marginHorizontal:10}}>
                 
                 <CardNoPrimary>
               
@@ -408,6 +425,7 @@ const handleRefresh = async () => {
                     // Display the EmptyApartmentPlaceholder when no properties exist
                     <EmptyApartmentPlaceholder onAddApartment={handleHostPress} />
                   ) : (
+                    <View style={{marginHorizontal:10}}>
                     <CardNoPrimary>
                       <View style={styles.titleContainer}>
                         <Text bold style={styles.title}>My Properties</Text>
@@ -424,6 +442,15 @@ const handleRefresh = async () => {
                       <View style={styles.line}></View>
                       <View style={styles.content}>
                         {apartments.slice(0, 2).map((property) => (
+                          <TouchableOpacity
+                          onPress={() =>
+                            navigation.navigate(ROUTES.host_apt_dashboard, {
+                              propertyId: property._id,
+                              hostId: currentUserId,
+                              property: property,
+                            })
+                          }
+                        >
                           <List.Item
                             key={property._id}
                             title={property?.apt_name}
@@ -444,6 +471,7 @@ const handleRefresh = async () => {
                               </View>
                             )}
                           />
+                          </TouchableOpacity>
                         ))}
 
                           {apartments.length > 2 && (
@@ -456,18 +484,19 @@ const handleRefresh = async () => {
                           )}
                       </View>
                     </CardNoPrimary>
+                    </View>
                   )}
                 </View>
               );
       }}
 
       
-      // const renderRequestItem = (item) => (
+      const renderRequestItem = (item) => (
 
-      //   <View style={{marginVertical:0, marginHorizontal:0}}>
-      //     <CleaningRequestItem item={item} />
-      //   </View>
-      // )
+        <View style={{marginVertical:0, marginHorizontal:0}}>
+          <CleaningRequestItem item={item} />
+        </View>
+      )
       const renderExtratime = (item) => (
 
         <View style={{marginVertical:0, marginHorizontal:0}}>
@@ -493,9 +522,11 @@ const handleRefresh = async () => {
       
       const data = [
         // { type: 'intro' },
-        // { type: 'cleaning_requests' },
-        { type: 'cleaning_extra_time_requests' },
         { type: 'pending_payment' },
+        {type:'newly_published_schedule'},
+        // { type: 'cleaning_requests' },
+        // { type: 'cleaning_extra_time_requests' },
+        
         { type: 'payment_approval'},
         { type: 'upcomingSchedule' },
         { type: 'properties' },
@@ -529,18 +560,7 @@ const handleRefresh = async () => {
     <StatusBar translucent={false} backgroundColor={COLORS.white}  barStyle="dark-content"/>
 
           
-     {pending_payment.length > 0 ? (
-       <View></View>
-      ) : (
-        
-      <Animatable.View animation="slideInRight" duration={550}>
-        <NewlyPublishedSchedule 
-            schedule={sampleSchedule}
-            pendingCount={pendingCount}
-            
-        />
-      </Animatable.View>
-      )}
+     
       
           <FlatList
             data={data}
@@ -1132,3 +1152,4 @@ const styles = StyleSheet.create({
 // });
 
 // export default Dashboard;
+

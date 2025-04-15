@@ -120,6 +120,11 @@ const fetchApartments = async () => {
         return (
             <View style={styles.noData}>
                 <Text style={styles.noDataText}>No apartment listed.</Text>
+
+                <FloatingButton 
+                    onPress={handleOpenCreateBooking}
+                    color="green"
+                />
             </View>
         );
     }

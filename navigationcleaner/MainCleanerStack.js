@@ -249,17 +249,22 @@ export default function MainCleanerStack() {
             
             options={({route}) => ({
                 headerShown:true,
-                headerTintColor: COLORS.white,
+                headerTintColor: COLORS.gray,
                 headerBackTitleVisible: false,
                 headerStyle: {
-                  backgroundColor: COLORS.primary,
+                  backgroundColor: '#fff', // Background color of the header
+                  elevation: 5, // Adds elevation for Android
+                  shadowColor: '#000', // Shadow color for iOS
+                  shadowOpacity: 0.3, // Shadow opacity for iOS
+                  shadowOffset: { width: 0, height: 2 }, // Shadow offset for iOS
+                  shadowRadius: 3, // Shadow radius for iOS
                 },
                 title: "Active Cleaning Session",
-                headerTintColor:COLORS.white,
+              
                 // headerBackTitleVisible:true,
                 headerRight: () => (
                   <TouchableOpacity onPress={() => navigation.setParams({ menuVisible: true })}>
-                    <MaterialIcons name="more-vert" size={24} color="#f9f9f9" style={{ marginRight: 16 }} />
+                    <MaterialIcons name="more-vert" size={24} color={COLORS.gray} style={{ marginRight: 16 }} />
                   </TouchableOpacity>
                 ),
             })}

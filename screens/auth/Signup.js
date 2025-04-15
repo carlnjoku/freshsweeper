@@ -228,6 +228,7 @@ export default function Signup({navigation, route}) {
           if(status === 200){
             setEmail(res.email)
             writeUserData(res)
+            console.log()
             // Login user after signup
             navigation.navigate(ROUTES.signin, {"email":res.email});
           }
@@ -272,19 +273,20 @@ export default function Signup({navigation, route}) {
    <SafeAreaView
           style={{
             flex:1,
-            justifyContent:'center',
-            backgroundColor:COLORS.backgroundColor,
-            alignItems:'center',
+            // justifyContent:'center',
+            backgroundColor:COLORS.white,
+            // alignItems:'center',
+            paddingHorizontal:20
           }}
         >
-          <StatusBar backgroundColor={COLORS.backgroundColor} />
+          <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
           {/* <Loader visible={loading} /> */}
         <ScrollView 
           showsVerticalScrollIndicator={false} 
           contentContainerStyle={{paddingTop: 60, paddingHorizontal: 0}}>
          
           <View style={styles.header}>
-            <Text style={styles.text_header}>Create {userType == "host" ?  "host":  "cleaner" } account</Text>
+            <Text style={styles.text_header}>Create {userType == "host" ?  "Host":  "Cleaner" } Account</Text>
           </View>
           
           
@@ -441,9 +443,12 @@ const styles = StyleSheet.create({
       paddingVertical: 20,
   },
   text_header: {
-    color: COLORS.dark,
-    textAlign:'center',
-    fontSize: 30
+  
+    fontSize:22,
+    alignSelf:'center',
+    fontWeight:'600',
+    marginBottom:20
+
   },
   text_footer: {
       color: '#05375a',

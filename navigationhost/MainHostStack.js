@@ -31,6 +31,7 @@ import ChangeLanguage from '../screens/host/ChangeLanguage';
 import EditApartment from '../screens/host/EditApartment';
 import { TransitionPresets } from '@react-navigation/stack';
 import CleanerProfilePay from '../screens/host/CleanerProfilePay';
+import RequestList from '../screens/host/RequestList';
 // import ScheduleApproval from '../screens/host/ScheduleApproval';
 
 
@@ -151,6 +152,28 @@ export default function MainHostStack() {
                 headerStyle:{
                     backgroundColor:COLORS.white
                 }
+            })}
+          />
+          <Stack.Screen 
+            name={ROUTES.host_request_list}
+            component={RequestList} 
+            
+            options={({route}) => ({
+                headerShown:true,
+                headerTintColor: COLORS.white,
+                headerBackTitleVisible: false,
+                
+                title: "Cleaning Requests",
+                headerTintColor:COLORS.gray,
+                headerBackTitleVisible:false,
+                headerStyle: {
+                  backgroundColor: '#fff', // Background color of the header
+                  elevation: 5, // Adds elevation for Android
+                  shadowColor: '#000', // Shadow color for iOS
+                  shadowOpacity: 0.3, // Shadow opacity for iOS
+                  shadowOffset: { width: 0, height: 2 }, // Shadow offset for iOS
+                  shadowRadius: 3, // Shadow radius for iOS
+                },
             })}
           />
           <Stack.Screen 

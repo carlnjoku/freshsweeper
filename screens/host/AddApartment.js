@@ -1022,6 +1022,9 @@ import ROUTES from '../../constants/routes';
 import FloatingLabelPicker from '../../components/FloatingLabelPicker';
 import { propertyList } from "../../data";
 import moment from 'moment'
+import AddressInput from "../../components/AddressInput";
+import useLocationPermission from "../../components/UseLocationPermission";
+
 
 // Fallback Colors if COLORS is missing
 const FALLBACK_COLORS = {
@@ -1032,7 +1035,8 @@ const FALLBACK_COLORS = {
 export default function AddApartment({ navigation }) {
   const { currentUserId } = useContext(AuthContext);
 
-      
+  const { hasPermission } = useLocationPermission();
+
   // Room State
   const [roomDetails, setRoomDetails] = useState([
     { type: "Bedroom", number: 0, size: 120, size_range: "Small" },
@@ -1055,6 +1059,8 @@ export default function AddApartment({ navigation }) {
   });
 
    const[loading, setLoading] = React.useState(false);
+   const [manualAddressRequired, setManualAddressRequired] = useState(false);
+
 
 
   const {geolocationData} = useContext(AuthContext)
@@ -1073,6 +1079,31 @@ export default function AddApartment({ navigation }) {
     const[longitude, setLongitude] = useState(null);
     const[city, setCity] = useState(null);
     const[textInputBottomMargin, setTextInputBottomMargin] = useState(0);
+
+    const [coordinates, setCoordinates] = useState(null);
+
+    
+
+  // const handleGeocodeSuccess = async (selectedAddress) => {
+  //   try {
+  //     const { latitude, longitude } = await geocodeAddress(selectedAddress);
+  //     setCoordinates({ latitude, longitude });
+  //     // Additional state updates if needed
+  //   } catch (error) {
+  //     console.error('Geocoding error:', error);
+  //     throw error; // This will be caught in AddressInput
+  //   }
+  // };
+
+  const handleAutocompleteSelect = async (selectedAddress) => {
+    try {
+      const { latitude, longitude } = await geocodeAddress(selectedAddress);
+      setCoordinates({ latitude, longitude });
+    } catch (error) {
+      console.error('Geocoding failed:', error);
+      setCoordinates(null);
+    }
+  };
 
     useEffect(() => {
     fetchUser()
@@ -1183,6 +1214,7 @@ export default function AddApartment({ navigation }) {
       
       try {
           const { latitude, longitude } = await geocodeAddress(e);
+          alert(latitude)
           // setCoordinates({ latitude, longitude });
           setLatitude(latitude)
           setLongitude(longitude)
@@ -1230,7 +1262,6 @@ export default function AddApartment({ navigation }) {
           return; // Stop execution if validation fails
         }
 
-
         setTimeout(async () => {
           const owner_info = {
             firstname:firstname,
@@ -1238,6 +1269,7 @@ export default function AddApartment({ navigation }) {
             email:email,
             userId:currentUserId
           }
+          
           const data = {
             userId:currentUserId,
             owner_info:owner_info,
@@ -1246,8 +1278,8 @@ export default function AddApartment({ navigation }) {
             cleaning_supplies:checked,
             contact_phone:phoneNumber,
             address:address,
-            latitude:latitude,
-            longitude:longitude,
+            latitude:coordinates.latitude.toFixed(4),
+            longitude:coordinates.longitude.toFixed(4),
             created_on: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
             apt_type:apt_type,
             roomDetails:roomDetails
@@ -1272,7 +1304,7 @@ export default function AddApartment({ navigation }) {
           }).catch((err)=> {
             console.log(err)
             // setErrMsg(true)
-            console.log("Either username or password incorrect")
+            console.log("Something went wrong, please try again")
             Alert.alert('Error', "Something went wrong, please try again");
           })
           setLoading(false);
@@ -1404,20 +1436,105 @@ export default function AddApartment({ navigation }) {
             outlineColor="#CCC"
             value={inputs.apt_name}
             activeOutlineColor={COLORS.primary}
-            style={{marginBottom:0, fontSize:14, backgroundColor:"#fff"}}
+            style={{marginBottom:0, marginTop:40, fontSize:14, backgroundColor:"#fff"}}
             onChangeText={text => handleChange(text, 'apt_name')}
             onFocus={() => handleError(null, 'apt_name')}
             iconName="email-outline"
             // error={errors.apt_name}
           />
-          {errors.apt_name && <Text style={styles.errorText}>{errors.apt_name}</Text>}
+          {/* {errors.apt_name && <Text style={styles.errorText}>{errors.apt_name}</Text>}
           <GoogleAutocomplete 
             label="Apartment Address"
             apiKey={GOOGLE_MAPS_API_KEY}
             selected_address= {handleSelectedAddress}
             handleError={handleError}
           />
+          {errors.address && <Text style={styles.errorText}>{errors.address}</Text>} */}
+
+          <GoogleAutocomplete 
+            label="Apartment Address"
+            apiKey={GOOGLE_MAPS_API_KEY}
+            selected_address={(address) => {
+              setFieldValue('address', address);
+              setManualAddressRequired(false); // Hide manual input if autocomplete works
+            }}
+            handleError={(error) => {
+              if (error === 'ZERO_RESULTS') {
+                setManualAddressRequired(true); // Show manual input
+              }
+              handleError(error);
+            }}
+          />
+
+          {/* Manual Address Fallback */}
+          {manualAddressRequired && (
+            <View style={styles.manualInputContainer}>
+              <Text style={styles.manualPrompt}>
+                Can't find your address? Enter it manually:
+              </Text>
+              <TextInput
+                style={[
+                  styles.input,
+                  errors.address && styles.inputError
+                ]}
+                placeholder="Full Street Address"
+                value={values.address}
+                onChangeText={(text) => setFieldValue('address', text)}
+                onBlur={handleBlur('address')}
+              />
+            </View>
+          )}
+
+          {/* Error Message */}
           {errors.address && <Text style={styles.errorText}>{errors.address}</Text>}
+
+          
+          {/* <AddressInput
+            label="Apartment Address"
+            value={address}
+            // onChange={(val) => setFieldValue('address', val)}
+            onChange={(val) => setAddress(val)}
+            error={errors.address}
+          /> */}
+
+        {/* <AddressInput
+          label="Property Address"
+          value={address}
+          onChange={setAddress}
+          onAutocompleteSelect={handleAutocompleteSelect}
+          error={coordinates ? '' : 'Please verify address'}
+        /> */}
+
+        {/* <AddressInput
+          label="Apartment Address"
+          value={address}
+          onChange={setAddress}
+          onCoordinatesSet={setCoordinates}
+          error={!coordinates ? 'Address needs verification (optional)' : ''}
+        /> */}
+
+        <AddressInput
+          label="Property Address"
+          value={address}
+          onChange={setAddress}
+          onCoordinatesSet={setCoordinates}
+          error={!coordinates ? 'Please verify address' : ''}
+        />
+
+        {errors.address && <Text style={styles.errorText}>{errors.address}</Text>}
+
+        {coordinates && (
+          <Text style={styles.coordinatesText}>
+            Verified Location: {coordinates.latitude.toFixed(4)}, {coordinates.longitude.toFixed(4)}
+          </Text>
+        )}
+
+        {!hasPermission && (
+          <Text style={styles.permissionWarning}>
+            Location permission required for address verification
+          </Text>
+        )}
+
 
         <FloatingLabelPicker
           // label1="Select entity"
@@ -1676,34 +1793,45 @@ square_foot:{
     borderBottomWidth: 1,
     borderBottomColor: "#ddd",
 },
-roomType: {
-    fontSize: 14,
-    fontWeight: "500",
-},
-roomSize: {
-    fontSize: 14,
-    color: "#666",
-},
-counterButton: {
-    padding: 12,
-    marginHorizontal: 5,
-    borderRadius: 5,
-    borderWidth: 1,
-    borderColor: COLORS.primary,
-    height:40
- 
-},
-roomCount: {
-    fontSize: 14,
-    fontWeight: "500",
-    marginHorizontal: 5,
-},
-errorTextRoom: {
-    color: "#D32F2F",
-    fontSize: 12,
-    marginTop: 5,
-    position:"absolute",
-    left:0,
-    top:40
-},
+  roomType: {
+      fontSize: 14,
+      fontWeight: "500",
+  },
+  roomSize: {
+      fontSize: 14,
+      color: "#666",
+  },
+  counterButton: {
+      padding: 12,
+      marginHorizontal: 5,
+      borderRadius: 5,
+      borderWidth: 1,
+      borderColor: COLORS.primary,
+      height:40
+  
+  },
+  roomCount: {
+      fontSize: 14,
+      fontWeight: "500",
+      marginHorizontal: 5,
+  },
+  errorTextRoom: {
+      color: "#D32F2F",
+      fontSize: 12,
+      marginTop: 5,
+      position:"absolute",
+      left:0,
+      top:40
+  },
+  manualInputContainer: {
+    marginTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.lightGray,
+    paddingTop: 15
+  },
+  manualPrompt: {
+    color: COLORS.gray,
+    marginBottom: 10,
+    fontStyle: 'italic'
+  },
 };

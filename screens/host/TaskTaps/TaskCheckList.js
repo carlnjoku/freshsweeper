@@ -27,10 +27,6 @@ export default function TaskChecklist({scheduleId}) {
   const[currentImages, setCurrentImages] = useState([]);
   const[selected_images, setSelectedImages] = React.useState([])
 
-  // useEffect(() => {
-  //   fetchUser()
-  // },[])
-
   // Execute fetchImages when the screen comes into focus
   useFocusEffect(
     useCallback(() => {
@@ -89,7 +85,7 @@ export default function TaskChecklist({scheduleId}) {
                  <View key={taskTitle} style={{marginBottom:20}}>
                      
                      <Text style={styles.roomTitle}>
-                        {taskTitle} 
+                        {taskTitle}  Hello
                      </Text>
                      
                     <ScrollView horizontal style={styles.previewContainer}>

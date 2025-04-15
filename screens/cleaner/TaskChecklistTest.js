@@ -18,6 +18,50 @@ import { Image } from 'expo-image';
 import CustomActivityIndicator from '../../components/CuustomActivityIndicator';
 
 // Memoized thumbnail component to prevent unnecessary re-renders
+// const ThumbnailItem = React.memo(({ 
+//   photo, 
+//   index, 
+//   openImageViewer, 
+//   taskTitle,
+//   invertPercentage, 
+//   getCleanlinessColor, 
+//   photosArray // Add this new prop
+// }) => {
+//   const photoScore = invertPercentage(photo.cleanliness?.individual_overall || 0);
+//   const isProblemPhoto = photoScore < 35;
+
+//   return (
+//     <TouchableOpacity
+//       onPress={() => openImageViewer(photosArray, index, taskTitle)} // Pass full array and correct index
+//       style={styles.thumbnailContainer}
+//     >
+//       <Image
+//         source={{ uri: photo.img_url }}
+//         style={[
+//           styles.preview,
+//           isProblemPhoto && { borderWidth: 2, borderColor: '#e74c3c' }
+//         ]}
+//         cachePolicy="memory-disk"
+//         transition={300}
+//       />
+//       <View style={[
+//         styles.percentageOverlay, 
+//         { backgroundColor: getCleanlinessColor(photoScore) }
+//       ]}>
+//         <Text style={styles.percentageText1}>{photoScore.toFixed(0)}%</Text>
+//       </View>
+//       {isProblemPhoto && (
+//         <MaterialIcons 
+//           name="warning" 
+//           size={20} 
+//           color="#e74c3c" 
+//           style={styles.warningIcon}
+//         />
+//       )}
+//     </TouchableOpacity>
+//   );
+// });
+
 const ThumbnailItem = React.memo(({ 
   photo, 
   index, 
@@ -25,40 +69,70 @@ const ThumbnailItem = React.memo(({
   taskTitle,
   invertPercentage, 
   getCleanlinessColor, 
-  photosArray // Add this new prop
+  photosArray,
+  onDelete // Add this prop
 }) => {
   const photoScore = invertPercentage(photo.cleanliness?.individual_overall || 0);
   const isProblemPhoto = photoScore < 35;
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+
+  const handleDelete = () => {
+    Alert.alert(
+      "Delete Photo",
+      "Are you sure you want to permanently delete this photo?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { 
+          text: "Delete", 
+          onPress: () => {
+            Animated.timing(fadeAnim, {
+              toValue: 0,
+              duration: 300,
+              useNativeDriver: true
+            }).start(() => onDelete(index, taskTitle)); // Pass both index and category
+          }
+        }
+      ]
+    );
+  };
 
   return (
-    <TouchableOpacity
-      onPress={() => openImageViewer(photosArray, index, taskTitle)} // Pass full array and correct index
-      style={styles.thumbnailContainer}
-    >
-      <Image
-        source={{ uri: photo.img_url }}
-        style={[
-          styles.preview,
-          isProblemPhoto && { borderWidth: 2, borderColor: '#e74c3c' }
-        ]}
-        cachePolicy="memory-disk"
-        transition={300}
-      />
-      <View style={[
-        styles.percentageOverlay, 
-        { backgroundColor: getCleanlinessColor(photoScore) }
-      ]}>
-        <Text style={styles.percentageText1}>{photoScore.toFixed(0)}%</Text>
-      </View>
-      {isProblemPhoto && (
-        <MaterialIcons 
-          name="warning" 
-          size={20} 
-          color="#e74c3c" 
-          style={styles.warningIcon}
+    <Animated.View style={{ opacity: fadeAnim }}>
+      <TouchableOpacity
+        onPress={() => openImageViewer(photosArray, index, taskTitle)}
+        style={styles.thumbnailContainer}
+      >
+        <Image
+          source={{ uri: photo.img_url }}
+          style={[
+            styles.preview,
+            // isProblemPhoto && { borderWidth: 2, borderColor: '#e74c3c' }
+          ]}
+          cachePolicy="memory-disk"
+          transition={300}
         />
-      )}
-    </TouchableOpacity>
+        <View style={[
+          styles.percentageOverlay, 
+          { backgroundColor: getCleanlinessColor(photoScore) }
+        ]}>
+          <Text style={styles.percentageText1}>{photoScore.toFixed(0)}%</Text>
+        </View>
+        <TouchableOpacity 
+          onPress={handleDelete}
+          style={styles.deleteButton}
+        >
+          <Ionicons name="trash-outline" size={20} color="white" />
+        </TouchableOpacity>
+        {isProblemPhoto && (
+          <MaterialIcons 
+            name="warning" 
+            size={20} 
+            color="#e74c3c" 
+            style={styles.warningIcon}
+          />
+        )}
+      </TouchableOpacity>
+    </Animated.View>
   );
 });
 
@@ -167,16 +241,33 @@ const TaskChecklistTest = ({ scheduleId, tasksList, hostId }) => {
     }
   }, [scheduleId]);
 
-
+ 
   const fetchHostPushTokens = useCallback(async () => {
     const response = await userService.getUserPushTokens(hostId);
     setHostPushToken(response.data.tokens);
   }, [hostId]);
 
+
   useFocusEffect(
     useCallback(() => {
-      fetchImages();
-      fetchHostPushTokens();
+      let isActive = true;
+  
+      const fetchData = async () => {
+        try {
+          await fetchImages();
+          await fetchHostPushTokens();
+        } catch (error) {
+          console.error("Error fetching data:", error);
+        }
+      };
+  
+      if (isActive) {
+        fetchData();
+      }
+  
+      return () => {
+        isActive = false;
+      };
     }, [fetchImages, fetchHostPushTokens])
   );
 
@@ -381,6 +472,110 @@ const TaskChecklistTest = ({ scheduleId, tasksList, hostId }) => {
   const removePhoto = (index) => {
     setPhotos(prevPhotos => prevPhotos.filter((_, i) => i !== index));
   };
+
+  
+
+  // const handleDeletePhoto = (indexToDelete, category) => {
+  //   setSelectedImages(prev => {
+  //     const updated = { ...prev };
+  //     if (updated[category]?.photos) {
+  //       updated[category].photos = updated[category].photos.filter(
+  //         (_, i) => i !== indexToDelete
+  //       );
+
+        
+  //       updateChecklistInBackend(updated);
+  //     }
+  //     return updated;
+  //   });
+  // };
+
+  // const handleDeletePhoto = async (indexToDelete, category) => {
+  //   try {
+  //     // Get the photo details before deleting
+  //     const photoToDelete = selectedImages[category]?.photos[indexToDelete];
+      
+  //     // Optimistically update UI
+  //     setSelectedImages(prev => {
+  //       const updated = { ...prev };
+  //       if (updated[category]?.photos) {
+  //         updated[category].photos = updated[category].photos.filter(
+  //           (_, i) => i !== indexToDelete
+  //         );
+  //       }
+  //       return updated;
+  //     });
+  
+  //     // Delete from DigitalOcean Spaces and backend
+  //     await userService.deleteSpacePhoto({
+  //       filename: photoToDelete.filename,
+  //       category: category,
+  //       scheduleId: scheduleId
+  //     });
+  
+  //     // Update checklist after successful deletion
+  //     updateChecklistInBackend(selectedImages);
+  
+  //   } catch (error) {
+  //     console.error('Delete failed:', error);
+  //     // Revert UI if deletion fails
+  //     setSelectedImages(prev => ({ ...prev }));
+  //     Alert.alert(
+  //       'Deletion Failed', 
+  //       'Could not delete photo. Please try again.'
+  //     );
+  //   }
+  // };
+
+
+  const handleDeletePhoto = async (indexToDelete, category) => {
+    try {
+      const photoToDelete = selectedImages[category]?.photos[indexToDelete];
+      
+      if (!photoToDelete) {
+        Alert.alert("Error", "Photo not found");
+        return;
+      }
+  
+      // Extract filenames from URLs
+      const originalFilename = photoToDelete.img_url.split('/').pop();
+      const heatmapFilename = photoToDelete.cleanliness?.heatmap_url?.split('/').pop();
+  
+      // Optimistic UI update
+      setSelectedImages(prev => {
+        const updated = {...prev};
+        updated[category].photos = updated[category].photos.filter(
+          (_, i) => i !== indexToDelete
+        );
+        return updated;
+      });
+  
+      // Delete from backend and Spaces
+      const data = {
+        originalFilename,
+        heatmapFilename,
+        category,
+        scheduleId
+      }
+      console.log(data)
+      await userService.deleteSpaceAfterPhoto(data);
+  
+      // Final state update
+      updateChecklistInBackend(selectedImages);
+  
+    } catch (error) {
+  
+      console.error('Delete failed:', error);
+      // Revert UI on error
+      setSelectedImages(prev => ({...prev}));
+      Alert.alert(
+        'Deletion Failed',
+        error.response?.data?.detail || 'Could not delete photo'
+      );
+    }
+  };
+
+
   
   // Task completion logic
   const submitCompletion = useCallback(async () => {
@@ -452,6 +647,7 @@ const TaskChecklistTest = ({ scheduleId, tasksList, hostId }) => {
               index={index}
               taskTitle={taskTitle} // Pass the category name here
               photosArray={categoryPhotos} // Pass the full array
+              onDelete={handleDeletePhoto}
               openImageViewer={openImageViewer}
               invertPercentage={invertPercentage}
               getCleanlinessColor={getCleanlinessColor}
@@ -626,7 +822,15 @@ const TaskChecklistTest = ({ scheduleId, tasksList, hostId }) => {
               backgroundColor="black"
               enableSwipeDown
               enableImageZoom
+              saveToLocalByLongPress={false}
+              menuContext={{ saveToLocal: 'Save', cancel: 'Cancel' }}
+              enablePreload={false}
+              enableHorizontalBounce={false}
+              pageAnimateTime={200}
+              flipThreshold={100} // Make harder to accidentally trigger
               onSwipeDown={() => setBeforeModalVisible(false)}
+              placeholder={require('../../assets/logo_loading.png')}
+              onError={(error) => console.log('Image load error:', error)}
               onChange={(index) => {
                 setCurrentImageIndex(index);
                 pan.setValue({ x: 0, y: 0 });
@@ -812,9 +1016,13 @@ const styles = StyleSheet.create({
     flex: 1,
     // backgroundColor: 'black',
     // backgroundColor: COLORS.backgroundColor,
-    borderRadius:10
+    // borderRadius:10
   },
-  
+
+fullScreenModal: {
+    margin: 0,
+    justifyContent: 'center',
+  },
   openCameraButton: {
     justifyContent: 'center',
     alignItems: 'center',
@@ -1023,12 +1231,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
 
-
-
-  modalContainer: {
-    flex: 1,
-    backgroundColor: 'black',
-  },
   cleanlinessDetails: {
     position: 'absolute',
     bottom: 0,
@@ -1097,10 +1299,6 @@ const styles = StyleSheet.create({
 
 
 
-  modalContainer: {
-    flex: 1,
-    backgroundColor: 'black',
-  },
   cleanlinessDetails: {
     position: 'absolute',
     bottom: 0,
@@ -1213,8 +1411,6 @@ const styles = StyleSheet.create({
     height: '100%',
     width:'100%',
     backgroundColor: 'black',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
     overflow: 'hidden',
   },
   imageContainer: {
@@ -1310,49 +1506,57 @@ const styles = StyleSheet.create({
 
 
 
-warningIcon: {
-  position: 'absolute',
-  top: 5,
-  left: 5,
-  backgroundColor: 'rgba(255,255,255,0.8)',
-  borderRadius: 10,
-  padding: 2,
-},
-factorsContainer: {
-  backgroundColor: 'rgba(255,255,255,0.1)',
-  borderRadius: 12,
-  padding: 8,
-  marginTop: 12,
-},
-factorItem: {
-  flexDirection: 'row',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  paddingVertical: 8,
-  borderBottomWidth: 1,
-  borderBottomColor: 'rgba(255,255,255,0.1)',
-},
-factorName: {
-  color: 'white',
-  fontSize: 14,
-  flex: 2,
-},
-factorScore: {
-  fontSize: 14,
-  fontWeight: '600',
-  flex: 1,
-  textAlign: 'right',
-},
-finishButton:{
-  backgroundColor:COLORS.primary,
-  paddingVertical: 12,
-  paddingHorizontal: 20,
-  borderRadius: 8,
-  alignItems: 'center',
-  justifyContent: 'center',
-  flexDirection: 'row', // Arrange icon and text horizontally
-  borderRadius:50
-}
+  warningIcon: {
+    position: 'absolute',
+    top: 5,
+    left: 5,
+    backgroundColor: 'rgba(255,255,255,0.8)',
+    borderRadius: 10,
+    padding: 2,
+  },
+  factorsContainer: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 12,
+    padding: 8,
+    marginTop: 12,
+  },
+  factorItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.1)',
+  },
+  factorName: {
+    color: 'white',
+    fontSize: 14,
+    flex: 2,
+  },
+  factorScore: {
+    fontSize: 14,
+    fontWeight: '600',
+    flex: 1,
+    textAlign: 'right',
+  },
+  finishButton:{
+    backgroundColor:COLORS.primary,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row', // Arrange icon and text horizontally
+    borderRadius:50
+  },
+  deleteButton: {
+    position: 'absolute',
+    top: 5,
+    right: 5,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    padding: 5,
+    borderRadius: 15,
+  },
 });
 
 export default TaskChecklistTest;
@@ -3592,14 +3796,3 @@ export default TaskChecklistTest;
 
 
 
-
-
-
-
-
-
-
-
-
-
-      
