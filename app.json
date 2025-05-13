@@ -12,20 +12,27 @@
       "backgroundColor": "#ffffff"
     },
     "scheme": "freshsweeper1",
-    "deeplinks": ["freshsweeper1://"],
-    "platforms": ["ios", "android"],
+    "deeplinks": [
+      "freshsweeper1://"
+    ],
+    "platforms": [
+      "ios",
+      "android"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.flavoursoft.freshsweeper1",
-      "buildNumber": "1.0.0",
+      "buildNumber": "1.0.4",
       "config": {
         "googleMapsApiKey": "AIzaSyDEcmSEw9ZtSb709NRO487hLTr1KiyGir8"
       },
       "associatedDomains": [
+        "applinks:freshsweeper.com",
         "applinks:freshsweeper.com"
       ],
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "This app uses location to verify property addresses"
+        "NSLocationWhenInUseUsageDescription": "This app uses location to verify property addresses",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -34,7 +41,7 @@
         "INTERNET",
         "ACCESS_NETWORK_STATE",
         "ACCESS_WIFI_STATE",
-        "ACCESS_COARSE_LOCATION", 
+        "ACCESS_COARSE_LOCATION",
         "ACCESS_FINE_LOCATION"
       ],
       "adaptiveIcon": {
@@ -53,7 +60,10 @@
               "pathPrefix": "/res/et_password"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ],
       "config": {
@@ -75,8 +85,9 @@
         "expo-build-properties",
         {
           "ios": {
-            "deploymentTarget": "14.0" 
+            "deploymentTarget": "15.1"
           },
+          
           "android": {
             "compileSdkVersion": 34,
             "targetSdkVersion": 34,
@@ -88,6 +99,3 @@
     ]
   }
 }
-
-
-

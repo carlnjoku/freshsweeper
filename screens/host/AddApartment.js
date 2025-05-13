@@ -1007,7 +1007,7 @@
 
 import React, { useState, useEffect, useContext, useRef } from "react";
 import { TextInput, Checkbox, RadioButton } from 'react-native-paper';
-import { StyleSheet,Text, KeyboardAvoidingView, Keyboard, Alert, Platform, StatusBar, Linking,  FlatList, ScrollView, Image, View, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { StyleSheet,Text, Keyboard, Alert, Platform, StatusBar, Linking,  FlatList, ScrollView, Image, View, TouchableOpacity, ActivityIndicator } from 'react-native';
 import Button from '../../components/Button';
 import { Modal, Portal, Provider } from "react-native-paper";
 import Slider from "@react-native-community/slider"; // Fixed import

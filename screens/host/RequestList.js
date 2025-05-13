@@ -32,7 +32,7 @@ export default function RequestList({ route }) {
 
   const filteredRequests = allRequests.filter(req => {
     switch(activeTab) {
-      case 'accepted': return req.status === 'accepted';
+      case 'accepted': return req.status === 'pending_payment';
       case 'pending': return req.status === 'pending_acceptance';
       case 'declined': return req.status === 'declined';
       default: return true;

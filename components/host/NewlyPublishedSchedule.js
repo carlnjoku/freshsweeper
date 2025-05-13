@@ -60,7 +60,7 @@ const groupedSchedules = schedule.reduce((acc, current) => {
         }
       },
       totalRequests: 1,
-      accepted: current.status === 'accepted' ? 1 : 0,
+      accepted: current.status === 'pending_acceptance' ? 1 : 0,
       declined: current.status === 'declined' ? 1 : 0
     });
   }

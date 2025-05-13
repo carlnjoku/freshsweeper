@@ -1,5 +1,5 @@
 import React, { useContext, useEffect,useState } from 'react';
-import { SafeAreaView,StyleSheet, StatusBar, Linking, FlatList, ScrollView, Modal, Image, View, useWindowDimensions, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { SafeAreaView,StyleSheet, StatusBar, Linking, FlatList, Alert, ScrollView, Modal, Image, View, useWindowDimensions, TouchableOpacity, ActivityIndicator } from 'react-native';
 import ChipIcon from '../../components/ChipIcon';
 import GoogleMapComponent from '../../components/GoogleMap';
 import GoogleMapWithRoute from '../../components/GoogleMapWithRoute';
@@ -316,7 +316,7 @@ export default function SchedulePreview({route}) {
       navigation.navigate(ROUTES.cleaner_dashboard)
     }
 
-    const handleDecline = () => {
+    const handleDecline1 = () => {
 
 
       userService.declineCleaningRequest(requestId)
@@ -336,6 +336,32 @@ export default function SchedulePreview({route}) {
     // Usage in component
 
 
+    const handleDecline = () => {
+      Alert.alert(
+        'Confirm Decline',
+        'Are you sure you want to decline this cleaning request?',
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel'
+          },
+          { 
+            text: 'Decline', 
+            onPress: () => executeDecline() 
+          }
+        ]
+      );
+    };
+    
+    const executeDecline = () => {
+        userService.declineCleaningRequest(requestId)
+        .then(response => {
+          console.log(response.data)
+          navigation.navigate(ROUTES.cleaner_dashboard)
+        }).catch(
+
+        )
+    };
 
 
   return (

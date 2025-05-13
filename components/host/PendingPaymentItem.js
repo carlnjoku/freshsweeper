@@ -23,6 +23,8 @@ const {currentUser, currentUserId} = useContext(AuthContext)
   const navigation = useNavigation();
 
   const pending_payment = item.item
+  console.log("rooooooooooooo")
+  console.log(pending_payment?.cleaner.firstname)
 
 
   // console.log("Cleeeeeeenaer", pending_payment._id)
